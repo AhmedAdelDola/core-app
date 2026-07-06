@@ -1,0 +1,37 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
+
+import '../../../core/consts/strings.dart';
+import '../../../core/navigator/named_navigator_impl.dart';
+import '../../../core/services/di.dart';
+import '../../../core/theme/colors/app_colors.dart';
+import '../../../core/theme/theme.dart';
+import '../../../core/widgets/app_bar/custom_curved_appbar.dart';
+import '../../../core/widgets/app_texts/app_text.dart';
+import '../../../core/widgets/app_texts/text_scroll.dart';
+import '../../../core/widgets/loader/app_loader.dart';
+import '../../../core/widgets/network_img.dart';
+import '../../../core/widgets/ui_helpers/alert_message.dart';
+import '../../../core/widgets/ui_helpers/app_rating_bar.dart';
+import '../../../core/widgets/ui_helpers/bottom_sheet_helper.dart';
+import '../../../core/widgets/ui_helpers/extensions.dart';
+import '../home/home_section/courses_section/view/course_view/course_view.dart';
+import '../home/home_section/courses_section/view/course_view/course_view_widgets/price_container.dart';
+import '../home/home_section/courses_section/widgets/floating_text_on_img.dart';
+import '../quizes/cubit/create_quiz/create_quize_cubit.dart';
+import '../quizes/quizes_screen.dart';
+import 'cubit/library_cubit/library_cubit.dart';
+import 'widgets/files_tap/commitment.dart';
+import 'widgets/files_tap/screens/chapter_lessons_screen.dart';
+import 'package:lottie/lottie.dart';
+
+import '../../../core/consts/images.dart';
+part 'library_screen.dart';
+part 'widgets/courses_tab/courses_tab.dart';
+// part 'widgets/files_tap/files_tap.dart';
+// part 'widgets/files_tap/files_tap_card.dart';
+// part 'widgets/files_tap/screens/chapters_details_screen.dart';
+part 'widgets/quizes_tab/quizes_tab.dart';
