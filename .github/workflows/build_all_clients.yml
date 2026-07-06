@@ -4,16 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Type of update to deploy'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - release
 
 jobs:
   discover_clients:
@@ -21,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       clients: ${{ steps.set-clients.outputs.clients }}
-      deploy_type: ${{ steps.set-type.outputs.type }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,16 +21,6 @@ jobs:
           CLIENTS_JSON=$(ls clients/ | jq -R -s -c 'split("\n")[:-1]')
           echo "Found clients: $CLIENTS_JSON"
           echo "clients=$CLIENTS_JSON" >> $GITHUB_OUTPUT
-
-      - name: Determine Deploy Type
-        id: set-type
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "type=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
-          else
-            # Default to patch on regular pushes
-            echo "type=patch" >> $GITHUB_OUTPUT
-          fi
 
   build_android:
     name: Build & Deploy Android (${{ matrix.client }})
@@ -68,11 +47,6 @@ jobs:
           flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Setup Shorebird
-        uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
-
       - name: Switch Flavor
         run: dart scripts/switch_flavor.dart ${{ matrix.client }}
 
@@ -93,33 +67,22 @@ jobs:
           echo "keyAlias=$KEY_ALIAS" >> android/key.properties
           echo "storeFile=app/keystore.jks" >> android/key.properties
 
-      - name: Shorebird OTA Patch (Android)
-        if: needs.discover_clients.outputs.deploy_type == 'patch'
-        env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-        run: shorebird patch android --force
-
-      - name: Shorebird Release (Android)
-        if: needs.discover_clients.outputs.deploy_type == 'release'
-        env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-        run: shorebird release android --force
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release
 
       - name: Extract Package Name
-        if: needs.discover_clients.outputs.deploy_type == 'release'
         id: get_package_name
         run: |
           PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
 
-      - name: Deploy to Google Play
-        if: needs.discover_clients.outputs.deploy_type == 'release'
+      - name: Deploy to Google Play (Internal Testing)
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: ${{ env.PACKAGE_NAME }}
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: production
+          track: internal
           status: completed
 
   build_ios:
@@ -140,11 +103,6 @@ jobs:
         with:
           flutter-version: '3.19.x'
           channel: 'stable'
-
-      - name: Setup Shorebird
-        uses: shorebirdtech/setup-shorebird@v1
-        with:
-          cache: true
 
       - name: Switch Flavor
         run: dart scripts/switch_flavor.dart ${{ matrix.client }}
@@ -173,26 +131,14 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
       
-      - name: Shorebird OTA Patch (iOS)
-        if: needs.discover_clients.outputs.deploy_type == 'patch'
+      - name: Build iOS IPA
         env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
           EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
         run: |
           echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
-          shorebird patch ios --force --export-options-plist=ios/ExportOptions.plist
-          
-      - name: Shorebird Release (iOS)
-        if: needs.discover_clients.outputs.deploy_type == 'release'
-        env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-          EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
-        run: |
-          echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
-          shorebird release ios --force --export-options-plist=ios/ExportOptions.plist
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
           
       - name: Upload to App Store TestFlight
-        if: needs.discover_clients.outputs.deploy_type == 'release'
         uses: apple-actions/upload-testflight-build@v1
         with:
           app-path: build/ios/ipa/*.ipa

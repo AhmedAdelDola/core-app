@@ -71,8 +71,18 @@ void main(List<String> args) async {
   if (buildGradle.existsSync()) {
     var content = buildGradle.readAsStringSync();
     content = content.replaceAll(RegExp(r'applicationId\s*=\s*".*"'), 'applicationId = "${packageName}"');
+    content = content.replaceAll(RegExp(r'namespace\s*=\s*".*"'), 'namespace = "${packageName}"');
     buildGradle.writeAsStringSync(content);
-    print('Updated applicationId in android/app/build.gradle.kts');
+    print('Updated applicationId and namespace in android/app/build.gradle.kts');
+  }
+
+  // 4b. Update package declaration in MainActivity.kt (or .java)
+  final mainActivityKt = File('android/app/src/main/kotlin/com/example/elhanbly/MainActivity.kt');
+  if (mainActivityKt.existsSync()) {
+    var content = mainActivityKt.readAsStringSync();
+    content = content.replaceAll(RegExp(r'^package\s+.*$', multiLine: true), 'package ${packageName}');
+    mainActivityKt.writeAsStringSync(content);
+    print('Updated package declaration in MainActivity.kt');
   }
 
   // 5. Update android strings.xml

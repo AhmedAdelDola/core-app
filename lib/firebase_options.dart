@@ -50,18 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBfzgs_tCnmAMQC_tQzUlkk_d6EOZGg--4',
-    appId: '1:743946405075:android:c0766ff8778a9d97b74026',
-    messagingSenderId: '743946405075',
-    projectId: 'section-65fb3',
-    storageBucket: 'section-65fb3.firebasestorage.app',
+    apiKey: 'AIzaSyCetu1HQzA62hDvR1Bj6yLwT_yx7pLRmNc',
+    appId: '1:717815546482:android:f1f545ab7bc8fce4fff8eb',
+    messagingSenderId: '717815546482',
+    projectId: 'elhanbly-b141f',
+    storageBucket: 'elhanbly-b141f.firebasestorage.app',
   );
+
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCUbdZxzKIroFMNLLWIy44qP1KxD62EhN8',
-    appId: '1:743946405075:ios:1bd89213ab12a9b1b74026',
-    messagingSenderId: '743946405075',
-    projectId: 'section-65fb3',
-    storageBucket: 'section-65fb3.firebasestorage.app',
-    iosBundleId: 'section.aplus.com',
+    apiKey: 'AIzaSyCcAn-oDvzoLPlgEI701ToPIuxVhuITJww',
+    appId: '1:717815546482:ios:2ca51a72fea0d286fff8eb',
+    messagingSenderId: '717815546482',
+    projectId: 'elhanbly-b141f',
+    storageBucket: 'elhanbly-b141f.firebasestorage.app',
+    iosBundleId: 'ahmed.elhanbly.com',
   );
 }

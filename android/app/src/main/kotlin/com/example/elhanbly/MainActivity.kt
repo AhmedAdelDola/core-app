@@ -1,4 +1,4 @@
-package section.aplus.com
+package ahmed.elhanbly.com
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -11,7 +11,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-       
+        enableScreenSecurity()
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
