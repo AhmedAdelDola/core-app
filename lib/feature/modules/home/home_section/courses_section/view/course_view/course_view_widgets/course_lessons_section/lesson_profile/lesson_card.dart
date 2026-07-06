@@ -29,12 +29,13 @@ class LessonCard extends StatelessWidget {
             model?.isPublished != 0) {
           // Attachment
           switch (model?.type) {
-            case 'Attachment':
-              // NamedNavigatorImpl.push(LessonDetailsScreen(
-              //   id: model?.id ?? 0,
-              //   title: model?.title ?? '',
-              //   subTitle: model?.type ?? '',
-              // ));
+            case 'pdf':
+              NamedNavigatorImpl.push(LessonDetailsScreen(
+                id: model?.id ?? 0,
+                title: model?.title ?? '',
+                subTitle: model?.type ?? '',
+               
+              ));
               break;
             // case 'Sheet':
             //   NamedNavigatorImpl.push(SheetDetailsScreen(model?.id ?? 0));

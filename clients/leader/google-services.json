@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "348520261343",
+    "project_id": "leader-69221",
+    "storage_bucket": "leader-69221.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348520261343:android:048b009352932b75a5eb6a",
+        "android_client_info": {
+          "package_name": "leader.aplus.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3y7oTm1PbQDIdGDY5sRZ-RgUndmBmZ2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

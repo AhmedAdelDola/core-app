@@ -1,3 +1,4 @@
+import 'package:elhanbly/core/consts/client_config.dart';
 import 'package:elhanbly/core/local/user_preferences/user_preferences_helper.dart';
 import 'package:elhanbly/models/general/settings_response.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ class AppColors {
     }
     return const Color(0xFFFFAF4E);
   }
+    
+  
 
   /// Return stored primary color hex string, if any.
   static String? getPrimaryHex() => UserPreferencesHelper().getPrimaryColor();

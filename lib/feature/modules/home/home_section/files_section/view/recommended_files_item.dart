@@ -1,4 +1,5 @@
 import 'package:elhanbly/core/widgets/app_texts/text_scroll.dart';
+import 'package:elhanbly/feature/modules/home/home_section/lessons_section/widgets/lesson_screen.dart';
 import 'package:elhanbly/feature/modules/home/home_section/lessons_section/widgets/session_screen.dart';
 import 'package:elhanbly/models/home_entities/home/get_home.dart';
 
@@ -26,10 +27,12 @@ class RecommendedFilesItem extends StatelessWidget {
           NamedNavigatorImpl.push(SessionDetilesScreen(id: model?.session?.id ?? 0, title: model?.session?.title ?? '', subTitle: model?.course?.title ?? ''));}
           break;
         case 'pdf' : {
-
+          // NamedNavigatorImpl.push(LessonDetailsScreen(id: model?.session?.id ?? 0, title: model?.session?.title ?? '', subTitle: model?.course?.title ?? ''));
+          }
+        break;
         }
 
-        }
+        
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

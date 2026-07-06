@@ -1,4 +1,3 @@
-
 class GetSessionInfoResponse {
     Session? session;
     StudentState? studentState;
@@ -63,11 +62,11 @@ class Session {
     int? id;
     int? tenantId;
     int? lessonId;
-    int? mediaAssetId;
-    dynamic youtubeUrl;
-    dynamic pdfMediaAssetId;
+    dynamic mediaAssetId;
+    String? youtubeUrl;
+    int? pdfMediaAssetId;
     String? title;
-    dynamic description;
+    String? description;
     String? type;
     dynamic liveUrl;
     int? sortOrder;
@@ -78,12 +77,12 @@ class Session {
     dynamic maxCompletedViews;
     dynamic watchedAfterPercent;
     dynamic watchedAfterSeconds;
-    dynamic singleSessionPrice;
+    String? singleSessionPrice;
     DateTime? createdAt;
     DateTime? updatedAt;
     Lesson? lesson;
-    Media? media;
-    dynamic pdf;
+    dynamic media;
+    Pdf? pdf;
 
     Session({
         this.id,
@@ -135,8 +134,8 @@ class Session {
         createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
         updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
         lesson: json["lesson"] == null ? null : Lesson.fromJson(json["lesson"]),
-        media: json["media"] == null ? null : Media.fromJson(json["media"]),
-        pdf: json["pdf"],
+        media: json["media"],
+        pdf: json["pdf"] == null ? null : Pdf.fromJson(json["pdf"]),
     );
 
     Map<String, dynamic> toJson() => {
@@ -162,8 +161,8 @@ class Session {
         "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),
         "lesson": lesson?.toJson(),
-        "media": media?.toJson(),
-        "pdf": pdf,
+        "media": media,
+        "pdf": pdf?.toJson(),
     };
 }
 
@@ -172,7 +171,7 @@ class Lesson {
     int? tenantId;
     int? chapterId;
     String? title;
-    dynamic description;
+    String? description;
     int? sortOrder;
     bool? isVisible;
     dynamic externalExamProvider;
@@ -236,7 +235,7 @@ class Chapter {
     int? tenantId;
     int? courseId;
     String? title;
-    dynamic description;
+    String? description;
     int? sortOrder;
     bool? isVisible;
     DateTime? createdAt;
@@ -289,9 +288,9 @@ class Course {
     int? levelId;
     int? teacherId;
     String? title;
-    dynamic description;
+    String? description;
     int? imageMediaAssetId;
-    int? promoMediaAssetId;
+    dynamic promoMediaAssetId;
     String? price;
     bool? isActive;
     bool? isFeatured;
@@ -347,7 +346,7 @@ class Course {
     };
 }
 
-class Media {
+class Pdf {
     int? id;
     int? tenantId;
     int? uploadedBy;
@@ -357,12 +356,12 @@ class Media {
     String? path;
     String? mimeType;
     int? sizeBytes;
-    Metadata? metadata;
+    dynamic metadata;
     DateTime? createdAt;
     DateTime? updatedAt;
     String? url;
 
-    Media({
+    Pdf({
         this.id,
         this.tenantId,
         this.uploadedBy,
@@ -378,7 +377,7 @@ class Media {
         this.url,
     });
 
-    factory Media.fromJson(Map<String, dynamic> json) => Media(
+    factory Pdf.fromJson(Map<String, dynamic> json) => Pdf(
         id: json["id"],
         tenantId: json["tenant_id"],
         uploadedBy: json["uploaded_by"],
@@ -388,7 +387,7 @@ class Media {
         path: json["path"],
         mimeType: json["mime_type"],
         sizeBytes: json["size_bytes"],
-        metadata: json["metadata"] == null ? null : Metadata.fromJson(json["metadata"]),
+        metadata: json["metadata"],
         createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
         updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
         url: json["url"],
@@ -404,34 +403,10 @@ class Media {
         "path": path,
         "mime_type": mimeType,
         "size_bytes": sizeBytes,
-        "metadata": metadata?.toJson(),
+        "metadata": metadata,
         "created_at": createdAt?.toIso8601String(),
         "updated_at": updatedAt?.toIso8601String(),
         "url": url,
-    };
-}
-
-class Metadata {
-    String? durationLabel;
-    String? durationMinutes;
-    String? durationSeconds;
-
-    Metadata({
-        this.durationLabel,
-        this.durationMinutes,
-        this.durationSeconds,
-    });
-
-    factory Metadata.fromJson(Map<String, dynamic> json) => Metadata(
-        durationLabel: json["duration_label"],
-        durationMinutes: json["duration_minutes"],
-        durationSeconds: json["duration_seconds"],
-    );
-
-    Map<String, dynamic> toJson() => {
-        "duration_label": durationLabel,
-        "duration_minutes": durationMinutes,
-        "duration_seconds": durationSeconds,
     };
 }
 

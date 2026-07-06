@@ -1,7 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:elhanbly/core/services/di.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/consts/client_config.dart';
 import '../../../core/consts/images.dart';
 import '../../../core/local/user_preferences/user_preferences_helper.dart';
 import '../../../core/navigator/named_navigator_impl.dart';
@@ -117,17 +120,17 @@ class _SplashScreenState extends State<SplashScreen>
                               ],
                             ),
                             padding: EdgeInsets.all(28.w),
-                            child: Image.asset(
+                            child: appSettings?.branding?.logoUrl == null ? Image.asset(
                               AppImages.logoPng,
                               fit: BoxFit.contain,
-                            ),
+                            ):CachedNetworkImage(imageUrl: appSettings?.branding?.logoUrl ?? ''),
                           ),
                         ),
                         SizedBox(height: 26.h),
                         Opacity(
                           opacity: _titleFade.value,
                           child: Text(
-                            'الحنبلي',
+                            appSettings?.branding?.displayName ?? ClientConfig.appName,
                             style: TextStyles.textViewSemiBold(
                               fontSize: 28.sp,
                               color: AppColors.kBlack,
@@ -139,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
                         Opacity(
                           opacity: _taglineFade.value,
                           child: Text(
-                            'أقوى محتوى تعليمي يصل إليك بسرعة',
+                            appSettings?.branding?.slogan ?? ClientConfig.slogan,
                             style: TextStyles.textViewRegular(
                               fontSize: 14.sp,
                               color: AppColors.kBlack.withOpacity(0.84),

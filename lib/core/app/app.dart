@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../feature/auth/splash/splash_screen.dart';
+import '../consts/client_config.dart';
 import '../navigator/named_navigator_impl.dart';
 import '../network/cubit/cubit.dart';
 import '../network/cubit/state.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
               splitScreenMode: true,
               builder: (_, child) {
                 return MaterialApp(
-                  title: 'A-Plus',
+                  title: ClientConfig.appName,
                   onGenerateRoute: NamedNavigatorImpl.onGenerateRoute,
                   navigatorKey: NamedNavigatorImpl.navigatorState,
                   debugShowCheckedModeBanner: false,

@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'dio_helper.dart';
 import 'interceptors/app_interceptor.dart';
 
@@ -42,8 +44,8 @@ class DioImpl extends DioHelper {
       ..options.baseUrl = baseURL
       ..options.headers.addAll({
         'Accept': 'application/json',
-        'X-Tenant-Domain': 'https://elhanbly.aplusplatforms.com',
-        'X-Tenant-Slug': 'elhanbly',
+        if (dotenv.env['TENANT_DOMAIN'] != null) 'X-Tenant-Domain': dotenv.env['TENANT_DOMAIN']!,
+        if (dotenv.env['TENANT_SLUG'] != null) 'X-Tenant-Slug': dotenv.env['TENANT_SLUG']!,
       });
   }
 

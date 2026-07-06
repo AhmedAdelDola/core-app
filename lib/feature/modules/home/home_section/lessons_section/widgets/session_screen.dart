@@ -1,3 +1,4 @@
+import 'package:elhanbly/feature/modules/library/widgets/files_tap/pdf_viewer.dart';
 import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/charge_wallet_widgets.dart';
 import 'package:flutter/material.dart';
@@ -121,6 +122,7 @@ class SessionDetilesScreen extends StatelessWidget {
                           title: 'الحاله',
                           subTitle: model?.studentState?.status  ?? '',
                           icon: AppImages.alertCircle,
+                          
                         ),
                         // LessonProfileItem(
                         //   title: 'التقدم',
@@ -167,25 +169,27 @@ class SessionDetilesScreen extends StatelessWidget {
                         //     color: AppColors.kPrimary,
                         //   ),
                         // ),
+                        if(model?.session?.pdf != null)
                         LessonProfileItem(
-                          title: 'عدد المشاهدات المتاحة',
-                          subTitle: model?.session?.maxCompletedViews.toString() ?? '0',
+                          title: 'الملف',
+                          subTitle: model?.session?.pdf?.name  ?? '',
                           icons: Icon(
                             Icons.pause_circle_outline_rounded,
                             color: AppColors.kPrimary,
                           ),
                         ),
+                        
                       ],
                     ),
                     20.sbH,
-                    AppText(
-                      'تفاصيل المدرس',
-                      size: 20.sp,
-                      align: TextAlign.start,
-                      weight: w500,
-                      color: AppColors.textColor,
-                    ),
-                    14.sbH,
+                    // AppText(
+                    //   'تفاصيل المدرس',
+                    //   size: 20.sp,
+                    //   align: TextAlign.start,
+                    //   weight: w500,
+                    //   color: AppColors.textColor,
+                    // ),
+                    // 14.sbH,
                     // CourseInstructor(
                     //   avatar: model?.teacher?.avatar.toString() ??
                     //       Strings.placeHolderImg,
@@ -202,17 +206,47 @@ class SessionDetilesScreen extends StatelessWidget {
             ),
             bottomNavigationBar: model?.canAccess == true
                 ? Padding(
-                    padding: const EdgeInsets.all(25),
-                    child: CustomButton(
-                      text: 'المشاهده الان',
-                      onTap: () async {
-                        await cubit.getvideo('${model?.session?.id}');
-                        final models = cubit.ShowVideoModel;
-                        bool isTablet = MediaQuery.of(context).size.width >= 600;
-                        NamedNavigatorImpl.push(VideoPlayer(model: models));
-                      },
-                    ),
-                  )
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    spacing: 8,
+                    children: [
+                      if(model?.session?.pdf != null)
+                          Expanded(
+                            child: CustomButton(
+                                          text: 'عرض الملف',
+                                          onTap: () async {
+                                            // PrintLog.w(model?.id);
+                                            // await cubit
+                                            //     .getAttachmentFile('${model?.id}')
+                                            //     .whenComplete(() {
+                                            //   PrintLog.w(cubit.getAttachmentModel?.data.link);
+                                              NamedNavigatorImpl.push(
+                                                  PdfViewers(pdfurl: model?.session?.pdf?.url ,name: model?.session?.pdf?.name ,));
+                                            // });
+                                          },
+                                        ),
+                          ),
+                             
+                      Expanded(
+                        child: CustomButton(
+                          text: 'المشاهده الان',
+                          onTap: () async {
+                            await cubit.getvideo('${model?.session?.id}');
+                            final models = cubit.ShowVideoModel;
+                            bool isTablet = MediaQuery.of(context).size.width >= 600;
+                            if(!isTablet){
+                            NamedNavigatorImpl.push(SplitViewScreen(model: models,pdfUrl: model?.session?.pdf?.url ?? '',pdfname: model?.session?.pdf?.name ?? '',
+                            ));
+                            }else{
+                              NamedNavigatorImpl.push(VideoPlayer(model: models));
+                            }
+                            
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )
                 : BlocBuilder<WalletCubit, WalletState>(
                     builder: (context, walletState) {
                       final walletCubit = context.read<WalletCubit>();

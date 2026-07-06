@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "717815546482",
+    "project_id": "elhanbly-b141f",
+    "storage_bucket": "elhanbly-b141f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717815546482:android:f1f545ab7bc8fce4fff8eb",
+        "android_client_info": {
+          "package_name": "ahmed.elhanbly.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCetu1HQzA62hDvR1Bj6yLwT_yx7pLRmNc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

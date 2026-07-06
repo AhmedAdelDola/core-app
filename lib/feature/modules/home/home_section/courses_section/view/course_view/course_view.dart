@@ -76,7 +76,7 @@ class CourseViewScreen extends StatelessWidget {
                 customAppBar,
               ],
             ),
-           bottomNavigationBar: model?.accessMode == "subscribed"
+           bottomNavigationBar: model?.course?.hasActiveSubscription == true
                 ? null
                 : BlocBuilder<WalletCubit, WalletState>(
                     builder: (context, walletState) {

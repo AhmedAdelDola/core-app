@@ -31,7 +31,7 @@ class LessonProfileItem extends StatelessWidget {
           ),
           padding: EdgeInsets.all(5),
           child:
-              icons ?? SvgPicture.asset(icon ?? '', height: 24.h, width: 24.w),
+              icons ?? SvgPicture.asset(icon ?? '', height: 24.h, width: 24.w, color: AppColors.kPrimary,),
         ),
         5.sbW,
         Column(
