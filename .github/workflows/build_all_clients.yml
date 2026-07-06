@@ -65,7 +65,7 @@ jobs:
           echo "storePassword=$STORE_PASSWORD" > android/key.properties
           echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
           echo "keyAlias=$KEY_ALIAS" >> android/key.properties
-          echo "storeFile=app/keystore.jks" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
 
       - name: Build Android App Bundle
         run: flutter build appbundle --release
