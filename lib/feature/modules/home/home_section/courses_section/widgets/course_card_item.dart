@@ -1,3 +1,4 @@
+import 'package:elhanbly/core/consts/strings.dart';
 import 'package:elhanbly/models/home_entities/home/get_home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -99,11 +100,16 @@ class CourseCardItem extends StatelessWidget {
                       SizedBox(height: isLargeScreen ? 8 : 5.h),
                       Row(
                         children: [
-                          NetworkImagesWidgets(
-                            url: model?.teacher?.imageUrl ?? '',
-                            height:
-                                isLargeScreen ? (isDesktop ? 26 : 24) : 32.h,
-                            width: isLargeScreen ? (isDesktop ? 26 : 24) : 32.w,
+                          ClipRRect(
+                            borderRadius: BorderRadiusGeometry.circular(50),
+                            child: NetworkImagesWidgets(
+                              url: model?.teacher?.imageUrl ?? Strings.placeHolderImg,
+                            
+                              height:
+                                  isLargeScreen ? (isDesktop ? 26 : 24) : 32.h,
+                              width: isLargeScreen ? (isDesktop ? 26 : 24) : 32.w,
+                              
+                            ),
                           ),
                           SizedBox(width: isLargeScreen ? 8 : 8.w),
                           Expanded(

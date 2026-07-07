@@ -53,7 +53,6 @@ part 'cubit/update_profile/update_profile_state.dart';
 // part 'pages/favourite_screen/favourite_item_card.dart';
 // part 'pages/favourite_screen/favourite_screen.dart';
 part 'pages/favourite_screen/favourite_widgets.dart';
-part 'pages/personal_data/edit_personal_data.dart';
 part 'pages/personal_data/edit_phone.dart';
 part 'pages/personal_data/personal_data.dart';
 part 'pages/setting_pages/about_us.dart';

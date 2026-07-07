@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:elhanbly/core/theme/theme.dart';
 import 'package:elhanbly/models/home_entities/courses/get_course_data_response_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import '../../../../../../../../../../core/consts/images.dart';
@@ -79,7 +81,11 @@ class LessonCard extends StatelessWidget {
                           border: Border.all(
                               color: AppColors.textFieldBorderColor, width: 1),
                         ),
-                        child: Image.asset(AppImages.playStore, fit: BoxFit.fill)
+                        child: CircleAvatar(
+                backgroundColor: AppColors.kPrimary,
+                radius: 20,
+                child: SvgPicture.asset(AppImages.playVideoSvg,color: AppColors.kWhite,width: 25,) ,
+              ),
                             
                       ),
                       // if (model?.isFree == 1)
@@ -113,13 +119,13 @@ class LessonCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: AppText(
-                                model?.type ?? '',
-                                size: 14.sp,
-                                color: AppColors.textColor2,
-                              ),
-                            ),
+                            // Flexible(
+                            //   child: AppText(
+                            //     model?.type ?? '',
+                            //     size: 14.sp,
+                            //     color: AppColors.textColor2,
+                            //   ),
+                            // ),
                             if (model?.type != 'Attachment')
                               Container(
                                 padding: EdgeInsets.symmetric(
@@ -190,15 +196,10 @@ class LessonCard extends StatelessWidget {
                   Stack(
                     alignment: Alignment.bottomCenter,
                     children: [
-                      Container(
-                        width: 80.w, // Smaller for mobile
-                        height: 80.h,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                              color: AppColors.textFieldBorderColor, width: 1),
-                        ),
-                        child:  Image.asset(AppImages.playStore, fit: BoxFit.fill)
+                      CircleAvatar(
+                        radius: 25,
+                       backgroundColor: AppColors.kPrimary,
+                        child:  SvgPicture.asset(AppImages.playVideoSvg,color: AppColors.kWhite,width: 40,),
                            
                       ),
                       // if (model?.isFree == 1)
@@ -229,14 +230,16 @@ class LessonCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flexible(
                               child: AppText(
-                                model?.type ?? '',
-                                size: 12.sp,
-                                color: AppColors.textColor2,
+                                model?.title ?? '',
+                                // size: 12.sp,
+                                // color: AppColors.kBlack,
+                                style: TextStyles.textViewMedium(),
                               ),
                             ),
                             if (model?.type != 'Attachment')
@@ -258,14 +261,10 @@ class LessonCard extends StatelessWidget {
                               ),
                           ],
                         ),
-                        6.sbH,
-                        AppTextScroll(
-                          model?.title ?? '',
-                          size: 14.sp,
-                          weight: w500,
-                        ),
+                        // 6.sbH,
+                       
                         if (model?.type != 'Attachment') ...[
-                          8.sbH,
+                          // 8.sbH,
                           Row(
                             children: [
                               AppText(

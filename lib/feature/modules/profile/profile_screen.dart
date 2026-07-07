@@ -14,12 +14,14 @@ class ProfileScreen extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
+
                 ProfileItem(
                   onTap: () => NamedNavigatorImpl.push(const PersonalData()),
                   img: AppImages.person,
                   title: 'البيانات الشخصية',
                   subTitle: 'البيانات المسجله للحساب الشخصي',
                 ),
+
                 ProfileItem(
                   onTap: () => NamedNavigatorImpl.push(const WalletScreen()),
                   img: AppImages.wallet,
@@ -27,6 +29,7 @@ class ProfileScreen extends StatelessWidget {
                   subTitle: 'البيانات المسجله للحساب الشخصي',
                   child: const WalletProfileItem(),
                 ),
+
                 // ProfileItem(
                 //   onTap: () => NamedNavigatorImpl.push(const FavouriteScreen()),
                 //   img: AppImages.heart,
@@ -41,25 +44,28 @@ class ProfileScreen extends StatelessWidget {
                   title: 'مشاركة التطبيق',
                   subTitle: 'البيانات المسجله للحساب الشخصي',
                 ),
+
                 ProfileItem(
                   onTap: () => NamedNavigatorImpl.push(const AboutAppScreen()),
                   img: AppImages.aboutApp,
                   title: 'عن التطبيق',
                   subTitle: 'اعرف المزيد عن A plus',
                 ),
+
                 ProfileItem(
                   onTap: () => NamedNavigatorImpl.push(const TechnicalSupport()),
                   img: AppImages.suggestions,
                   title: 'الشكاوى و المقترحات',
                   subTitle: 'نعمل علي ان تكون سعيد بالتعامل',
                 ),
+
                 ProfileItem(
                   onTap: () => NamedNavigatorImpl.push(const TermsOfUseScreen()),
                   img: AppImages.termsOfUse,
                   title: 'شروط الإستخدام',
                   subTitle: 'بعض الشروط الواجب تواجدها',
                 ),
-                16.sbH,
+                60.sbH,
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [

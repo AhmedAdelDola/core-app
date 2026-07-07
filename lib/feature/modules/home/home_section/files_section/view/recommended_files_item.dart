@@ -1,7 +1,9 @@
+import 'package:elhanbly/core/consts/images.dart';
 import 'package:elhanbly/core/widgets/app_texts/text_scroll.dart';
 import 'package:elhanbly/feature/modules/home/home_section/lessons_section/widgets/lesson_screen.dart';
 import 'package:elhanbly/feature/modules/home/home_section/lessons_section/widgets/session_screen.dart';
 import 'package:elhanbly/models/home_entities/home/get_home.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
@@ -47,8 +49,9 @@ class RecommendedFilesItem extends StatelessWidget {
           child: Row(
             children: [
                CircleAvatar(
+                backgroundColor: AppColors.kPrimary,
                 radius: 20,
-                child: Icon(model?.type == 'video'? Icons.video_library_outlined : Icons.picture_as_pdf, color: AppColors.kWhite),
+                child:model?.type == 'video'? SvgPicture.asset(AppImages.playVideoSvg,color: AppColors.kWhite,width: 25,) :Icon( Icons.picture_as_pdf, color: AppColors.kWhite),
               ),
               Flexible(
                 child: Column(

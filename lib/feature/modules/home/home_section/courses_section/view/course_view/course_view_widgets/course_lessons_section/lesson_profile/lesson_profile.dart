@@ -17,9 +17,10 @@ import 'lesson_card.dart';
 import 'lesson_profile_item.dart';
 
 class LessonProfile extends StatelessWidget {
-  final String title, id;
+  final Lesson lesson;
+  final String title2;
 
-  const LessonProfile({super.key, required this.title, required this.id});
+  const LessonProfile({super.key, required this.lesson, required this.title2});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class LessonProfile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AppTextScroll(
-              title,
+              lesson.title ?? '',
               size: 28.sp,
               weight: w500,
               color: AppColors.kWhite,
@@ -39,7 +40,7 @@ class LessonProfile extends StatelessWidget {
               mode: TextScrollMode.begin,
             ),
             AppTextScroll(
-              id,
+              title2,
               size: 20.sp,
               weight: w400,
               color: AppColors.kWhite,
@@ -47,97 +48,41 @@ class LessonProfile extends StatelessWidget {
           ],
         ),
       ),
-      body: BlocProvider(
-        create: (context) => CoursesSectionCubit.of(context)..getCourseData(id),
-        child: BlocBuilder<CoursesSectionCubit, CoursesSectionState>(
-          builder: (context, state) {
-            final cubit = CoursesSectionCubit.of(context);
-            Lesson? findLesson() {
-              final chapters = cubit.courseData?.course?.chapters;
-              if (chapters == null) return null;
-              for (final chapter in chapters) {
-                final lessons = chapter.lessons;
-                if (lessons == null) continue;
-                for (final lesson in lessons) {
-                  if (lesson.id?.toString() == id) {
-                    return lesson;
-                  }
-                }
-              }
-              return null;
-            }
-
-            final model = findLesson();
-            if (state is GetLessonProfileLoadingState) return const AppLoader();
-            return ListView(
-              padding: const EdgeInsets.all(8),
-              children: [
-                20.sbH,
-                AppText(
-                  'تفاصيل الدرس',
-                  size: 20.sp,
-                  align: TextAlign.start,
-                  weight: w500,
-                  color: AppColors.textColor,
-                ),
-                14.sbH,
-                AppText(
-                  model?.title ?? 'غير متوفر',
-                  size: 16.sp,
-                  align: TextAlign.start,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  weight: w400,
-                  color: AppColors.textColor2,
-                ),
-                20.sbH,
-                if (model == null) ...[
-                  AppText(
-                    'لا يوجد درس واحد بمثل هذا المعرف.',
-                    size: 16.sp,
-                    align: TextAlign.start,
-                    weight: w400,
-                    color: AppColors.textColor2,
-                  ),
-                ] else ...[
-                  AppText(
-                    'محتوي الدرس',
-                    size: 20.sp,
-                    align: TextAlign.start,
-                    weight: w500,
-                    color: AppColors.textColor,
-                  ),
-                  14.sbH,
-                  ...List.generate(
-                    model.sessions?.length ?? 0,
-                    (i) => LessonCard(model: model.sessions?[i]),
-                  ),
-                ],
-                //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //   children: [
-                //     LessonProfileItem(
-                //       title: 'الحاله',
-                //       subTitle: model?.status ?? '',
-                //       icon: AppImages.alertCircle,
-                //     ),
-                //     LessonProfileItem(
-                //       title: 'التقدم',
-                //       subTitle: '${model?.progressPoint ?? 0} %',
-                //       icon: AppImages.medalStar,
-                //     ),
-                //     LessonProfileItem(
-                //       title: 'النقاط',
-                //       subTitle: model?.points.toString() ?? '',
-                //       icon: AppImages.ranking,
-                //     ),
-                //   ],
-                // ),
-                // 20.sbH,
-                
-              ],
-            );
-          },
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(8),
+        children: [
+          20.sbH,
+          AppText(
+            'تفاصيل الدرس',
+            size: 20.sp,
+            align: TextAlign.start,
+            weight: w500,
+            color: AppColors.textColor,
+          ),
+          14.sbH,
+          AppText(
+            lesson.title ?? 'غير متوفر',
+            size: 16.sp,
+            align: TextAlign.start,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            weight: w400,
+            color: AppColors.textColor2,
+          ),
+          20.sbH,
+          AppText(
+            'محتوي الدرس',
+            size: 20.sp,
+            align: TextAlign.start,
+            weight: w500,
+            color: AppColors.textColor,
+          ),
+          14.sbH,
+          ...List.generate(
+            lesson.sessions?.length ?? 0,
+            (i) => LessonCard(model: lesson.sessions?[i]),
+          ),
+        ],
       ),
     );
   }

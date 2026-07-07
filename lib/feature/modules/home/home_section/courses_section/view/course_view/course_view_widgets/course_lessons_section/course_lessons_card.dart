@@ -86,14 +86,8 @@ class CourseLessonsCard extends StatelessWidget {
                     onTap: () {
                       NamedNavigatorImpl.push(
                         LessonProfile(
-                          title:
-                              model?[courseIndex].lessons?[index].title ?? '',
-                          id:"${model?[courseIndex]
-                                          .lessons?[index]
-                                          .id ?? 0 }"
-                                      ,
-                             
-                                  
+                          lesson: model![courseIndex].lessons![index],
+                          title2: model![courseIndex].title ?? '',
                         ),
                       );
                     },
@@ -117,14 +111,8 @@ class CourseLessonsCard extends StatelessWidget {
                             onPressed: () {
                               NamedNavigatorImpl.push(
                                 LessonProfile(
-                                  title: model?[courseIndex]
-                                          .lessons?[index]
-                                          .title ??
-                                      '',
-                                  id: "${model?[courseIndex]
-                                          .lessons?[index]
-                                          .id ?? 0 }"
-                                      ,
+                                  lesson: model![courseIndex].lessons![index],
+                                  title2: model![courseIndex].title ?? '',
                                 ),
                               );
                             },

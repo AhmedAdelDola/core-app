@@ -139,10 +139,13 @@ class CoursesTab extends StatelessWidget {
                                     SizedBox(height: isDesktop ? 10.h : 8.h),
                                     Row(
                                       children: [
-                                        NetworkImagesWidgets(
-                                          url: model.teacher?.imageUrl,
-                                          height: isDesktop ? 26.h : 24.h,
-                                          width: isDesktop ? 26.w : 24.w,
+                                        ClipRRect(
+                                          borderRadius: BorderRadiusGeometry.circular(50),
+                                          child: NetworkImagesWidgets(
+                                            url: model.teacher?.imageUrl,
+                                            height: isDesktop ? 26.h : 24.h,
+                                            width: isDesktop ? 26.w : 24.w,
+                                          ),
                                         ),
                                         SizedBox(width: isDesktop ? 10.w : 8.w),
                                         Expanded(
@@ -234,10 +237,13 @@ class CoursesTab extends StatelessWidget {
                                       5.sbH,
                                       Row(
                                         children: [
-                                          NetworkImagesWidgets(
-                                            url: model.teacher?.imageUrl ?? '',
-                                            height: 32.h,
-                                            width: 32.w,
+                                          ClipRRect(
+                                            borderRadius: BorderRadiusGeometry.circular(50),
+                                            child: NetworkImagesWidgets(
+                                              url: model.teacher?.imageUrl ?? '',
+                                              height: 32.h,
+                                              width: 32.w,
+                                            ),
                                           ),
                                           8.sbW,
                                           AppText(
