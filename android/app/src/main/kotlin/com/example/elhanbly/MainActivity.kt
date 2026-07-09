@@ -1,4 +1,4 @@
-package section.aplus.com
+package demo.aplus.com
 
 import android.os.Bundle
 import android.view.WindowManager
