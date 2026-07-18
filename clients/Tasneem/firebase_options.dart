@@ -50,18 +50,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC9kyERKfAGc6lELi8SRp3d7lgVMUXFGSo',
-    appId: '1:68768853136:android:372a07d42459d6352bbc15',
-    messagingSenderId: '68768853136',
-    projectId: 'fir-5d455',
-    storageBucket: 'fir-5d455.firebasestorage.app',
+    apiKey: 'AIzaSyC3N29ht9sm29l8XBBlw2HPJVa1OIyqj2k',
+    appId: '1:302467652441:android:b5976d7a81f101f0574a48',
+    messagingSenderId: '302467652441',
+    projectId: 'tasneem-4b09b',
+    storageBucket: 'tasneem-4b09b.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAuXz18FChvNnPVP-oLB2wuYCrCoPml7tI',
-    appId: '1:68768853136:ios:1adf718222f7b5bf2bbc15',
-    messagingSenderId: '68768853136',
-    projectId: 'fir-5d455',
-    storageBucket: 'fir-5d455.firebasestorage.app',
-    iosBundleId: 'demo.aplus.com',
+    apiKey: 'AIzaSyBezNqItb5xsmYPyuKM46wWAVS1UqDjdEQ',
+    appId: '1:302467652441:ios:8d92fb7659ed171a574a48',
+    messagingSenderId: '302467652441',
+    projectId: 'tasneem-4b09b',
+    storageBucket: 'tasneem-4b09b.firebasestorage.app',
+    iosBundleId: 'tasneem.aplus.com',
   );
 }
