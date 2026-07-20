@@ -241,6 +241,31 @@ class RepoImpl extends Repository {
     );
   }
 
+  @override
+  Future<Either<dynamic, StoreProductsResponse>> getStoreProducts() {
+    return responseHandling<StoreProductsResponse>(
+      onSuccess: () async {
+        final res = await dioHelper.get(EndPoints.storeProducts);
+        return StoreProductsResponse.fromJson(res.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> verifyStorePurchase({
+    required Map<String, dynamic> data,
+  }) {
+    return responseHandling<GeneralResponse>(
+      onSuccess: () async {
+        final res = await dioHelper.post(
+          EndPoints.storePurchases,
+          data: data,
+        );
+        return GeneralResponse.fromJson(res.data);
+      },
+    );
+  }
+
   // /// ============================== Home ==================================
 
   @override

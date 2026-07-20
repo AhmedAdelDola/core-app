@@ -7,6 +7,7 @@ import '../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../core/network/repository/repository_imports.dart';
 import '../../../../../core/util/utils.dart';
 import '../../../../../models/profile/wallet/wallet_history.dart';
+import '../../../../../models/profile/wallet/store_products.dart';
 
 part 'wallet_state.dart';
 
@@ -16,6 +17,35 @@ class WalletCubit extends Cubit<WalletState> {
 
   static WalletCubit of(context) => BlocProvider.of(context);
   WalletResponse? wallet;
+  StoreProductsResponse? storeProducts;
+
+  Future<void> getStoreProducts() async {
+    emit(GetStoreProductsLoadingState());
+    final f = await repo.getStoreProducts();
+    f.fold(
+      (l) => emit(GetStoreProductsErrorState(l.toString())),
+      (r) {
+        storeProducts = r;
+        emit(GetStoreProductsSuccessState());
+      },
+    );
+  }
+
+  Future<void> verifyStorePurchase({
+    required Map<String, dynamic> data,
+    required Function() onSuccess,
+  }) async {
+    emit(VerifyStorePurchaseLoadingState());
+    final f = await repo.verifyStorePurchase(data: data);
+    f.fold(
+      (l) => emit(VerifyStorePurchaseErrorState(l.toString())),
+      (r) {
+        emit(VerifyStorePurchaseSuccessState(r.message ?? 'تم الشحن بنجاح'));
+        onSuccess();
+        getWalletHistory();
+      },
+    );
+  }
   Future<void> getWalletHistory() async {
     emit(GetWalletHistoryLoadingState());
     final f = await repo.getWallet();

@@ -69,6 +69,8 @@ abstract class Repository {
   Future<Either<dynamic, WalletResponse>> getWallet();
   Future<Either<dynamic, GeneralResponse>> chargeWallet({required String Code,});
     Future<Either<dynamic, GeneralResponse>> purchaseProduct({required String type,required String id,});
+    Future<Either<dynamic, StoreProductsResponse>> getStoreProducts();
+    Future<Either<dynamic, GeneralResponse>> verifyStorePurchase({required Map<String, dynamic> data});
 
   // Future<Either<dynamic, QrResponse>> QrSubscribe(String qr);
 

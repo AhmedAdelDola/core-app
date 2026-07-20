@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   phone:"${ context.read<LoginCubit>().numberCode }${ phoneController.text.trim()}"
                 ),
               );
-            } else if (state.message.contains('Invalid')) {
+            } else if (state.message.contains('required')) {
               
               if (!showPasswordField) {
                                               setState(() {

@@ -17,6 +17,8 @@ import 'package:elhanbly/models/home_entities/courses/get_my_courses.dart'
 import 'package:elhanbly/models/home_entities/home/get_home.dart' show HomeResponse;
 import 'package:elhanbly/models/profile/wallet/wallet_history.dart'
     show WalletResponse;
+import 'package:elhanbly/models/profile/wallet/store_products.dart'
+    show StoreProductsResponse;
 import 'package:elhanbly/models/user_response/login_response.dart'
     show LoginResponse;
 import 'package:elhanbly/models/user_response/user_data.dart'
@@ -36,6 +38,8 @@ class FakeRepository implements Repository {
   RepositoryStub<WalletResponse>? getWalletStub;
   RepositoryStub<GeneralResponse>? chargeWalletStub;
   RepositoryStub<GeneralResponse>? purchaseProductStub;
+  RepositoryStub<StoreProductsResponse>? getStoreProductsStub;
+  RepositoryStub<GeneralResponse>? verifyStorePurchaseStub;
   RepositoryStub<LibraryCoursesResponse>? getLibraryCoursesStub;
   RepositoryStub<GetSessionInfoResponse>? getSessionInfoStub;
   RepositoryStub<ShowVideo>? getVideoStub;
@@ -118,6 +122,18 @@ class FakeRepository implements Repository {
   Future<Either<dynamic, GeneralResponse>> chargeWallet({required String Code}) {
     lastChargeWalletCode = Code;
     return _call(chargeWalletStub, 'chargeWallet');
+  }
+
+  @override
+  Future<Either<dynamic, StoreProductsResponse>> getStoreProducts() {
+    return _call(getStoreProductsStub, 'getStoreProducts');
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> verifyStorePurchase({
+    required Map<String, dynamic> data,
+  }) {
+    return _call(verifyStorePurchaseStub, 'verifyStorePurchase');
   }
 
   @override

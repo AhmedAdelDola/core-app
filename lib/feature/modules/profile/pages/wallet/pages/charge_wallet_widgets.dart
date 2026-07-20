@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:elhanbly/core/navigator/named_navigator_impl.dart';
 import 'package:elhanbly/core/services/di.dart';
 import 'package:elhanbly/core/util/validator/validator.dart';
+import 'in_app_purchase_screen.dart';
 import 'package:elhanbly/core/widgets/app_buttons/master_button.dart';
 import 'package:elhanbly/core/widgets/text_field/master_text_field.dart';
 import 'package:elhanbly/core/widgets/ui_helpers/alert_message.dart';
@@ -85,6 +87,36 @@ class ChargeWalletScreen extends StatelessWidget {
                             );
                           }
                         },
+                      ),
+                      16.sbH,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AppText(
+                            'أو ',
+                            style: TextStyle(
+                              color: AppColors.textColor2,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              NamedNavigatorImpl.push(
+                                InAppPurchaseScreen(cubit: cubit),
+                                replace: true,
+                              );
+                            },
+                            child: AppText(
+                              Platform.isIOS ? 'الشحن عبر App Store' : 'الشحن عبر Google Play',
+                              style: TextStyle(
+                                color: AppColors.kPrimary,
+                                fontSize: 14.sp,
+                                fontWeight: w600,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

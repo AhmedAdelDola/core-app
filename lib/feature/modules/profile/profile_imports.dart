@@ -39,6 +39,7 @@ import '../../auth/login/login_imports.dart';
 import '../../home_layout/cubit/home_lay_out_cubit.dart';
 import 'cubit/wallet_cubit/wallet_cubit.dart';
 import 'pages/wallet/pages/charge_wallet_widgets.dart';
+import 'pages/wallet/pages/in_app_purchase_screen.dart';
 import 'package:pay/pay.dart';
 import 'dart:io';
 

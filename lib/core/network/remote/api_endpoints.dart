@@ -65,6 +65,8 @@ class EndPoints {
   static const String getWallet = 'wallet';
   static String ChargeWithCode = 'wallet/redeem-code';
   static String purchaseProduct = 'wallet/purchase';
+  static const String storeProducts = 'wallet/store-products';
+  static const String storePurchases = 'wallet/store-purchases';
 
   /// ============================== Library ==================================
   static const String getLibraryCourses = 'my-courses';

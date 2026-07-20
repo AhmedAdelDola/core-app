@@ -10,7 +10,10 @@ class WalletProfileItem extends StatelessWidget {
       child: BlocBuilder<WalletCubit, WalletState>(
         builder: (context, state) {
           final cubit = WalletCubit.of(context);
-          List model = ['charge with code'];
+          List<String> model = [
+            'الشحن باستخدام كود شحن (Redeem Code)',
+            Platform.isIOS ? 'الشحن عبر App Store' : 'الشحن عبر Google Play'
+          ];
           return Row(
             children: [
               AppText(
@@ -45,16 +48,22 @@ class WalletProfileItem extends StatelessWidget {
                                 buttonColor: AppColors.kWhite,
                                 onPressed: () {
                                   NamedNavigatorImpl.pop();
-                                  NamedNavigatorImpl.push(
-                                    ChargeWalletScreen(cubit: cubit),
-                                  );
+                                  if (i == 0) {
+                                    NamedNavigatorImpl.push(
+                                      ChargeWalletScreen(cubit: cubit),
+                                    );
+                                  } else {
+                                    NamedNavigatorImpl.push(
+                                      InAppPurchaseScreen(cubit: cubit),
+                                    );
+                                  }
                                 },
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     AppText(
-                                      model[i] ?? '',
+                                      model[i],
                                       style: TextStyle(
                                         color: AppColors.kPrimary,
                                         fontSize: 14.sp,

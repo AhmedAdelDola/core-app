@@ -37,3 +37,20 @@ class PurchaseProductErrorState extends WalletState {
 class PurchaseProductSuccessState extends WalletState {  final String massage;
   PurchaseProductSuccessState(this.massage);
 }
+
+class GetStoreProductsLoadingState extends WalletState {}
+class GetStoreProductsErrorState extends WalletState {
+  final String error;
+  GetStoreProductsErrorState(this.error);
+}
+class GetStoreProductsSuccessState extends WalletState {}
+
+class VerifyStorePurchaseLoadingState extends WalletState {}
+class VerifyStorePurchaseErrorState extends WalletState {
+  final String error;
+  VerifyStorePurchaseErrorState(this.error);
+}
+class VerifyStorePurchaseSuccessState extends WalletState {
+  final String message;
+  VerifyStorePurchaseSuccessState(this.message);
+}
