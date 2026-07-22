@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../feature/auth/login/login_imports.dart';
 import '../../feature/auth/splash/onboarding_screens.dart';
 import '../../feature/auth/splash/splash_screen.dart';
+import '../../feature/guest/guest_home_screen.dart';
 import 'named_navigator_routes.dart';
 
 class NamedNavigatorImpl {
@@ -60,6 +61,8 @@ class NamedNavigatorImpl {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case Routes.homePage:
         return MaterialPageRoute(builder: (_) => const HomeLayout());
+      case Routes.guestHome:
+        return MaterialPageRoute(builder: (_) => const GuestHomeScreen());
       // case Routes.homePage:
     }
 

@@ -1,9 +1,12 @@
+import '../home_entities/home/get_home.dart';
+
 class SettingsResponse {
     Tenant? tenant;
     Settings? settings;
     Branding? branding;
     Legal? legal;
     List<Contact>? contacts;
+    List<RecommendedCourse>? featuredCourses;
 
     SettingsResponse({
         this.tenant,
@@ -11,6 +14,7 @@ class SettingsResponse {
         this.branding,
         this.legal,
         this.contacts,
+        this.featuredCourses,
     });
 
     factory SettingsResponse.fromJson(Map<String, dynamic> json) => SettingsResponse(
@@ -19,6 +23,7 @@ class SettingsResponse {
         branding: json["branding"] == null ? null : Branding.fromJson(json["branding"]),
         legal: json["legal"] == null ? null : Legal.fromJson(json["legal"]),
         contacts: json["contacts"] == null ? [] : List<Contact>.from(json["contacts"]!.map((x) => Contact.fromJson(x))),
+        featuredCourses: json["featured_courses"] == null ? [] : List<RecommendedCourse>.from(json["featured_courses"]!.map((x) => RecommendedCourse.fromJson(x))),
     );
 
     Map<String, dynamic> toJson() => {
@@ -27,6 +32,7 @@ class SettingsResponse {
         "branding": branding?.toJson(),
         "legal": legal?.toJson(),
         "contacts": contacts == null ? [] : List<dynamic>.from(contacts!.map((x) => x.toJson())),
+        "featured_courses": featuredCourses == null ? [] : List<dynamic>.from(featuredCourses!.map((x) => x.toJson())),
     };
 }
 

@@ -28,14 +28,15 @@ class RecommendedLessonsCard extends StatelessWidget {
     final bool isLargeScreen = isTablet || isDesktop;
 
     return InkWell(
-      onTap: () => NamedNavigatorImpl.push(SessionDetilesScreen(
-        id: model?.id ?? 0,
-        title: model?.title ?? '',
-        subTitle: model?.course?.title ?? '',
-      )),
+      onTap: () => NamedNavigatorImpl.push(
+        SessionDetilesScreen(
+          id: model?.id ?? 0,
+          title: model?.title ?? '',
+          subTitle: model?.course?.title ?? '',
+        ),
+      ),
       child: Container(
         width: isLargeScreen ? 200.w : 190.w,
-        height: isLargeScreen ? 280.h : 180.h,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(isLargeScreen ? 12 : 12.r),
@@ -46,6 +47,7 @@ class RecommendedLessonsCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(isLargeScreen ? 12 : 12.r),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
@@ -53,93 +55,88 @@ class RecommendedLessonsCard extends StatelessWidget {
                   topLeft: Radius.circular(isLargeScreen ? 12 : 12.r),
                   topRight: Radius.circular(isLargeScreen ? 12 : 12.r),
                 ),
-                child: SizedBox(
-                  width: isLargeScreen ? 200 : 180.w,
-                  height: isLargeScreen ? 150 : 170.h,
-                  child: Image.asset(AppImages.playStore, fit: BoxFit.cover)
-                     
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.asset(AppImages.playStore, fit: BoxFit.cover),
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(isLargeScreen ? 12 : 12.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          isLargeScreen
-                              ? AppTextScroll(
-                                  model?.title ?? '',
-                                  size: isDesktop ? 15 : 14,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  color: AppColors.textColor,
-                                  centerText: false,
-                                )
-                              : AppTextScroll(
-                                  model?.title ?? '',
-                                  size: 18.sp,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  color: AppColors.textColor,
-                                  centerText: false,
-                                ),
-                          SizedBox(height: isLargeScreen ? 6 : 5.h),
-                          isLargeScreen
-                              ? AppText(
-                                  model?.course?.title ?? '',
-                                  size: isDesktop ? 13 : 12,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  color: AppColors.textColor,
-                                  centerText: false,
-                                )
-                              : AppTextScroll(
-                                  model?.course?.title ?? '',
-                                  size: 18.sp,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  color: AppColors.textColor,
-                                  centerText: false,
-                                ),
-                        ],
-                      ),
-                      SizedBox(height: isLargeScreen ? 8 : 5.h),
+              Padding(
+                padding: EdgeInsets.all(isLargeScreen ? 12 : 12.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        isLargeScreen
+                            ? AppTextScroll(
+                                model?.title ?? '',
+                                size: isDesktop ? 15 : 14,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                color: AppColors.textColor,
+                                centerText: false,
+                              )
+                            : AppTextScroll(
+                                model?.title ?? '',
+                                size: 18.sp,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                color: AppColors.textColor,
+                                centerText: false,
+                              ),
+                        SizedBox(height: isLargeScreen ? 6 : 5.h),
+                        isLargeScreen
+                            ? AppText(
+                                model?.course?.title ?? '',
+                                size: isDesktop ? 13 : 12,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                color: AppColors.textColor,
+                                centerText: false,
+                              )
+                            : AppTextScroll(
+                                model?.course?.title ?? '',
+                                size: 18.sp,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                color: AppColors.textColor,
+                                centerText: false,
+                              ),
+                      ],
+                    ),
+                    SizedBox(height: isLargeScreen ? 8 : 5.h),
 
-                      // Row(
-                      //   children: [
-                      //     NetworkImagesWidgets(
-                      //       url: model.lesson..?.avatar ?? '',
-                      //       height: isLargeScreen ? 24 : 22.h,
-                      //       width: isLargeScreen ? 24 : 22.w,
-                      //     ),
-                      //     SizedBox(width: isLargeScreen ? 8 : 8.w),
-                      //     Expanded(
-                      //       child: isLargeScreen
-                      //           ? AppText(
-                      //               model.teacher?.name ?? '',
-                      //               maxLines: 1,
-                      //               size: isDesktop ? 12 : 11,
-                      //               overflow: TextOverflow.ellipsis,
-                      //               style: TextStyles.textViewMedium(
-                      //                   color: AppColors.textColor5),
-                      //             )
-                      //           : AppTextScroll(
-                      //               model.teacher?.name ?? '',
-                      //               maxLines: 1,
-                      //               overflow: TextOverflow.ellipsis,
-                      //               style: TextStyles.textViewMedium(
-                      //                   color: AppColors.textColor5),
-                      //             ),
-                      //     ),
-                      //   ],
-                      // ),
-                    
-                    ],
-                  ),
+                    // Row(
+                    //   children: [
+                    //     NetworkImagesWidgets(
+                    //       url: model.lesson..?.avatar ?? '',
+                    //       height: isLargeScreen ? 24 : 22.h,
+                    //       width: isLargeScreen ? 24 : 22.w,
+                    //     ),
+                    //     SizedBox(width: isLargeScreen ? 8 : 8.w),
+                    //     Expanded(
+                    //       child: isLargeScreen
+                    //           ? AppText(
+                    //               model.teacher?.name ?? '',
+                    //               maxLines: 1,
+                    //               size: isDesktop ? 12 : 11,
+                    //               overflow: TextOverflow.ellipsis,
+                    //               style: TextStyles.textViewMedium(
+                    //                   color: AppColors.textColor5),
+                    //             )
+                    //           : AppTextScroll(
+                    //               model.teacher?.name ?? '',
+                    //               maxLines: 1,
+                    //               overflow: TextOverflow.ellipsis,
+                    //               style: TextStyles.textViewMedium(
+                    //                   color: AppColors.textColor5),
+                    //             ),
+                    //     ),
+                    //   ],
+                    // ),
+                  ],
                 ),
               ),
             ],

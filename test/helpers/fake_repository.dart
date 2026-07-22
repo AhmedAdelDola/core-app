@@ -23,6 +23,8 @@ import 'package:elhanbly/models/user_response/login_response.dart'
     show LoginResponse;
 import 'package:elhanbly/models/user_response/user_data.dart'
     show UserModelResponse;
+import 'package:elhanbly/models/guest/guest_courses_response.dart'
+    show GuestCoursesResponse;
 
 typedef RepositoryStub<T> = Future<Either<dynamic, T>> Function();
 
@@ -31,6 +33,7 @@ class FakeRepository implements Repository {
   RepositoryStub<List<RegisterStage>>? fetchRegistrationStagesStub;
   RepositoryStub<bool>? registerStudentStub;
   RepositoryStub<HomeResponse>? getHomeStub;
+  RepositoryStub<GuestCoursesResponse>? getGuestCoursesStub;
   RepositoryStub<GetCourseDataResponse>? getCourseDataStub;
   RepositoryStub<UserModelResponse>? getProfileStub;
   RepositoryStub<SettingsResponse>? getSettingsStub;
@@ -89,6 +92,11 @@ class FakeRepository implements Repository {
   @override
   Future<Either<dynamic, HomeResponse>> getHome() {
     return _call(getHomeStub, 'getHome');
+  }
+
+  @override
+  Future<Either<dynamic, GuestCoursesResponse>> getGuestCourses() {
+    return _call(getGuestCoursesStub, 'getGuestCourses');
   }
 
   @override

@@ -278,6 +278,16 @@ class RepoImpl extends Repository {
     );
   }
 
+  @override
+  Future<Either<dynamic, GuestCoursesResponse>> getGuestCourses() {
+    return responseHandling<GuestCoursesResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.guestCourses);
+        return GuestCoursesResponse.fromJson(response.data);
+      },
+    );
+  }
+
   // @override
   // Future<Either<dynamic, GetSubjectsResponse>> getSubjects() {
   //   return responseHandling<GetSubjectsResponse>(

@@ -13,7 +13,8 @@ import '../qr_scanner.dart';
 import 'default_app_bar_widgets.dart';
 
 class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const DefaultAppBar({super.key});
+  List<Widget>? action ;
+   DefaultAppBar({super.key , this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
                   cubit.currentIndex != 1)
               ? const AppBarImageWidget()
               : null,
+          actions: action ?? null,
           
         );
       },
@@ -101,7 +103,7 @@ class AppBarImageWidget extends StatelessWidget {
               radius: avatarRadius,
               backgroundColor: AppColors.kPrimary,
               child: AppText(
-                userData?.student?.name?.substring(0, 1) ?? '',
+                userData?.student?.name?.substring(0, 1) ?? 'guest',
                 style: TextStyle(
                   color: AppColors.kWhite,
                   fontSize: errorFontSize,

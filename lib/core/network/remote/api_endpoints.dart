@@ -32,6 +32,7 @@ class EndPoints {
   /// ============================== Home ==================================
 
   static const String gethome = 'home';
+  static const String guestCourses = 'https://api.aplusplatforms.com/api/public/v1/courses';
   // static const String getSubjectsApi = 'subjects';
   // static String getCoursesSubjectsApi(String id) => 'subjects/$id/courses';
   // static const String lessonsApi = 'lessons';

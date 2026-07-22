@@ -12,6 +12,8 @@ class RecommendedLessonsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLargeScreen = MediaQuery.sizeOf(context).width >= 600;
+
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
         final model = HomeCubit.of(context).home?.suggestedSessions;
@@ -33,12 +35,14 @@ class RecommendedLessonsSection extends StatelessWidget {
             24.sbH,
             SizedBox(
               width: double.infinity,
-              // height: 310.h,
-              height: 290.h,
+              height: isLargeScreen ? 220 : 210.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: model?.length ?? 0,
-                itemBuilder: (c, i) => RecommendedLessonsCard(model: model?[i]),
+                itemBuilder: (c, i) => Align(
+                  alignment: Alignment.topCenter,
+                  child: RecommendedLessonsCard(model: model?[i]),
+                ),
               ),
             ),
           ],

@@ -85,63 +85,63 @@ jobs:
           track: internal
           status: completed
 
-  # build_ios:
-  #   name: Build & Deploy iOS (${{ matrix.client }})
-  #   needs: discover_clients
-  #   runs-on: macos-latest
-  #   environment: ${{ matrix.client }}
-  #   strategy:
-  #     matrix:
-  #       client: ${{ fromJson(needs.discover_clients.outputs.clients) }}
-  #     fail-fast: false
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  build_ios:
+    name: Build & Deploy iOS (${{ matrix.client }})
+    needs: discover_clients
+    runs-on: macos-latest
+    environment: ${{ matrix.client }}
+    strategy:
+      matrix:
+        client: ${{ fromJson(needs.discover_clients.outputs.clients) }}
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Setup Flutter
-  #       uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: '3.44.x'
-  #         channel: 'stable'
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.x'
+          channel: 'stable'
 
-  #     - name: Switch Flavor
-  #       run: dart scripts/switch_flavor.dart ${{ matrix.client }}
+      - name: Switch Flavor
+        run: dart scripts/switch_flavor.dart ${{ matrix.client }}
 
-  #     - name: Install Apple Certificate and Provisioning Profile
-  #       env:
-  #         BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-  #         P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-  #         BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
-  #         KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-  #       run: |
-  #         CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-  #         PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
-  #         KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+      - name: Install Apple Certificate and Provisioning Profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-  #         echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-  #         echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
 
-  #         security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-  #         security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-  #         security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-  #         security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-  #         security list-keychain -d user -s $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
 
-  #         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-  #         cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
       
-  #     - name: Build iOS IPA
-  #       env:
-  #         EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
-  #       run: |
-  #         echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
-  #         flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+      - name: Build iOS IPA
+        env:
+          EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
+        run: |
+          echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
           
-  #     - name: Upload to App Store TestFlight
-  #       uses: apple-actions/upload-testflight-build@v1
-  #       with:
-  #         app-path: build/ios/ipa/*.ipa
-  #         issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-  #         api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-  #         api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      - name: Upload to App Store TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: build/ios/ipa/*.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}

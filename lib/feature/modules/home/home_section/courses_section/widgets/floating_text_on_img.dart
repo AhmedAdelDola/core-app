@@ -16,23 +16,24 @@ class FloatingTextOnImg extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Container(
-          width: 382.w,
-          height: 171.h,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12.r),
-              topRight: Radius.circular(12.r),
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.r),
+                topRight: Radius.circular(12.r),
+              ),
             ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12.r),
-              topRight: Radius.circular(12.r),
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.r),
+                topRight: Radius.circular(12.r),
+              ),
+              child: img == 'https://apluscore.com/media/images/logo.png'
+                  ? Image.asset(AppImages.logoPng, fit: BoxFit.cover)
+                  : NetworkImagesWidgets(url: img ?? '', fit: BoxFit.cover),
             ),
-            child: img == 'https://apluscore.com/media/images/logo.png'
-                ? Image.asset(AppImages.logoPng, fit: BoxFit.fill)
-                : NetworkImagesWidgets(url: img ?? '', fit: BoxFit.fill),
           ),
         ),
         if (isFree == 1)
@@ -46,11 +47,7 @@ class FloatingTextOnImg extends StatelessWidget {
                 color: AppColors.kPrimary,
                 borderRadius: BorderRadius.all(Radius.circular(8.r)),
               ),
-              child: AppText(
-                'مجاني',
-                color: Colors.white,
-                size: 16.sp,
-              ),
+              child: AppText('مجاني', color: Colors.white, size: 16.sp),
             ),
           ),
       ],

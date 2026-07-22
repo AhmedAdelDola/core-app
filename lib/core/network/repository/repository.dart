@@ -12,6 +12,7 @@ abstract class Repository {
     required int levelId,
   });
   Future<Either<dynamic, HomeResponse>> getHome();
+  Future<Either<dynamic, GuestCoursesResponse>> getGuestCourses();
   // Future<Either<dynamic, Unit>> resendOtp(ResendOtpParams params);
   // Future<Either<dynamic, BlockResponse>> blockReason(String phone);
   // Future<Either<dynamic, bool>> basicInformation(

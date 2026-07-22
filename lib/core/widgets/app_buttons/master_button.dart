@@ -61,7 +61,7 @@ class MasterButton extends StatelessWidget {
           onPressed: isLoading == true ? null : onPressed,
           clipBehavior: Clip.antiAliasWithSaveLayer,
           style: ElevatedButton.styleFrom(
-            disabledBackgroundColor: AppColors.disabledBtnColor,
+            disabledBackgroundColor: AppColors.kPrimary,
             padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
             foregroundColor: AppColors.kWhite,
             backgroundColor: buttonColor ?? AppColors.kPrimary,

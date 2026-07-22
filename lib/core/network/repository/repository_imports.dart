@@ -15,6 +15,7 @@ import '../../../models/general/general_response.dart';
 import '../../../models/general/general_selectable_entity.dart';
 import '../../../models/general/register_stage_model.dart';
 import '../../../models/general/settings_response.dart';
+import '../../../models/guest/guest_courses_response.dart';
 
 import '../../../models/user_response/login_response.dart';
 import '../../../models/user_response/user_data.dart';

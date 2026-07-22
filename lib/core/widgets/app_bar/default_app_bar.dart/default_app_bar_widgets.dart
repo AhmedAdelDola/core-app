@@ -141,7 +141,7 @@ Widget get appBarBodyView {
     children: [
       AppText(
         align: TextAlign.start,
-        userData?.student?.name ?? '',
+        userData?.student?.name ?? 'guest',
         style: TextStyles.textViewMedium(
             color: AppColors.textColor, fontSize: 18.sp),
       ),

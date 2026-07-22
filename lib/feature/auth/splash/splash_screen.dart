@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
             if (seenOnBoarding == false) {
               NamedNavigatorImpl.pushNamed(Routes.onBoarding, clean: true);
             } else {
-              NamedNavigatorImpl.pushNamed(Routes.login, clean: true);
+              NamedNavigatorImpl.pushNamed(Routes.guestHome, clean: true);
             }
           }
 

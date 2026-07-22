@@ -37,7 +37,8 @@ class SplashCubit extends Cubit<SplashState> {
         String? token = UserPreferencesHelper().getUserTokenPreference();
         log('Hello Tolba ==> $token');
         log('isLogged ==> $isLogged');
-        log('FCM TOKEN ==> $fcmToken');
+        final token_ = di.isRegistered<String>(instanceName: 'fcmToken') ? fcmToken : 'not_registered';
+        log('FCM TOKEN ==> $token_');
         emit(AuthenticatedState());
       } else {
         emit(UnAuthenticatedState());
@@ -63,7 +64,7 @@ class SplashCubit extends Cubit<SplashState> {
   void changePage() {
     if (isLast) {
       UserPreferencesHelper().saveSeenOnBoarding(true);
-      NamedNavigatorImpl.pushNamed(Routes.login, clean: true);
+      NamedNavigatorImpl.pushNamed(Routes.guestHome, clean: true);
     } else {
       controller.nextPage(
         duration: const Duration(milliseconds: 300),

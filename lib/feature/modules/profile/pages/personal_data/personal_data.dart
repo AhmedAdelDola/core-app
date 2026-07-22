@@ -8,7 +8,7 @@ class PersonalData extends StatefulWidget {
 }
 
 class _PersonalDataState extends State<PersonalData> {
-   final formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   File? selectedImage;
@@ -46,78 +46,98 @@ class _PersonalDataState extends State<PersonalData> {
             },
             builder: (context, state) {
               var cubit = UpdateProfileCubit.of(context);
+              final isTablet = MediaQuery.sizeOf(context).width >= 600;
+              final avatarSize = isTablet ? 120.0 : 100.w;
+              final editRadius = isTablet ? 18.0 : 15.0;
               return Form(
                 key: formKey,
                 child: Column(
                   children: <Widget>[
-                        Stack(alignment: AlignmentGeometry.bottomRight,
-      children:[ Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.kPrimary,width: 2.5),
-          shape: BoxShape.circle
-        ),
-        width: 100.w,
-        height: 100.h,
-        margin: EdgeInsets.only(top: 20.h),
-        child: selectedImage != null
-            ? Container(
-                width: 40.w,
-                height: 40.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                      image: FileImage(selectedImage!), fit: BoxFit.fill),
-                ),
-              )
-            : CachedNetworkImage(
-                imageUrl: userData?.student?.imageUrl ?? Strings.placeHolderImg,
-                imageBuilder: (context, img) => Container(
-                  width: 40.w,
-                  height: 40.h,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(image: img, fit: BoxFit.fill),
-                  ),
-                ),
-                errorWidget: errorIconImage,
-              ),
-      ),
-      GestureDetector(
-        onTap: () async{
-          final image = await MyMedia.pickImageFromGallery();
-                        if (image != null) {
-                          setState(() => selectedImage = image);
-                        }
-        },
-        child: CircleAvatar(
-          radius: 15,
-        backgroundColor: AppColors.kPrimary,
-        child: Icon(Icons.edit,color: AppColors.kWhite,size: 15,),
-              ),
-      )
-    ]),
- 
-            12.sbH,
-            AppText(
-              '${userData?.student?.name}',
-              style: TextStyle(
-                color: AppColors.textColor,
-                fontWeight: w500,
-                fontSize: 24.sp,
-              ),
-            ),
-            7.sbH,
-            AppText(
-              '${userData?.student?.level?.stage?.name} - ${userData?.student?.level?.name}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: AppColors.textColor4,
-                fontWeight: w500,
-                fontSize: 16.sp,
-              ),
-            ),
-            40.sbH,
+                    Stack(
+                      alignment: AlignmentGeometry.bottomRight,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppColors.kPrimary,
+                              width: 2.5,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          width: avatarSize,
+                          height: avatarSize,
+                          margin: EdgeInsets.only(top: 20.h),
+                          child: selectedImage != null
+                              ? Container(
+                                  width: 40.w,
+                                  height: 40.h,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      image: FileImage(selectedImage!),
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl:
+                                      userData?.student?.imageUrl ??
+                                      Strings.placeHolderImg,
+                                  imageBuilder: (context, img) => Container(
+                                    width: 40.w,
+                                    height: 40.h,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: img,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: errorIconImage,
+                                ),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            final image = await MyMedia.pickImageFromGallery();
+                            if (image != null) {
+                              setState(() => selectedImage = image);
+                            }
+                          },
+                          child: CircleAvatar(
+                            radius: editRadius,
+                            backgroundColor: AppColors.kPrimary,
+                            child: Icon(
+                              Icons.edit,
+                              color: AppColors.kWhite,
+                              size: editRadius,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    12.sbH,
+                    AppText(
+                      '${userData?.student?.name}',
+                      style: TextStyle(
+                        color: AppColors.textColor,
+                        fontWeight: w500,
+                        fontSize: 24.sp,
+                      ),
+                    ),
+                    7.sbH,
+                    AppText(
+                      '${userData?.student?.level?.stage?.name} - ${userData?.student?.level?.name}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textColor4,
+                        fontWeight: w500,
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                    40.sbH,
                     MasterTextField(
                       controller: nameController,
                       validate: Validator.defaultValidator,
@@ -132,6 +152,7 @@ class _PersonalDataState extends State<PersonalData> {
                       prefixWidget: prefixIcon,
                     ),
                     20.sbH,
+
                     // GestureDetector(
                     //   onTap: () async {
                     //     final image = await MyMedia.pickImageFromGallery();
@@ -186,9 +207,7 @@ class _PersonalDataState extends State<PersonalData> {
                     //     ),
                     //   ),
                     // ),
-                   
-                    
-                    200.sbH,
+                    32.sbH,
                     CustomButton(
                       text: 'حفظ',
                       isLoading: state is UpdateProfileLoading,
@@ -211,10 +230,11 @@ class _PersonalDataState extends State<PersonalData> {
           ),
         ),
       ),
-    
     );
   }
 }
- Icon get prefixIcon => const Icon(Icons.person_outline, color: AppColors.textColor2);
+
+Icon get prefixIcon =>
+    const Icon(Icons.person_outline, color: AppColors.textColor2);
 
 TextStyle get textStyle => const TextStyle(color: Colors.white);

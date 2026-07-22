@@ -24,16 +24,19 @@ class RecommendedCoursesSection extends StatelessWidget {
         final cubit = HomeCubit.of(context);
         return Column(
           children: [
-            ShowAllWidget(
-              'الكورسات المقترحة',
-              () {
-                NamedNavigatorImpl.push(BlocProvider.value(
-                    value: cubit, child: const AllRecommendedCoursesScreen()));
-              },
-            ),
+            ShowAllWidget('الكورسات المقترحة', () {
+              NamedNavigatorImpl.push(
+                BlocProvider.value(
+                  value: cubit,
+                  child: const AllRecommendedCoursesScreen(),
+                ),
+              );
+            }),
             SizedBox(height: isLargeScreen ? 32.h : 24.h),
             SizedBox(
-              height: isLargeScreen ? 320.h : 295.h,
+              // The card image has a 16:9 ratio and the remaining content is
+              // compact, so a fixed tall viewport would leave empty card space.
+              height: isLargeScreen ? 220 : 210.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
@@ -41,8 +44,12 @@ class RecommendedCoursesSection extends StatelessWidget {
                   horizontal: isLargeScreen ? 12 : 0,
                 ),
                 itemCount: cubit.home?.recommendedCourses?.length,
-                itemBuilder: (c, i) =>
-                    CourseCardItem(model: cubit.home?.recommendedCourses?[i]),
+                itemBuilder: (c, i) => Align(
+                  alignment: Alignment.topCenter,
+                  child: CourseCardItem(
+                    model: cubit.home?.recommendedCourses?[i],
+                  ),
+                ),
               ),
             ),
           ],
