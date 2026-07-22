@@ -140,6 +140,9 @@ jobs:
         run: |
           echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
           
+          # Fix the destination in ExportOptions.plist so it exports locally instead of trying to upload directly without credentials
+          sed -i '' 's/<string>upload<\/string>/<string>export<\/string>/g' ios/ExportOptions.plist
+          
           # 1. Force Xcode to use Manual signing instead of Automatic
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
           
@@ -162,12 +165,19 @@ jobs:
           API_ISSUER: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: |
-          # 1. Create the private_keys directory required by altool
-          mkdir -p ~/private_keys
+          # 3. Upload the IPA to TestFlight using Fastlane
+          IPA_FILE=$(find . -name "*.ipa" | head -n 1)
           
-          # 2. Safely write the private key while preserving line breaks
-          echo "$PRIVATE_KEY" > ~/private_keys/AuthKey_${API_KEY}.p8
+          if [ -z "$IPA_FILE" ]; then
+            echo "Error: Could not find .ipa file! The flutter build ipa step likely failed to export."
+            exit 1
+          fi
           
-          # 3. Upload the IPA to TestFlight
-          IPA_FILE=$(find build/ios/ipa -name "*.ipa" | head -n 1)
-          xcrun altool --upload-app --type ios --file "$IPA_FILE" --apiKey "$API_KEY" --apiIssuer "$API_ISSUER"
+          echo "Found IPA at: $IPA_FILE"
+          
+          # Fastlane automatically reads these environment variables for App Store Connect authentication
+          export APP_STORE_CONNECT_API_KEY_ISSUER_ID="$API_ISSUER"
+          export APP_STORE_CONNECT_API_KEY_KEY_ID="$API_KEY"
+          export APP_STORE_CONNECT_API_KEY_KEY="$PRIVATE_KEY"
+          
+          fastlane pilot upload --ipa "$IPA_FILE"
