@@ -128,8 +128,11 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
+          # Extract the UUID from the mobileprovision file
+          UUID=$(security cms -D -i $PP_PATH | grep -a -A1 UUID | grep -o "[-a-zA-Z0-9]\{36\}")
+          
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
       
       - name: Build iOS IPA
         env:
