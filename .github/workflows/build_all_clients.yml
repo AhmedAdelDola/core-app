@@ -131,11 +131,26 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
       
-      - name: Build iOS IPA
+            - name: Build iOS IPA
         env:
           EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
         run: |
           echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
+          
+          # 1. Force Xcode to use Manual signing instead of Automatic
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
+          
+          # 2. Extract the Bundle ID for the current white-label client
+          PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
+          
+          # 3. Extract the Profile Name from your ExportOptions.plist
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :provisioningProfiles:$PACKAGE_NAME" ios/ExportOptions.plist)
+          
+          # 4. Inject the profile name into the build config so the Archive step knows which one to use
+          echo "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_NAME" >> ios/Flutter/Release.xcconfig
+          echo "CODE_SIGN_IDENTITY=Apple Distribution" >> ios/Flutter/Release.xcconfig
+          
+          # 5. Build the IPA (Archive + Export)
           flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
           
       - name: Upload to App Store TestFlight
