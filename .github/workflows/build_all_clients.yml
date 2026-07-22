@@ -165,7 +165,13 @@ jobs:
           API_ISSUER: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: |
-          # 3. Upload the IPA to TestFlight using Fastlane
+          # 1. Create the private_keys directory required by altool
+          mkdir -p ~/private_keys
+          
+          # 2. Safely write the private key while stripping Windows carriage returns (fixes the -39 error)
+          echo "$PRIVATE_KEY" | tr -d '\r' > ~/private_keys/AuthKey_${API_KEY}.p8
+          
+          # 3. Upload the IPA to TestFlight using altool
           IPA_FILE=$(find . -name "*.ipa" | head -n 1)
           
           if [ -z "$IPA_FILE" ]; then
@@ -174,10 +180,4 @@ jobs:
           fi
           
           echo "Found IPA at: $IPA_FILE"
-          
-          # Fastlane automatically reads these environment variables for App Store Connect authentication
-          export APP_STORE_CONNECT_API_KEY_ISSUER_ID="$API_ISSUER"
-          export APP_STORE_CONNECT_API_KEY_KEY_ID="$API_KEY"
-          export APP_STORE_CONNECT_API_KEY_KEY="$PRIVATE_KEY"
-          
-          fastlane pilot upload --ipa "$IPA_FILE"
+          xcrun altool --upload-app --type ios --file "$IPA_FILE" --apiKey "$API_KEY" --apiIssuer "$API_ISSUER"
