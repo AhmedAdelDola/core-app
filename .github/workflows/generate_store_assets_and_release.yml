@@ -105,10 +105,17 @@ jobs:
       - name: Launch iOS Simulator & Capture Screenshots
         run: |
           mkdir -p raw_screenshots
-          # Boot default iOS Simulator
-          open -a Simulator
-          sleep 10
-          flutter test integration_test/take_screenshots_test.dart --dart-define=TAKING_SCREENSHOTS=true || true
+          # Find available iPhone simulator UDID
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 15|iPhone 14|iPhone 16" | head -n 1 | grep -oE "[-A-F0-9]{36}" || xcrun simctl list devices available | grep "iPhone" | head -n 1 | grep -oE "[-A-F0-9]{36}")
+          echo "Target Simulator UDID: $UDID"
+          if [ -n "$UDID" ]; then
+            xcrun simctl boot "$UDID" || true
+            flutter test integration_test/take_screenshots_test.dart -d "$UDID" --dart-define=TAKING_SCREENSHOTS=true || true
+          else
+            open -a Simulator
+            sleep 10
+            flutter test integration_test/take_screenshots_test.dart -d iPhone --dart-define=TAKING_SCREENSHOTS=true || true
+          fi
 
       - name: Generate Framed Store Screenshots (iOS)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
