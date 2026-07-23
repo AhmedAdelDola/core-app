@@ -15,7 +15,7 @@ import 'core/local/enum_init.dart';
 /// Enables FlutterDriver extension so [test_driver/screenshot_driver.dart]
 /// can connect and take real screenshots via the Dart VM service.
 ///
-/// If --dart-define=TEST_PHONE=... is provided, auto-logs in after runApp
+/// If --dart-define=TEST_PHONE=... is provided, auto-logs in before runApp
 /// so Home, Library, and Profile screens render fully authenticated.
 Future<void> main() async {
   enableFlutterDriverExtension();
@@ -25,11 +25,13 @@ Future<void> main() async {
   const phone = String.fromEnvironment('TEST_PHONE', defaultValue: '');
   const pass = String.fromEnvironment('TEST_PASS', defaultValue: '');
 
-  runApp(const MyApp());
+  di<CacheHelper>().put(CachingKey.onBoarding, true);
 
   if (phone.isNotEmpty) {
-    unawaited(_screenshotAutoLogin(phone: phone, pass: pass));
+    await _screenshotAutoLogin(phone: phone, pass: pass);
   }
+
+  runApp(const MyApp());
 }
 
 Future<void> _screenshotAutoLogin({
@@ -38,9 +40,9 @@ Future<void> _screenshotAutoLogin({
 }) async {
   try {
     await _performScreenshotLogin(phone: phone, pass: pass).timeout(
-      const Duration(seconds: 20),
+      const Duration(seconds: 30),
       onTimeout: () {
-        print('Screenshot auto-login timed out after 20s');
+        print('Screenshot auto-login timed out after 30s');
       },
     );
   } catch (e) {

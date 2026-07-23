@@ -20,7 +20,8 @@ class SplashCubit extends Cubit<SplashState> {
   static SplashCubit of(context) => BlocProvider.of(context);
 
   bool openAnimation = false;
-  int splashDuration = 3;
+  int get splashDuration =>
+      const bool.fromEnvironment('TAKING_SCREENSHOTS') ? 1 : 3;
 
   switchAnimation() {
     Future.delayed(Duration(seconds: splashDuration), () {

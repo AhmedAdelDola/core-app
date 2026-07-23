@@ -3,9 +3,8 @@
 // frame_screenshots.dart
 //
 // Takes raw screenshots captured by test_driver/screenshot_driver.dart and
-// frames them into professional store-ready assets at all required dimensions.
-//
-// If a raw screenshot is missing, it skips that file (no blank placeholders).
+// frames them into professional store-ready assets with gradient backgrounds,
+// marketing titles, and a realistic phone bezel.
 //
 // Usage:
 //   dart scripts/frame_screenshots.dart --client Tasneem --input-dir raw_screenshots
@@ -15,6 +14,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:image/image.dart' as img;
+
+const _screenshotTitles = <String, String>{
+  '01_splash.png': 'شاشة البداية',
+  '02_onboarding_or_login.png': 'محتوى تعليمي شامل',
+  '03_guest_home.png': 'استكشف الكورسات والدورات',
+  '04_main_screen.png': 'تابع دروسك بسهولة',
+  '05_library_screen.png': 'مكتبتي ودوراتي',
+  '06_profile_screen.png': 'إدارة الملف الشخصي',
+};
 
 void main(List<String> args) async {
   String client = 'Tasneem';
@@ -29,12 +37,13 @@ void main(List<String> args) async {
 
   print('Framing store screenshots for client: $client');
 
-  // ── Load client branding ──────────────────────────────────────────────────
   final clientConfigFile = File('clients/$client/client_config.json');
   img.Color brandColor = img.ColorRgb8(37, 99, 235);
+  String appName = client;
 
   if (clientConfigFile.existsSync()) {
     final cfg = jsonDecode(await clientConfigFile.readAsString()) as Map;
+    appName = (cfg['appName'] as String?) ?? client;
     final hex = cfg['fallbackPrimaryColor'] as String?;
     if (hex != null) {
       final cleaned = hex.replaceAll(RegExp(r'^0xFF|^0xff|^#'), '');
@@ -47,14 +56,17 @@ void main(List<String> args) async {
     }
   }
 
-  // Slightly darker version for gradient bottom
+  final lightColor = img.ColorRgb8(
+    math.min(255, brandColor.r.toInt() + 25),
+    math.min(255, brandColor.g.toInt() + 25),
+    math.min(255, brandColor.b.toInt() + 25),
+  );
   final darkColor = img.ColorRgb8(
-    math.max(0, brandColor.r.toInt() - 45),
-    math.max(0, brandColor.g.toInt() - 45),
-    math.max(0, brandColor.b.toInt() - 45),
+    math.max(0, brandColor.r.toInt() - 30),
+    math.max(0, brandColor.g.toInt() - 30),
+    math.max(0, brandColor.b.toInt() - 30),
   );
 
-  // ── Store target dimensions ───────────────────────────────────────────────
   final targets = {
     'android': [
       {'name': 'phone_1080x1920', 'w': 1080, 'h': 1920},
@@ -68,23 +80,14 @@ void main(List<String> args) async {
     ],
   };
 
-  // ── Raw screenshot filenames (produced by screenshot_driver.dart) ─────────
-  // Map raw name → output name
-  final screenshotFiles = [
-    '01_splash.png',
-    '02_onboarding_or_login.png',
-    '03_guest_home.png',
-    '04_main_screen.png',
-    '05_library_screen.png',
-    '06_profile_screen.png',
-  ];
-
-  int totalGenerated = 0;
-  int totalSkipped = 0;
+  final screenshotFiles = _screenshotTitles.keys.toList();
+  var totalGenerated = 0;
+  var totalSkipped = 0;
 
   for (final storeEntry in targets.entries) {
     final store = storeEntry.key;
     final sizes = storeEntry.value;
+    final isTablet = store.contains('tablet') || store.contains('ipad');
 
     for (final sizeMap in sizes) {
       final sizeName = sizeMap['name'] as String;
@@ -96,53 +99,38 @@ void main(List<String> args) async {
 
       for (final fileName in screenshotFiles) {
         final rawFile = File('$inputDir/$fileName');
-
-        // Skip missing raw screenshots — don't produce blank placeholders
         if (!rawFile.existsSync()) {
           print('  ⚠️  Skipped (missing raw): $fileName');
           totalSkipped++;
           continue;
         }
 
-        final rawBytes = rawFile.readAsBytesSync();
-        final rawImg = img.decodeImage(rawBytes);
+        final rawImg = img.decodeImage(rawFile.readAsBytesSync());
         if (rawImg == null) {
           print('  ⚠️  Skipped (decode failed): $fileName');
           totalSkipped++;
           continue;
         }
 
-        // ── Build canvas with gradient background ──────────────────────────
         final canvas = img.Image(width: tw, height: th);
-        _fillGradient(canvas, tw, th, brandColor, darkColor);
-
-        // ── Scale screenshot to fit inside canvas ─────────────────────────
-        // Leave 3% padding sides, 4% top, 2% bottom for optimal store display
-        final padX = (tw * 0.03).toInt();
-        final padTop = (th * 0.04).toInt();
-        final padBottom = (th * 0.02).toInt();
-        final maxW = tw - padX * 2;
-        final maxH = th - padTop - padBottom;
-
-        // Scale proportionally to fit maxW × maxH
-        double scale = math.min(maxW / rawImg.width, maxH / rawImg.height);
-        final scaledW = (rawImg.width * scale).toInt();
-        final scaledH = (rawImg.height * scale).toInt();
-        final scaled = img.copyResize(rawImg, width: scaledW, height: scaledH,
-            interpolation: img.Interpolation.cubic);
-
-        // Center horizontally; align to top of available area
-        final posX = (tw - scaledW) ~/ 2;
-        final posY = padTop;
-
-        // Draw subtle white shadow behind the device screenshot
-        _drawShadow(canvas, posX, posY, scaledW, scaledH);
-
-        img.compositeImage(canvas, scaled, dstX: posX, dstY: posY);
+        _fillGradient(canvas, tw, th, lightColor, darkColor);
+        _drawTitleBanner(
+          canvas,
+          tw,
+          th,
+          _screenshotTitles[fileName] ?? appName,
+        );
+        _compositePhoneFrame(
+          canvas: canvas,
+          rawImg: rawImg,
+          tw: tw,
+          th: th,
+          isTablet: isTablet,
+        );
 
         final outFile = File('${outFolder.path}/$fileName');
         outFile.writeAsBytesSync(img.encodePng(canvas));
-        print('  ✅ ${tw}x${th} → ${outFile.path}'); // ignore: unnecessary_brace_in_string_interps
+        print('  ✅ ${tw}x$th → ${outFile.path}');
         totalGenerated++;
       }
     }
@@ -151,32 +139,206 @@ void main(List<String> args) async {
   print('\n✅ Done — $totalGenerated screenshots generated, $totalSkipped skipped.');
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/// Fills [canvas] with a vertical gradient from [top] to [bottom].
-void _fillGradient(img.Image canvas, int w, int h, img.Color top, img.Color bottom) {
-  for (int y = 0; y < h; y++) {
+void _fillGradient(
+  img.Image canvas,
+  int w,
+  int h,
+  img.Color top,
+  img.Color bottom,
+) {
+  for (var y = 0; y < h; y++) {
     final t = y / h;
     final r = (top.r + (bottom.r - top.r) * t).round().clamp(0, 255);
     final g = (top.g + (bottom.g - top.g) * t).round().clamp(0, 255);
     final b = (top.b + (bottom.b - top.b) * t).round().clamp(0, 255);
-    img.drawLine(canvas, x1: 0, y1: y, x2: w, y2: y, color: img.ColorRgb8(r, g, b));
+    img.drawLine(
+      canvas,
+      x1: 0,
+      y1: y,
+      x2: w,
+      y2: y,
+      color: img.ColorRgb8(r, g, b),
+    );
   }
 }
 
-/// Draws a semi-transparent shadow around the screenshot for depth.
-void _drawShadow(img.Image canvas, int x, int y, int w, int h) {
-  const shadowOpacity = 60; // 0-255
-  const shadowSpread = 12;
-  for (int s = shadowSpread; s > 0; s--) {
-    final opacity = (shadowOpacity * (1 - s / shadowSpread)).toInt();
+void _drawTitleBanner(img.Image canvas, int tw, int th, String title) {
+  final bannerHeight = (th * 0.09).toInt();
+  final overlay = img.ColorRgba8(255, 255, 255, 28);
+  img.fillRect(
+    canvas,
+    x1: 0,
+    y1: 0,
+    x2: tw,
+    y2: bannerHeight,
+    color: overlay,
+  );
+
+  final font = img.arial24;
+  final estimatedTextWidth = title.length * 14;
+  final textX = math.max(24, (tw - estimatedTextWidth) ~/ 2);
+  const textY = 28;
+
+  img.drawString(
+    canvas,
+    title,
+    font: font,
+    x: textX + 2,
+    y: textY + 2,
+    color: img.ColorRgba8(0, 0, 0, 90),
+  );
+  img.drawString(
+    canvas,
+    title,
+    font: font,
+    x: textX,
+    y: textY,
+    color: img.ColorRgb8(255, 255, 255),
+  );
+}
+
+void _compositePhoneFrame({
+  required img.Image canvas,
+  required img.Image rawImg,
+  required int tw,
+  required int th,
+  required bool isTablet,
+}) {
+  final headerMargin = (th * (isTablet ? 0.14 : 0.12)).toInt();
+  final sideMargin = (tw * (isTablet ? 0.12 : 0.08)).toInt();
+  final bottomMargin = (th * 0.05).toInt();
+
+  var deviceWidth = tw - sideMargin * 2;
+  var scale = deviceWidth / rawImg.width;
+  var deviceHeight = (rawImg.height * scale).round();
+  final maxDeviceHeight = th - headerMargin - bottomMargin;
+
+  if (deviceHeight > maxDeviceHeight) {
+    deviceHeight = maxDeviceHeight;
+    scale = deviceHeight / rawImg.height;
+    deviceWidth = (rawImg.width * scale).round();
+  }
+
+  final scaled = img.copyResize(
+    rawImg,
+    width: deviceWidth,
+    height: deviceHeight,
+    interpolation: img.Interpolation.cubic,
+  );
+
+  final deviceX = (tw - deviceWidth) ~/ 2;
+  final deviceY = headerMargin + (maxDeviceHeight - deviceHeight) ~/ 2;
+  final borderRadius = (tw * (isTablet ? 0.025 : 0.04)).round();
+  final bezelPadding = (tw * 0.015).round();
+  final bezelColor = img.ColorRgb8(15, 23, 42);
+
+  _drawDeviceShadow(
+    canvas,
+    deviceX - bezelPadding,
+    deviceY - bezelPadding,
+    deviceWidth + bezelPadding * 2,
+    deviceHeight + bezelPadding * 2,
+    borderRadius + bezelPadding,
+  );
+
+  img.fillRect(
+    canvas,
+    x1: deviceX - bezelPadding,
+    y1: deviceY - bezelPadding,
+    x2: deviceX + deviceWidth + bezelPadding,
+    y2: deviceY + deviceHeight + bezelPadding,
+    color: bezelColor,
+    radius: borderRadius + bezelPadding,
+  );
+
+  img.fillRect(
+    canvas,
+    x1: deviceX - bezelPadding + 2,
+    y1: deviceY - bezelPadding + 2,
+    x2: deviceX + deviceWidth + bezelPadding - 2,
+    y2: deviceY + deviceHeight + bezelPadding - 2,
+    color: img.ColorRgb8(30, 41, 59),
+    radius: borderRadius + bezelPadding - 2,
+  );
+
+  final clipped = _clipRoundedCorners(scaled, borderRadius);
+  img.compositeImage(canvas, clipped, dstX: deviceX, dstY: deviceY);
+
+  if (!isTablet) {
+    _drawDynamicIsland(canvas, deviceX, deviceY, deviceWidth);
+  }
+
+  img.drawRect(
+    canvas,
+    x1: deviceX,
+    y1: deviceY,
+    x2: deviceX + deviceWidth,
+    y2: deviceY + deviceHeight,
+    color: img.ColorRgba8(255, 255, 255, 35),
+    radius: borderRadius,
+  );
+}
+
+img.Image _clipRoundedCorners(img.Image source, int radius) {
+  final output = img.Image.from(source);
+  final mask = img.Image(width: source.width, height: source.height, numChannels: 1);
+  img.fill(mask, color: img.ColorRgb8(0, 0, 0));
+  img.fillRect(
+    mask,
+    x1: 0,
+    y1: 0,
+    x2: source.width,
+    y2: source.height,
+    color: img.ColorRgb8(255, 255, 255),
+    radius: radius,
+  );
+
+  for (var y = 0; y < output.height; y++) {
+    for (var x = 0; x < output.width; x++) {
+      final alpha = mask.getPixel(x, y).r;
+      if (alpha == 0) {
+        output.setPixelRgba(x, y, 0, 0, 0, 0);
+      }
+    }
+  }
+  return output;
+}
+
+void _drawDynamicIsland(img.Image canvas, int deviceX, int deviceY, int deviceWidth) {
+  final islandW = (deviceWidth * 0.28).round();
+  final islandH = (deviceWidth * 0.045).round().clamp(18, 34);
+  final islandX = deviceX + (deviceWidth - islandW) ~/ 2;
+  final islandY = deviceY + (deviceWidth * 0.025).round();
+
+  img.fillRect(
+    canvas,
+    x1: islandX,
+    y1: islandY,
+    x2: islandX + islandW,
+    y2: islandY + islandH,
+    color: img.ColorRgb8(0, 0, 0),
+    radius: islandH ~/ 2,
+  );
+}
+
+void _drawDeviceShadow(
+  img.Image canvas,
+  int x,
+  int y,
+  int w,
+  int h,
+  int radius,
+) {
+  for (var spread = 18; spread > 0; spread--) {
+    final opacity = (55 * (1 - spread / 18)).round().clamp(0, 55);
     img.drawRect(
       canvas,
-      x1: x - s,
-      y1: y - s,
-      x2: x + w + s,
-      y2: y + h + s,
+      x1: x - spread,
+      y1: y - spread + 6,
+      x2: x + w + spread,
+      y2: y + h + spread + 6,
       color: img.ColorRgba8(0, 0, 0, opacity),
+      radius: radius + spread,
     );
   }
 }

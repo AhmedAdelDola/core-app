@@ -52,6 +52,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
 
   Widget bottomNavigationItem(int index, String label, String iconPath) {
     return InkWell(
+      key: ValueKey('nav_tab_$index'),
       onTap: () => widget.onItemTap(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
