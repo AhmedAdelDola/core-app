@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -122,8 +122,10 @@ jobs:
       - name: Switch White-Label Flavor & Branding
         run: dart scripts/switch_flavor.dart ${{ matrix.client }}
 
-      - name: Get Dependencies
-        run: flutter pub get
+      - name: Get Dependencies & Install Pods
+        run: |
+          flutter pub get
+          cd ios && pod install && cd ..
 
       - name: Boot iOS Simulator
         run: |
@@ -131,7 +133,19 @@ jobs:
           echo "Booting iOS Simulator UDID: $UDID"
           xcrun simctl boot "$UDID" || true
           open -a Simulator
-          xcrun simctl bootstatus "$UDID" -b || sleep 15
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+
+      - name: Build iOS App for Simulator
+        env:
+          TEST_PHONE: ${{ secrets.TEST_PHONE }}
+          TEST_PASS: ${{ secrets.TEST_PASS }}
+        run: |
+          flutter build ios --simulator --no-codesign \
+            --target=lib/main_screenshot.dart \
+            --dart-define=TAKING_SCREENSHOTS=true \
+            --dart-define=TEST_PHONE="$TEST_PHONE" \
+            --dart-define=TEST_PASS="$TEST_PASS"
 
       - name: Capture Real iOS Screenshots via FlutterDriver
         env:
@@ -142,10 +156,11 @@ jobs:
           flutter drive \
             --driver=test_driver/screenshot_driver.dart \
             --target=lib/main_screenshot.dart \
+            --no-build \
             --dart-define=TAKING_SCREENSHOTS=true \
             --dart-define=TEST_PHONE="$TEST_PHONE" \
             --dart-define=TEST_PASS="$TEST_PASS" \
-            -d booted || true
+            -d "$SIMULATOR_UDID"
 
       - name: Frame Screenshots for Store (iOS)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
