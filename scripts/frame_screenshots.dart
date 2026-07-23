@@ -142,7 +142,7 @@ void main(List<String> args) async {
 
         final outFile = File('${outFolder.path}/$fileName');
         outFile.writeAsBytesSync(img.encodePng(canvas));
-        print('  ✅ ${tw}x${th} → ${outFile.path}');
+        print('  ✅ ${tw}x${th} → ${outFile.path}'); // ignore: unnecessary_brace_in_string_interps
         totalGenerated++;
       }
     }
