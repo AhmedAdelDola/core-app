@@ -25,8 +25,6 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────
   # ANDROID: Real screenshots via FlutterDriver on emulator
-  # FlutterDriver.screenshot() uses the Dart VM service — works
-  # even with swiftshader (software renderer), no GPU required.
   # ─────────────────────────────────────────────────────────────
   android_screenshots:
     name: Android Screenshots (${{ matrix.client }})
@@ -63,6 +61,21 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Write the capture script to a file BEFORE the emulator starts.
+      # The emulator runner's `script:` field runs each YAML line as a
+      # separate `/usr/bin/sh -c` call, so multi-line commands and shell
+      # variables don't work there. Using a script file avoids all of this.
+      - name: Prepare screenshot capture script
+        run: |
+          cat > capture_android_screenshots.sh << 'CAPTURE_SCRIPT'
+          #!/bin/bash
+          set -x
+          mkdir -p raw_screenshots
+          # emulator-5554 is always the device ID when using android-emulator-runner
+          flutter drive --driver=test_driver/screenshot_driver.dart --target=lib/main_screenshot.dart --dart-define=TAKING_SCREENSHOTS=true -d emulator-5554 || true
+          CAPTURE_SCRIPT
+          chmod +x capture_android_screenshots.sh
+
       - name: Run Android Emulator & Capture Real Screenshots
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -71,15 +84,7 @@ jobs:
           arch: x86_64
           profile: pixel
           disable-animations: true
-          script: |
-            mkdir -p raw_screenshots
-            DEVICE_ID=$(adb devices | grep -v "List" | grep "device$" | head -n1 | awk '{print $1}')
-            echo "Using device: $DEVICE_ID"
-            flutter drive \
-              --driver=test_driver/screenshot_driver.dart \
-              --target=lib/main_screenshot.dart \
-              --dart-define=TAKING_SCREENSHOTS=true \
-              -d "$DEVICE_ID" || true
+          script: bash capture_android_screenshots.sh
 
       - name: Frame Screenshots for Store (Android)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
@@ -92,7 +97,6 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────
   # iOS: Real screenshots via FlutterDriver on macOS Simulator
-  # xcrun simctl provides real GPU rendering on macOS runners.
   # ─────────────────────────────────────────────────────────────
   ios_screenshots:
     name: iOS Screenshots (${{ matrix.client }})
@@ -119,25 +123,20 @@ jobs:
 
       - name: Boot iOS Simulator
         run: |
-          # Pick iPhone 15 or 14 (store-required sizes)
           UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[5-7]" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
           if [ -z "$UDID" ]; then
             UDID=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
           fi
-          echo "Booting simulator: $UDID"
+          echo "Booting simulator UDID: $UDID"
           xcrun simctl boot "$UDID" || true
           open -a Simulator --args -CurrentDeviceUDID "$UDID"
-          sleep 15
+          sleep 20
           echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
 
       - name: Capture Real iOS Screenshots via FlutterDriver
         run: |
           mkdir -p raw_screenshots
-          flutter drive \
-            --driver=test_driver/screenshot_driver.dart \
-            --target=lib/main_screenshot.dart \
-            --dart-define=TAKING_SCREENSHOTS=true \
-            -d "$SIMULATOR_UDID" || true
+          flutter drive --driver=test_driver/screenshot_driver.dart --target=lib/main_screenshot.dart --dart-define=TAKING_SCREENSHOTS=true -d "$SIMULATOR_UDID" || true
 
       - name: Frame Screenshots for Store (iOS)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
