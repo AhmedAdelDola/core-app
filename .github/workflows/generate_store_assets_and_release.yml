@@ -68,6 +68,7 @@ jobs:
         run: |
           cat > capture_android_screenshots.sh << CAPTURE_SCRIPT
           #!/bin/bash
+          set -euo pipefail
           set -x
           mkdir -p raw_screenshots
           flutter drive \
@@ -76,7 +77,11 @@ jobs:
             --dart-define=TAKING_SCREENSHOTS=true \
             --dart-define=TEST_PHONE="$TEST_PHONE" \
             --dart-define=TEST_PASS="$TEST_PASS" \
-            -d emulator-5554 || true
+            -d emulator-5554
+          if ! compgen -G "raw_screenshots/*.png" > /dev/null; then
+            echo "No raw screenshots were captured."
+            exit 1
+          fi
           CAPTURE_SCRIPT
           chmod +x capture_android_screenshots.sh
 
@@ -152,6 +157,7 @@ jobs:
           TEST_PHONE: ${{ secrets.TEST_PHONE }}
           TEST_PASS: ${{ secrets.TEST_PASS }}
         run: |
+          set -euo pipefail
           mkdir -p raw_screenshots
           flutter drive \
             --driver=test_driver/screenshot_driver.dart \
@@ -161,6 +167,10 @@ jobs:
             --dart-define=TEST_PHONE="$TEST_PHONE" \
             --dart-define=TEST_PASS="$TEST_PASS" \
             -d "$SIMULATOR_UDID"
+          if ! compgen -G "raw_screenshots/*.png" > /dev/null; then
+            echo "No raw screenshots were captured."
+            exit 1
+          fi
 
       - name: Frame Screenshots for Store (iOS)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots

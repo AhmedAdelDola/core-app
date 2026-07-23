@@ -30,7 +30,7 @@ void main() {
         outputDir.createSync(recursive: true);
       }
       await _waitForAppReady(driver);
-    }, timeout: const Timeout(Duration(minutes: 3)));
+    });
 
     tearDownAll(() async {
       await driver.close();
@@ -86,7 +86,7 @@ void main() {
       } catch (_) {}
       await snap('06_profile_screen.png', delayMs: 3000);
     });
-  });
+  }, timeout: const Timeout(Duration(minutes: 15)));
 }
 
 Future<void> _waitForAppReady(FlutterDriver driver) async {
