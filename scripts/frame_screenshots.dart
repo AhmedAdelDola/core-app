@@ -1,5 +1,19 @@
+// ignore_for_file: avoid_print
+// =============================================================================
+// frame_screenshots.dart
+//
+// Takes raw screenshots captured by test_driver/screenshot_driver.dart and
+// frames them into professional store-ready assets at all required dimensions.
+//
+// If a raw screenshot is missing, it skips that file (no blank placeholders).
+//
+// Usage:
+//   dart scripts/frame_screenshots.dart --client Tasneem --input-dir raw_screenshots
+// =============================================================================
+
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:image/image.dart' as img;
 
 void main(List<String> args) async {
@@ -15,27 +29,32 @@ void main(List<String> args) async {
 
   print('Framing store screenshots for client: $client');
 
+  // ── Load client branding ──────────────────────────────────────────────────
   final clientConfigFile = File('clients/$client/client_config.json');
-  String appName = client;
   img.Color brandColor = img.ColorRgb8(37, 99, 235);
 
   if (clientConfigFile.existsSync()) {
-    final cfg = jsonDecode(await clientConfigFile.readAsString());
-    appName = cfg['appName'] ?? client;
-    if (cfg['fallbackPrimaryColor'] != null) {
-      final hex = (cfg['fallbackPrimaryColor'] as String)
-          .replaceAll('#', '')
-          .replaceAll('0x', '')
-          .replaceAll('FF', '');
-      if (hex.length == 6) {
-        final r = int.parse(hex.substring(0, 2), radix: 16);
-        final g = int.parse(hex.substring(2, 4), radix: 16);
-        final b = int.parse(hex.substring(4, 6), radix: 16);
+    final cfg = jsonDecode(await clientConfigFile.readAsString()) as Map;
+    final hex = cfg['fallbackPrimaryColor'] as String?;
+    if (hex != null) {
+      final cleaned = hex.replaceAll(RegExp(r'^0xFF|^0xff|^#'), '');
+      if (cleaned.length >= 6) {
+        final r = int.parse(cleaned.substring(0, 2), radix: 16);
+        final g = int.parse(cleaned.substring(2, 4), radix: 16);
+        final b = int.parse(cleaned.substring(4, 6), radix: 16);
         brandColor = img.ColorRgb8(r, g, b);
       }
     }
   }
 
+  // Slightly darker version for gradient bottom
+  final darkColor = img.ColorRgb8(
+    math.max(0, brandColor.r.toInt() - 45),
+    math.max(0, brandColor.g.toInt() - 45),
+    math.max(0, brandColor.b.toInt() - 45),
+  );
+
+  // ── Store target dimensions ───────────────────────────────────────────────
   final targets = {
     'android': [
       {'name': 'phone_1080x1920', 'w': 1080, 'h': 1920},
@@ -46,23 +65,28 @@ void main(List<String> args) async {
       {'name': 'iphone_6.7in_1290x2796', 'w': 1290, 'h': 2796},
       {'name': 'iphone_6.5in_1242x2688', 'w': 1242, 'h': 2688},
       {'name': 'ipad_12.9in_2048x2732', 'w': 2048, 'h': 2732},
-    ]
+    ],
   };
 
+  // ── Raw screenshot filenames (produced by screenshot_driver.dart) ─────────
+  // Map raw name → output name
   final screenshotFiles = [
     '01_splash.png',
-    '02_onboarding_or_login.png',
-    '03_guest_home.png',
-    '04_main_screen.png',
-    '05_library_screen.png',
-    '06_profile_screen.png',
+    '02_onboarding_1.png',
+    '03_onboarding_2.png',
+    '04_login.png',
+    '05_guest_home.png',
+    '06_course_dialog.png',
   ];
 
-  for (var entry in targets.entries) {
-    final store = entry.key;
-    final sizes = entry.value;
+  int totalGenerated = 0;
+  int totalSkipped = 0;
 
-    for (var sizeMap in sizes) {
+  for (final storeEntry in targets.entries) {
+    final store = storeEntry.key;
+    final sizes = storeEntry.value;
+
+    for (final sizeMap in sizes) {
       final sizeName = sizeMap['name'] as String;
       final tw = sizeMap['w'] as int;
       final th = sizeMap['h'] as int;
@@ -70,37 +94,89 @@ void main(List<String> args) async {
       final outFolder = Directory('$outputDir/$client/$store/$sizeName');
       if (!outFolder.existsSync()) outFolder.createSync(recursive: true);
 
-      for (var file in screenshotFiles) {
-        final rawPath = '$inputDir/$file';
-        final rawFile = File(rawPath);
+      for (final fileName in screenshotFiles) {
+        final rawFile = File('$inputDir/$fileName');
 
-        img.Image canvas = img.Image(width: tw, height: th);
-        img.fill(canvas, color: brandColor);
-
-        img.Image? rawImg;
-        if (rawFile.existsSync()) {
-          rawImg = img.decodeImage(rawFile.readAsBytesSync());
+        // Skip missing raw screenshots — don't produce blank placeholders
+        if (!rawFile.existsSync()) {
+          print('  ⚠️  Skipped (missing raw): $fileName');
+          totalSkipped++;
+          continue;
         }
 
+        final rawBytes = rawFile.readAsBytesSync();
+        final rawImg = img.decodeImage(rawBytes);
         if (rawImg == null) {
-          rawImg = img.Image(width: 800, height: 1600);
-          img.fill(rawImg, color: img.ColorRgb8(240, 243, 246));
+          print('  ⚠️  Skipped (decode failed): $fileName');
+          totalSkipped++;
+          continue;
         }
 
-        // Scale screenshot to fit canvas
-        final headerMargin = (th * 0.10).toInt();
-        final deviceWidth = (tw * 0.84).toInt();
-        final scaled = img.copyResize(rawImg, width: deviceWidth);
+        // ── Build canvas with gradient background ──────────────────────────
+        final canvas = img.Image(width: tw, height: th);
+        _fillGradient(canvas, tw, th, brandColor, darkColor);
 
-        final posX = (tw - scaled.width) ~/ 2;
-        final posY = headerMargin;
+        // ── Scale screenshot to fit inside canvas ─────────────────────────
+        // Leave 8% padding top, 6% bottom, 8% sides
+        final padX = (tw * 0.08).toInt();
+        final padTop = (th * 0.08).toInt();
+        final padBottom = (th * 0.06).toInt();
+        final maxW = tw - padX * 2;
+        final maxH = th - padTop - padBottom;
+
+        // Scale proportionally to fit maxW × maxH
+        double scale = math.min(maxW / rawImg.width, maxH / rawImg.height);
+        final scaledW = (rawImg.width * scale).toInt();
+        final scaledH = (rawImg.height * scale).toInt();
+        final scaled = img.copyResize(rawImg, width: scaledW, height: scaledH,
+            interpolation: img.Interpolation.cubic);
+
+        // Center horizontally; align to top of available area
+        final posX = (tw - scaledW) ~/ 2;
+        final posY = padTop;
+
+        // Draw subtle white shadow behind the device screenshot
+        _drawShadow(canvas, posX, posY, scaledW, scaledH);
 
         img.compositeImage(canvas, scaled, dstX: posX, dstY: posY);
 
-        final outFile = File('${outFolder.path}/$file');
+        final outFile = File('${outFolder.path}/$fileName');
         outFile.writeAsBytesSync(img.encodePng(canvas));
-        print('✅ Generated framed store screenshot: ${outFile.path} (${tw}x${th})');
+        print('  ✅ ${tw}x${th} → ${outFile.path}');
+        totalGenerated++;
       }
     }
+  }
+
+  print('\n✅ Done — $totalGenerated screenshots generated, $totalSkipped skipped.');
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/// Fills [canvas] with a vertical gradient from [top] to [bottom].
+void _fillGradient(img.Image canvas, int w, int h, img.Color top, img.Color bottom) {
+  for (int y = 0; y < h; y++) {
+    final t = y / h;
+    final r = (top.r + (bottom.r - top.r) * t).round().clamp(0, 255);
+    final g = (top.g + (bottom.g - top.g) * t).round().clamp(0, 255);
+    final b = (top.b + (bottom.b - top.b) * t).round().clamp(0, 255);
+    img.drawLine(canvas, x1: 0, y1: y, x2: w, y2: y, color: img.ColorRgb8(r, g, b));
+  }
+}
+
+/// Draws a semi-transparent shadow around the screenshot for depth.
+void _drawShadow(img.Image canvas, int x, int y, int w, int h) {
+  const shadowOpacity = 60; // 0-255
+  const shadowSpread = 12;
+  for (int s = shadowSpread; s > 0; s--) {
+    final opacity = (shadowOpacity * (1 - s / shadowSpread)).toInt();
+    img.drawRect(
+      canvas,
+      x1: x - s,
+      y1: y - s,
+      x2: x + w + s,
+      y2: y + h + s,
+      color: img.ColorRgba8(0, 0, 0, opacity),
+    );
   }
 }
