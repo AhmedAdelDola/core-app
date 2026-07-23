@@ -68,7 +68,10 @@ jobs:
           disable-animations: true
           script: |
             mkdir -p raw_screenshots
-            flutter test integration_test/take_screenshots_test.dart --dart-define=TAKING_SCREENSHOTS=true || true
+            flutter drive \
+              --driver=test_driver/integration_test.dart \
+              --target=integration_test/take_screenshots_test.dart \
+              --dart-define=TAKING_SCREENSHOTS=true || true
 
       - name: Generate Framed Store Screenshots (Android)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
@@ -110,11 +113,19 @@ jobs:
           echo "Target Simulator UDID: $UDID"
           if [ -n "$UDID" ]; then
             xcrun simctl boot "$UDID" || true
-            flutter test integration_test/take_screenshots_test.dart -d "$UDID" --dart-define=TAKING_SCREENSHOTS=true || true
+            flutter drive \
+              --driver=test_driver/integration_test.dart \
+              --target=integration_test/take_screenshots_test.dart \
+              -d "$UDID" \
+              --dart-define=TAKING_SCREENSHOTS=true || true
           else
             open -a Simulator
             sleep 10
-            flutter test integration_test/take_screenshots_test.dart -d iPhone --dart-define=TAKING_SCREENSHOTS=true || true
+            flutter drive \
+              --driver=test_driver/integration_test.dart \
+              --target=integration_test/take_screenshots_test.dart \
+              -d iPhone \
+              --dart-define=TAKING_SCREENSHOTS=true || true
           fi
 
       - name: Generate Framed Store Screenshots (iOS)
