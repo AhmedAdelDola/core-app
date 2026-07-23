@@ -13,7 +13,10 @@ Future<void> initServices() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await init();
   HttpOverrides.global = MyHttpOverrides();
-  await listenAppFirebaseMessaging();
+  const isTakingScreenshots = bool.fromEnvironment('TAKING_SCREENSHOTS');
+  if (!isTakingScreenshots) {
+    await listenAppFirebaseMessaging();
+  }
   Bloc.observer = BlocObserverService();
 }
 

@@ -14,6 +14,7 @@
 //   06_profile_screen.png (Profile/More tab)
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
@@ -28,8 +29,8 @@ void main() {
       if (!outputDir.existsSync()) {
         outputDir.createSync(recursive: true);
       }
-      await driver.waitUntilFirstFrameRasterized();
-    });
+      await _waitForAppReady(driver);
+    }, timeout: const Timeout(Duration(minutes: 3)));
 
     tearDownAll(() async {
       await driver.close();
@@ -86,4 +87,24 @@ void main() {
       await snap('06_profile_screen.png', delayMs: 3000);
     });
   });
+}
+
+Future<void> _waitForAppReady(FlutterDriver driver) async {
+  const maxWait = Duration(seconds: 90);
+  final deadline = DateTime.now().add(maxWait);
+
+  while (DateTime.now().isBefore(deadline)) {
+    try {
+      await driver
+          .waitUntilFirstFrameRasterized()
+          .timeout(const Duration(seconds: 10));
+      return;
+    } on TimeoutException {
+      print('Waiting for first frame to rasterize...');
+      await Future<void>.delayed(const Duration(seconds: 2));
+    }
+  }
+
+  print('First frame wait exhausted after 90s; continuing with fallback delay.');
+  await Future<void>.delayed(const Duration(seconds: 5));
 }
