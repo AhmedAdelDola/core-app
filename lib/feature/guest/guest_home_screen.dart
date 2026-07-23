@@ -1,13 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:elhanbly/core/widgets/app_bar/default_app_bar.dart/default_app_bar.dart';
 import 'package:elhanbly/core/widgets/app_buttons/master_button.dart';
 import 'package:elhanbly/core/widgets/loader/app_loader.dart';
-import 'package:elhanbly/feature/modules/profile/profile_imports.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../core/local/user_preferences/user_preferences_helper.dart';
 import '../../core/navigator/named_navigator_impl.dart';
 import '../../core/navigator/named_navigator_routes.dart';
 import '../../core/theme/colors/app_colors.dart';
@@ -115,8 +112,8 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                           // Phone cards use larger text and teacher avatars than
                           // tablet cards, so reserve enough room for their details.
                           final detailsHeight = constraints.maxWidth < 600
-                              ? 92.0
-                              : 88.0;
+                              ? 118.0
+                              : 108.0;
                           final cardHeight =
                               cardWidth * (9 / 16) + detailsHeight;
 

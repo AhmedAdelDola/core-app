@@ -35,7 +35,7 @@ class RecommendedLessonsSection extends StatelessWidget {
             24.sbH,
             SizedBox(
               width: double.infinity,
-              height: isLargeScreen ? 220 : 210.h,
+              height: isLargeScreen ? 260 : 250.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: model?.length ?? 0,

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../core/navigator/named_navigator_impl.dart';
-import '../../../../../../core/widgets/ui_helpers/extensions.dart';
+
 import '../../../cubit/home_cubit/home_cubit.dart';
 import '../../../widgets/show_all_widget.dart';
 import '../widgets/course_card_item.dart';
@@ -36,7 +36,7 @@ class RecommendedCoursesSection extends StatelessWidget {
             SizedBox(
               // The card image has a 16:9 ratio and the remaining content is
               // compact, so a fixed tall viewport would leave empty card space.
-              height: isLargeScreen ? 220 : 210.h,
+              height: isLargeScreen ? 260 : 250.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
