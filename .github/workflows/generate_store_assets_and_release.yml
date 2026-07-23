@@ -61,16 +61,14 @@ jobs:
       - name: Run Android Integration Tests & Capture Screenshots
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
-          target: google_apis
+          api-level: 29
+          target: default
           arch: x86_64
-          profile: Pixel_6
+          profile: pixel
+          disable-animations: true
           script: |
             mkdir -p raw_screenshots
-            flutter drive \
-              --driver=test_driver/integration_test.dart \
-              --target=integration_test/take_screenshots_test.dart \
-              --dart-define=TAKING_SCREENSHOTS=true || true
+            flutter test integration_test/take_screenshots_test.dart --dart-define=TAKING_SCREENSHOTS=true || true
 
       - name: Generate Framed Store Screenshots (Android)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
