@@ -28,7 +28,8 @@ void main(List<String> args) async {
 
   final appName = config['appName'];
   final packageName = config['packageName'];
-  final slogan = config['slogan'];
+  final slogan = config['slogan'] ?? '';
+  final fallbackPrimaryColor = config['fallbackPrimaryColor'];
 
   // 2. Copy files
   void copyIfExists(String src, String dest) {
@@ -58,9 +59,11 @@ void main(List<String> args) async {
   // 3. Rewrite client_config.dart
   final clientConfigDart = File('lib/core/consts/client_config.dart');
   if (clientConfigDart.existsSync()) {
+    final colorVal = fallbackPrimaryColor != null ? "'$fallbackPrimaryColor'" : "null";
     clientConfigDart.writeAsStringSync('''class ClientConfig {
   static const String appName = '${appName}';
   static const String slogan = '${slogan}';
+  static const String? fallbackPrimaryColor = $colorVal;
 }
 ''');
     print('Updated lib/core/consts/client_config.dart');

@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 
 class AppColors {
  
-  // Compute primary color at runtime from stored settings
+  // Compute primary color at runtime from stored settings or ClientConfig
   static Color get kPrimary {
     final SettingsResponse? settings = UserPreferencesHelper().getAppSettings();
-    final String? hex = settings?.branding?.primaryColor ?? getPrimaryHex();
+    final String? hex = settings?.branding?.primaryColor ?? getPrimaryHex() ?? ClientConfig.fallbackPrimaryColor;
     if (hex != null && hex.isNotEmpty) {
-      final cleaned = hex.replaceAll('#', '');
+      final cleaned = hex.replaceAll('#', '').replaceAll('0x', '');
       final normalized = (cleaned.length == 6) ? 'FF$cleaned' : cleaned;
       final value = int.parse(normalized, radix: 16);
       return Color(value);

@@ -1,0 +1,220 @@
+name: Multi-Tenant Automated Branding, Screenshots & Store Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  discover_clients:
+    name: Discover White-Label Clients
+    runs-on: ubuntu-latest
+    outputs:
+      clients: ${{ steps.set-clients.outputs.clients }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Discover Clients
+        id: set-clients
+        run: |
+          CLIENTS_JSON=$(ls clients/ | jq -R -s -c 'split("\n")[:-1]')
+          echo "Found clients: $CLIENTS_JSON"
+          echo "clients=$CLIENTS_JSON" >> $GITHUB_OUTPUT
+
+  android_pipeline:
+    name: Android Pipeline (${{ matrix.client }})
+    needs: discover_clients
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.client }}
+    strategy:
+      matrix:
+        client: ${{ fromJson(needs.discover_clients.outputs.clients) }}
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.x'
+          channel: 'stable'
+
+      - name: Enable Hardware Acceleration for Emulator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cpu-checker
+          kvm-ok || true
+
+      - name: Switch White-Label Flavor & Branding
+        run: dart scripts/switch_flavor.dart ${{ matrix.client }}
+
+      - name: Run Android Integration Tests & Screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: Pixel_6
+          script: |
+            mkdir -p raw_screenshots
+            flutter drive \
+              --driver=test_driver/integration_test.dart \
+              --target=integration_test/take_screenshots_test.dart \
+              --dart-define=TAKING_SCREENSHOTS=true
+
+      - name: Generate Framed Store Screenshots (Android All Sizes)
+        run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo $KEYSTORE_B64 | base64 --decode > android/app/keystore.jks
+          fi
+
+      - name: Generate key.properties
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          if [ -n "$STORE_PASSWORD" ]; then
+            echo "storePassword=$STORE_PASSWORD" > android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=keystore.jks" >> android/key.properties
+          fi
+
+      - name: Build Android Release App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      - name: Extract Package Name
+        id: get_package_name
+        run: |
+          PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+
+      - name: Deploy to Google Play Store (Internal Testing)
+        if: ${{ secrets.SERVICE_ACCOUNT_JSON != '' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: ${{ env.PACKAGE_NAME }}
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+
+      - name: Archive Android Store Assets & Release Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-assets-android-${{ matrix.client }}
+          path: |
+            output/store_assets/${{ matrix.client }}/android/
+            build/app/outputs/bundle/release/app-release.aab
+
+  ios_pipeline:
+    name: iOS Pipeline (${{ matrix.client }})
+    needs: discover_clients
+    runs-on: macos-latest
+    environment: ${{ matrix.client }}
+    strategy:
+      matrix:
+        client: ${{ fromJson(needs.discover_clients.outputs.clients) }}
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.x'
+          channel: 'stable'
+
+      - name: Switch White-Label Flavor & Branding
+        run: dart scripts/switch_flavor.dart ${{ matrix.client }}
+
+      - name: Launch iOS Simulator & Run Integration Tests
+        run: |
+          mkdir -p raw_screenshots
+          # Boot iOS Simulator
+          UDID=$(xcrun simctl create "ScreenshotSim" "iPhone 15 Pro" "iOS17.0" || xcrun simctl list devices | grep "iPhone 15 Pro" | head -n 1 | grep -o "([-A-Z0-9]*)" | tr -d '()')
+          xcrun simctl boot $UDID || true
+          
+          # Run Integration Tests on Simulator
+          flutter test integration_test/take_screenshots_test.dart -d $UDID --dart-define=TAKING_SCREENSHOTS=true || true
+
+      - name: Generate Framed Store Screenshots (iOS All Sizes)
+        run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
+
+      - name: Install Apple Certificate & Provisioning Profile
+        if: ${{ secrets.BUILD_CERTIFICATE_BASE64 != '' }}
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          UUID=$(security cms -D -i $PP_PATH | grep -a -A1 UUID | grep -o "[-a-zA-Z0-9]\{36\}")
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+
+      - name: Build iOS IPA
+        if: ${{ secrets.EXPORT_OPTIONS_PLIST != '' }}
+        env:
+          EXPORT_OPTIONS_PLIST: ${{ secrets.EXPORT_OPTIONS_PLIST }}
+        run: |
+          echo "$EXPORT_OPTIONS_PLIST" > ios/ExportOptions.plist
+          sed -i '' 's/<string>upload<\/string>/<string>export<\/string>/g' ios/ExportOptions.plist
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
+          PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :provisioningProfiles:$PACKAGE_NAME" ios/ExportOptions.plist)
+          echo "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_NAME" >> ios/Flutter/Release.xcconfig
+          echo "CODE_SIGN_IDENTITY=Apple Distribution" >> ios/Flutter/Release.xcconfig
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Upload to App Store TestFlight
+        if: ${{ secrets.APP_STORE_CONNECT_KEY_ID != '' }}
+        env:
+          API_KEY: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          API_ISSUER: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$PRIVATE_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${API_KEY}.p8
+          IPA_FILE=$(find . -name "*.ipa" | head -n 1)
+          if [ -n "$IPA_FILE" ]; then
+            xcrun altool --upload-app --type ios --file "$IPA_FILE" --apiKey "$API_KEY" --apiIssuer "$API_ISSUER"
+          fi
+
+      - name: Archive iOS Store Assets & IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-assets-ios-${{ matrix.client }}
+          path: |
+            output/store_assets/${{ matrix.client }}/ios/
+            build/ios/ipa/*.ipa

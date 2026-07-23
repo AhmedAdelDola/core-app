@@ -5,7 +5,10 @@ import 'core/services/screen_security_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ScreenSecurityService.enable();
+  const bool isTakingScreenshots = bool.fromEnvironment('TAKING_SCREENSHOTS');
+  if (!isTakingScreenshots) {
+    await ScreenSecurityService.enable();
+  }
   await initServices();
   runApp(MyApp());
 }
