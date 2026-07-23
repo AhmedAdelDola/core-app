@@ -72,11 +72,11 @@ void main(List<String> args) async {
   // Map raw name → output name
   final screenshotFiles = [
     '01_splash.png',
-    '02_onboarding_1.png',
-    '03_onboarding_2.png',
-    '04_login.png',
-    '05_guest_home.png',
-    '06_course_dialog.png',
+    '02_onboarding_or_login.png',
+    '03_guest_home.png',
+    '04_main_screen.png',
+    '05_library_screen.png',
+    '06_profile_screen.png',
   ];
 
   int totalGenerated = 0;

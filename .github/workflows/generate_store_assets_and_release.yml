@@ -61,18 +61,22 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # Write the capture script to a file BEFORE the emulator starts.
-      # The emulator runner's `script:` field runs each YAML line as a
-      # separate `/usr/bin/sh -c` call, so multi-line commands and shell
-      # variables don't work there. Using a script file avoids all of this.
       - name: Prepare screenshot capture script
+        env:
+          TEST_PHONE: ${{ secrets.TEST_PHONE }}
+          TEST_PASS: ${{ secrets.TEST_PASS }}
         run: |
-          cat > capture_android_screenshots.sh << 'CAPTURE_SCRIPT'
+          cat > capture_android_screenshots.sh << CAPTURE_SCRIPT
           #!/bin/bash
           set -x
           mkdir -p raw_screenshots
-          # emulator-5554 is always the device ID when using android-emulator-runner
-          flutter drive --driver=test_driver/screenshot_driver.dart --target=lib/main_screenshot.dart --dart-define=TAKING_SCREENSHOTS=true -d emulator-5554 || true
+          flutter drive \
+            --driver=test_driver/screenshot_driver.dart \
+            --target=lib/main_screenshot.dart \
+            --dart-define=TAKING_SCREENSHOTS=true \
+            --dart-define=TEST_PHONE="$TEST_PHONE" \
+            --dart-define=TEST_PASS="$TEST_PASS" \
+            -d emulator-5554 || true
           CAPTURE_SCRIPT
           chmod +x capture_android_screenshots.sh
 
@@ -123,20 +127,25 @@ jobs:
 
       - name: Boot iOS Simulator
         run: |
-          UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[5-7]" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
-          if [ -z "$UDID" ]; then
-            UDID=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
-          fi
-          echo "Booting simulator UDID: $UDID"
+          UDID=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
+          echo "Booting iOS Simulator UDID: $UDID"
           xcrun simctl boot "$UDID" || true
-          open -a Simulator --args -CurrentDeviceUDID "$UDID"
-          sleep 20
-          echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+          open -a Simulator
+          xcrun simctl bootstatus "$UDID" -b || sleep 15
 
       - name: Capture Real iOS Screenshots via FlutterDriver
+        env:
+          TEST_PHONE: ${{ secrets.TEST_PHONE }}
+          TEST_PASS: ${{ secrets.TEST_PASS }}
         run: |
           mkdir -p raw_screenshots
-          flutter drive --driver=test_driver/screenshot_driver.dart --target=lib/main_screenshot.dart --dart-define=TAKING_SCREENSHOTS=true -d "$SIMULATOR_UDID" || true
+          flutter drive \
+            --driver=test_driver/screenshot_driver.dart \
+            --target=lib/main_screenshot.dart \
+            --dart-define=TAKING_SCREENSHOTS=true \
+            --dart-define=TEST_PHONE="$TEST_PHONE" \
+            --dart-define=TEST_PASS="$TEST_PASS" \
+            -d booted || true
 
       - name: Frame Screenshots for Store (iOS)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
