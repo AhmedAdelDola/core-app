@@ -117,10 +117,10 @@ void main(List<String> args) async {
         _fillGradient(canvas, tw, th, brandColor, darkColor);
 
         // ── Scale screenshot to fit inside canvas ─────────────────────────
-        // Leave 8% padding top, 6% bottom, 8% sides
-        final padX = (tw * 0.08).toInt();
-        final padTop = (th * 0.08).toInt();
-        final padBottom = (th * 0.06).toInt();
+        // Leave 3% padding sides, 4% top, 2% bottom for optimal store display
+        final padX = (tw * 0.03).toInt();
+        final padTop = (th * 0.04).toInt();
+        final padBottom = (th * 0.02).toInt();
         final maxW = tw - padX * 2;
         final maxH = th - padTop - padBottom;
 

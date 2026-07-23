@@ -30,8 +30,15 @@ class FloatingTextOnImg extends StatelessWidget {
                 topLeft: Radius.circular(12.r),
                 topRight: Radius.circular(12.r),
               ),
-              child: img == 'https://apluscore.com/media/images/logo.png'
-                  ? Image.asset(AppImages.logoPng, fit: BoxFit.cover)
+              child: (img == 'https://apluscore.com/media/images/logo.png' ||
+                      (img != null && img!.endsWith('logo.png')) ||
+                      img == null ||
+                      img!.isEmpty)
+                  ? Container(
+                      color: AppColors.kWhite,
+                      padding: const EdgeInsets.all(12),
+                      child: Image.asset(AppImages.logoPng, fit: BoxFit.contain),
+                    )
                   : NetworkImagesWidgets(url: img ?? '', fit: BoxFit.cover),
             ),
           ),
