@@ -1,4 +1,4 @@
-name: Multi-Tenant Automated Store Screenshots & Framing
+name: Multi-Tenant Real App Screenshots
 
 on:
   push:
@@ -23,6 +23,11 @@ jobs:
           echo "Found clients: $CLIENTS_JSON"
           echo "clients=$CLIENTS_JSON" >> $GITHUB_OUTPUT
 
+  # ─────────────────────────────────────────────────────────────
+  # ANDROID: Real screenshots via FlutterDriver on emulator
+  # FlutterDriver.screenshot() uses the Dart VM service — works
+  # even with swiftshader (software renderer), no GPU required.
+  # ─────────────────────────────────────────────────────────────
   android_screenshots:
     name: Android Screenshots (${{ matrix.client }})
     needs: discover_clients
@@ -46,19 +51,19 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Enable Hardware Acceleration for Emulator
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cpu-checker
-          kvm-ok || true
-
       - name: Switch White-Label Flavor & Branding
         run: dart scripts/switch_flavor.dart ${{ matrix.client }}
 
       - name: Get Dependencies
         run: flutter pub get
 
-      - name: Run Android Integration Tests & Capture Screenshots
+      - name: Enable KVM (hardware acceleration)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Android Emulator & Capture Real Screenshots
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
@@ -68,17 +73,27 @@ jobs:
           disable-animations: true
           script: |
             mkdir -p raw_screenshots
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/take_screenshots_test.dart --dart-define=TAKING_SCREENSHOTS=true || true
+            DEVICE_ID=$(adb devices | grep -v "List" | grep "device$" | head -n1 | awk '{print $1}')
+            echo "Using device: $DEVICE_ID"
+            flutter drive \
+              --driver=test_driver/screenshot_driver.dart \
+              --target=lib/main_screenshot.dart \
+              --dart-define=TAKING_SCREENSHOTS=true \
+              -d "$DEVICE_ID" || true
 
-      - name: Generate Framed Store Screenshots (Android)
+      - name: Frame Screenshots for Store (Android)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
 
-      - name: Archive Android Store Screenshots
+      - name: Upload Android Screenshots
         uses: actions/upload-artifact@v4
         with:
           name: store-screenshots-android-${{ matrix.client }}
           path: output/store_assets/${{ matrix.client }}/android/
 
+  # ─────────────────────────────────────────────────────────────
+  # iOS: Real screenshots via FlutterDriver on macOS Simulator
+  # xcrun simctl provides real GPU rendering on macOS runners.
+  # ─────────────────────────────────────────────────────────────
   ios_screenshots:
     name: iOS Screenshots (${{ matrix.client }})
     needs: discover_clients
@@ -102,25 +117,32 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-      - name: Launch iOS Simulator & Capture Screenshots
+      - name: Boot iOS Simulator
+        run: |
+          # Pick iPhone 15 or 14 (store-required sizes)
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[5-7]" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
+          if [ -z "$UDID" ]; then
+            UDID=$(xcrun simctl list devices available | grep "iPhone" | head -n 1 | grep -oE "[-A-F0-9]{36}" | head -n1)
+          fi
+          echo "Booting simulator: $UDID"
+          xcrun simctl boot "$UDID" || true
+          open -a Simulator --args -CurrentDeviceUDID "$UDID"
+          sleep 15
+          echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+
+      - name: Capture Real iOS Screenshots via FlutterDriver
         run: |
           mkdir -p raw_screenshots
-          # Find available iPhone simulator UDID
-          UDID=$(xcrun simctl list devices available | grep -E "iPhone 15|iPhone 14|iPhone 16" | head -n 1 | grep -oE "[-A-F0-9]{36}" || xcrun simctl list devices available | grep "iPhone" | head -n 1 | grep -oE "[-A-F0-9]{36}")
-          echo "Target Simulator UDID: $UDID"
-          if [ -n "$UDID" ]; then
-            xcrun simctl boot "$UDID" || true
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/take_screenshots_test.dart -d "$UDID" --dart-define=TAKING_SCREENSHOTS=true || true
-          else
-            open -a Simulator
-            sleep 10
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/take_screenshots_test.dart -d iPhone --dart-define=TAKING_SCREENSHOTS=true || true
-          fi
+          flutter drive \
+            --driver=test_driver/screenshot_driver.dart \
+            --target=lib/main_screenshot.dart \
+            --dart-define=TAKING_SCREENSHOTS=true \
+            -d "$SIMULATOR_UDID" || true
 
-      - name: Generate Framed Store Screenshots (iOS)
+      - name: Frame Screenshots for Store (iOS)
         run: dart scripts/frame_screenshots.dart --client ${{ matrix.client }} --input-dir raw_screenshots
 
-      - name: Archive iOS Store Screenshots
+      - name: Upload iOS Screenshots
         uses: actions/upload-artifact@v4
         with:
           name: store-screenshots-ios-${{ matrix.client }}
