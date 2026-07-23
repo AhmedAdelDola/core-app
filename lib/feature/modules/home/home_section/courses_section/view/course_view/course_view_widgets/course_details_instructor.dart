@@ -29,7 +29,7 @@ class CourseInstructor extends StatelessWidget {
         const Divider(),
         Row(
           children: [
-            CircleAvatar(radius: 22, backgroundImage:avatar == '' ? AssetImage(AppImages.logoPng):CachedNetworkImageProvider(avatar)),
+            CircleAvatar(radius: 22, child: avatar == '' ? Image.asset(AppImages.logoPng):CachedNetworkImage(imageUrl:avatar)),
             10.sbW,
             AppText(name, color: AppColors.textColor, size: 18.sp, weight: w800),
             const Spacer(),
