@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "513791676040",
+    "project_id": "a-plus-2d1ef",
+    "storage_bucket": "a-plus-2d1ef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:513791676040:android:cf5266c0591b8a633dd93d",
+        "android_client_info": {
+          "package_name": "com.tolba.eduApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnXwQJ3ruet_zauK9QMjd9nqXMuCGvq7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

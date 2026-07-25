@@ -45,21 +45,21 @@ void main() {
     }
 
     test('01 – Splash screen', () async {
-      await snap('01_splash.png', delayMs: 800);
+      await snap('01_splash.png', delayMs: 3000);
     });
 
     test('02 – Home overview', () async {
       await _waitForAuthenticatedHome(driver);
-      await snap('02_onboarding_or_login.png', delayMs: 1500);
+      await snap('02_onboarding_or_login.png', delayMs: 3000);
     });
 
     test('03 – Home content', () async {
-      await snap('03_guest_home.png', delayMs: 2000);
+      await snap('03_guest_home.png', delayMs: 3000);
     });
 
     test('04 – Main screen (Home tab)', () async {
       await _tapNavTab(driver, 0);
-      await snap('04_main_screen.png', delayMs: 2500);
+      await snap('04_main_screen.png', delayMs: 3000);
     });
 
     test('05 – Library screen (Library tab)', () async {

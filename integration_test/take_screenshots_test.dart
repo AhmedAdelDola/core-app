@@ -15,7 +15,7 @@ void main() {
 
     // 2. Pump main application
     await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
 
     // Capture 01: Splash / Initial Screen
     await binding.convertFlutterSurfaceToImage();
