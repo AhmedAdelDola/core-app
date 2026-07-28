@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../core/network/repository/repository_imports.dart';
@@ -18,6 +20,7 @@ class WalletCubit extends Cubit<WalletState> {
   static WalletCubit of(context) => BlocProvider.of(context);
   WalletResponse? wallet;
   StoreProductsResponse? storeProducts;
+  bool isCodeAvailable = true;
 
   Future<void> getStoreProducts() async {
     emit(GetStoreProductsLoadingState());
@@ -48,6 +51,7 @@ class WalletCubit extends Cubit<WalletState> {
   }
   Future<void> getWalletHistory() async {
     emit(GetWalletHistoryLoadingState());
+    checkCodeAvailability();
     final f = await repo.getWallet();
     f.fold(
       (l) => emit(GetWalletHistoryErrorState(l.toString())),
@@ -78,6 +82,28 @@ class WalletCubit extends Cubit<WalletState> {
           (r) {
         emit(PurchaseProductSuccessState(r.message ?? 'تم شراء المنتج بنجاح'));
         getWalletHistory();
+      },
+    );
+  }
+
+  Future<void> checkCodeAvailability() async {
+    emit(CheckCodeAvailabilityLoadingState());
+    int version = 1;
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      version = int.tryParse(packageInfo.buildNumber) ?? 1;
+    } catch (e) {
+      debugPrint('Error getting package build number: $e');
+    }
+
+    final f = await repo.checkCodeAvailability(version: version);
+    f.fold(
+      (l) {
+        emit(CheckCodeAvailabilityErrorState(l.toString()));
+      },
+      (r) {
+        isCodeAvailable = r.isCodeAvailable ?? true;
+        emit(CheckCodeAvailabilitySuccessState());
       },
     );
   }

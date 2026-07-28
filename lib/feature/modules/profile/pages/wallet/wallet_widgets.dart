@@ -10,10 +10,6 @@ class WalletProfileItem extends StatelessWidget {
       child: BlocBuilder<WalletCubit, WalletState>(
         builder: (context, state) {
           final cubit = WalletCubit.of(context);
-          List<String> model = [
-            'الشحن باستخدام كود شحن (Redeem Code)',
-            Platform.isIOS ? 'الشحن عبر App Store' : 'الشحن عبر Google Play'
-          ];
           return Row(
             children: [
               AppText(
@@ -27,62 +23,15 @@ class WalletProfileItem extends StatelessWidget {
               8.sbW,
               GestureDetector(
                 onTap: () {
-                  BottomSheetHelper.gShowModalBottomSheet(
-                    context: context,
-                    handleColor: AppColors.kPrimary,
-                    maxHeight: MediaQuery.of(context).size.height * 0.4,
-                    content: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Column(
-                        children: [
-                          if (model?.isNotEmpty ?? true)
-                            ...List.generate(model?.length ?? 0, (i) {
-                              return MasterButton(
-                                margin: EdgeInsets.only(
-                                  left: 20.sp,
-                                  right: 20.sp,
-                                  bottom: 10.sp,
-                                ),
-                                borderColor: AppColors.kGrayText,
-                                buttonRadius: 12.sp,
-                                buttonColor: AppColors.kWhite,
-                                onPressed: () {
-                                  NamedNavigatorImpl.pop();
-                                  if (i == 0) {
-                                    NamedNavigatorImpl.push(
-                                      ChargeWalletScreen(cubit: cubit),
-                                    );
-                                  } else {
-                                    NamedNavigatorImpl.push(
-                                      InAppPurchaseScreen(cubit: cubit),
-                                    );
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    AppText(
-                                      model[i],
-                                      style: TextStyle(
-                                        color: AppColors.kPrimary,
-                                        fontSize: 14.sp,
-                                        fontWeight: w600,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: AppColors.kPrimary,
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
-                        ],
-                      ),
-                    ),
-                  );
+                  if (cubit.isCodeAvailable) {
+                    NamedNavigatorImpl.push(
+                      ChargeWalletScreen(cubit: cubit),
+                    );
+                  } else {
+                    NamedNavigatorImpl.push(
+                      InAppPurchaseScreen(cubit: cubit),
+                    );
+                  }
                 },
                 child: Container(
                   width: 30.w,

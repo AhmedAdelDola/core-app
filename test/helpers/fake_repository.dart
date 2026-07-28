@@ -19,6 +19,8 @@ import 'package:elhanbly/models/profile/wallet/wallet_history.dart'
     show WalletResponse;
 import 'package:elhanbly/models/profile/wallet/store_products.dart'
     show StoreProductsResponse;
+import 'package:elhanbly/models/general/code_availability_response.dart'
+    show CodeAvailabilityResponse;
 import 'package:elhanbly/models/user_response/login_response.dart'
     show LoginResponse;
 import 'package:elhanbly/models/user_response/user_data.dart'
@@ -43,6 +45,7 @@ class FakeRepository implements Repository {
   RepositoryStub<GeneralResponse>? purchaseProductStub;
   RepositoryStub<StoreProductsResponse>? getStoreProductsStub;
   RepositoryStub<GeneralResponse>? verifyStorePurchaseStub;
+  RepositoryStub<CodeAvailabilityResponse>? checkCodeAvailabilityStub;
   RepositoryStub<LibraryCoursesResponse>? getLibraryCoursesStub;
   RepositoryStub<GetSessionInfoResponse>? getSessionInfoStub;
   RepositoryStub<ShowVideo>? getVideoStub;
@@ -142,6 +145,13 @@ class FakeRepository implements Repository {
     required Map<String, dynamic> data,
   }) {
     return _call(verifyStorePurchaseStub, 'verifyStorePurchase');
+  }
+
+  @override
+  Future<Either<dynamic, CodeAvailabilityResponse>> checkCodeAvailability({
+    required int version,
+  }) {
+    return _call(checkCodeAvailabilityStub, 'checkCodeAvailability');
   }
 
   @override

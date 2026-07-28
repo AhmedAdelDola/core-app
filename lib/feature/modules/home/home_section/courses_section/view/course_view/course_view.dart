@@ -1,6 +1,7 @@
 import 'package:elhanbly/core/navigator/named_navigator_impl.dart';
 import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/charge_wallet_widgets.dart';
+import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/in_app_purchase_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -106,7 +107,9 @@ class CourseViewScreen extends StatelessWidget {
                             await cubit.getCourseData(id.toString());
                           } else if (freshBalance < price) {
                             NamedNavigatorImpl.push(
-                              ChargeWalletScreen(cubit: walletCubit),
+                              walletCubit.isCodeAvailable
+                                  ? ChargeWalletScreen(cubit: walletCubit)
+                                  : InAppPurchaseScreen(cubit: walletCubit),
                             );
                           } else {
                             await walletCubit.purchaseProduct(

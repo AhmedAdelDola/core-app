@@ -266,6 +266,21 @@ class RepoImpl extends Repository {
     );
   }
 
+  @override
+  Future<Either<dynamic, CodeAvailabilityResponse>> checkCodeAvailability({
+    required int version,
+  }) {
+    return responseHandling<CodeAvailabilityResponse>(
+      onSuccess: () async {
+        final res = await dioHelper.get(
+          EndPoints.codeAvailability,
+          queryParams: {'apple_version': version},
+        );
+        return CodeAvailabilityResponse.fromJson(res.data);
+      },
+    );
+  }
+
   // /// ============================== Home ==================================
 
   @override

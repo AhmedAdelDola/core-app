@@ -86,4 +86,5 @@ class EndPoints {
   static String getNonce = 'device/attestation/challenge';
   static String StoreSignature = 'device/attestation/complete';
   static String CheckSignature = 'device/attestation/prove';
+  static const String codeAvailability = '/api/mobile/v1/is-code-available';
 }

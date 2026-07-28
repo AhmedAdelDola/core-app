@@ -54,3 +54,10 @@ class VerifyStorePurchaseSuccessState extends WalletState {
   final String message;
   VerifyStorePurchaseSuccessState(this.message);
 }
+
+class CheckCodeAvailabilityLoadingState extends WalletState {}
+class CheckCodeAvailabilityErrorState extends WalletState {
+  final String error;
+  CheckCodeAvailabilityErrorState(this.error);
+}
+class CheckCodeAvailabilitySuccessState extends WalletState {}
