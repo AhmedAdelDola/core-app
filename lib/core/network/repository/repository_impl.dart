@@ -272,10 +272,13 @@ class RepoImpl extends Repository {
   }) {
     return responseHandling<CodeAvailabilityResponse>(
       onSuccess: () async {
+        print(version);
         final res = await dioHelper.get(
-          'https://api.aplusplatforms.com//api/mobile/v1/is-code-available',
+          'https://api.aplusplatforms.com/api/mobile/v1/is-code-available',
           queryParams: {'apple_version': version},
         );
+        print('==============================================');
+        print(res.data);
         return CodeAvailabilityResponse.fromJson(res.data);
       },
     );

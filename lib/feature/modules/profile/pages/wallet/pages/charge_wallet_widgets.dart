@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:elhanbly/core/navigator/named_navigator_impl.dart';
 import 'package:elhanbly/core/services/di.dart';
 import 'package:elhanbly/core/util/validator/validator.dart';
+import 'package:elhanbly/core/widgets/app_bar/custom_curved_appbar.dart';
 import 'in_app_purchase_screen.dart';
 import 'package:elhanbly/core/widgets/app_buttons/master_button.dart';
 import 'package:elhanbly/core/widgets/text_field/master_text_field.dart';
@@ -29,6 +30,7 @@ class ChargeWalletScreen extends StatelessWidget {
     final codeController = TextEditingController();
 
     return Scaffold(
+      appBar: CustomAppBar(),
       body: BlocProvider.value(
         value: di<WalletCubit>()..getWalletHistory(),
         child: BlocConsumer<WalletCubit, WalletState>(
