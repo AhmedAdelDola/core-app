@@ -1,5 +1,5 @@
 class ClientConfig {
-  static const String appName = 'Tasneem Academy';
-  static const String slogan = 'Your learning partner';
-  static const String? fallbackPrimaryColor = null;
+  static const String appName = 'Mr.Hesham Ashraf';
+  static const String slogan = 'أقوى محتوى تعليمي يصل إليك بسرعة';
+  static const String? fallbackPrimaryColor = '0xFFFFAF4E';
 }
