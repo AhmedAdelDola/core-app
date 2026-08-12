@@ -50,18 +50,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA-nk-Gvp0WP3utONav51uLFtsaZ_bZsB8',
-    appId: '1:861764952750:android:b78c17071fc42fb787033f',
-    messagingSenderId: '861764952750',
-    projectId: 'mrheshamashraf',
-    storageBucket: 'mrheshamashraf.firebasestorage.app',
+    apiKey: 'AIzaSyBfzgs_tCnmAMQC_tQzUlkk_d6EOZGg--4',
+    appId: '1:743946405075:android:c0766ff8778a9d97b74026',
+    messagingSenderId: '743946405075',
+    projectId: 'section-65fb3',
+    storageBucket: 'section-65fb3.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyApx7-YOS8mqdD3B2K9jiLksbjfCJ1TNhc',
-    appId: '1:861764952750:ios:9ac2bfc159e2f44b87033f',
-    messagingSenderId: '861764952750',
-    projectId: 'mrheshamashraf',
-    storageBucket: 'mrheshamashraf.firebasestorage.app',
-    iosBundleId: 'hesham.aplus.com',
+    apiKey: 'AIzaSyCUbdZxzKIroFMNLLWIy44qP1KxD62EhN8',
+    appId: '1:743946405075:ios:1bd89213ab12a9b1b74026',
+    messagingSenderId: '743946405075',
+    projectId: 'section-65fb3',
+    storageBucket: 'section-65fb3.firebasestorage.app',
+    iosBundleId: 'section.aplus.com',
   );
 }
