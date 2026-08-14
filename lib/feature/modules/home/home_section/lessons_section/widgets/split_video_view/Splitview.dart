@@ -80,60 +80,62 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
             builder: (context, selectorState) {
           var cubit = LessonsSectionCubit.of(context);
 
-          return SafeArea(
-            child: Column(
-              children: [
-                // Toggle button for split view
-                Padding(
-                  padding: EdgeInsets.all(16.sp),
-                  child: Row(
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: _toggleSplitView,
-                        icon: Icon(
-                          isSplitEnabled
-                              ? Icons.close_fullscreen
-                              : Icons.splitscreen,
-                          color: AppColors.kWhite,
-                        ),
-                        label: AppText(
-                          isSplitEnabled ? "Close Split" : "Open Split",
-                          color: AppColors.kWhite,
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.kPrimary,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.sp,
-                            vertical: 12.sp,
+          return Scaffold(
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // Toggle button for split view
+                  Padding(
+                    padding: EdgeInsets.all(16.sp),
+                    child: Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _toggleSplitView,
+                          icon: Icon(
+                            isSplitEnabled
+                                ? Icons.close_fullscreen
+                                : Icons.splitscreen,
+                            color: AppColors.kWhite,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.sp),
+                          label: AppText(
+                            isSplitEnabled ? "Close Split" : "Open Split",
+                            color: AppColors.kWhite,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.kPrimary,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.sp,
+                              vertical: 12.sp,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.sp),
+                            ),
                           ),
                         ),
-                      ),
-                      if (isTablet && isSplitEnabled) ...[
-                        SizedBox(width: 16.sp),
-                        Expanded(child: AxisItem()),
+                        if (isTablet && isSplitEnabled) ...[
+                          SizedBox(width: 16.sp),
+                          Expanded(child: AxisItem()),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: isSplitEnabled
-                      ? MultiSplitView(
-                          controller: _controller,
-                          axis: isTablet ? cubit.currentAxis : Axis.vertical,
-                          dividerBuilder: (axis, index, resizable, dragging,
-                                  highlighted, themeData) =>
-                              Container(
-                            color: const Color.fromARGB(255, 155, 92, 15),
+                  Expanded(
+                    child: isSplitEnabled
+                        ? MultiSplitView(
+                            controller: _controller,
+                            axis: isTablet ? cubit.currentAxis : Axis.vertical,
+                            dividerBuilder: (axis, index, resizable, dragging,
+                                    highlighted, themeData) =>
+                                Container(
+                              color: const Color.fromARGB(255, 155, 92, 15),
+                            ),
+                          )
+                        : VideoPlayer(
+                            model: widget.model,
                           ),
-                        )
-                      : VideoPlayer(
-                          model: widget.model,
-                        ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           );
         }));

@@ -235,7 +235,7 @@ class SessionDetilesScreen extends StatelessWidget {
                             await cubit.getvideo('${model?.session?.id}');
                             final models = cubit.ShowVideoModel;
                             bool isTablet = MediaQuery.of(context).size.width >= 600;
-                            if(!isTablet){
+                            if(isTablet){
                             NamedNavigatorImpl.push(SplitViewScreen(model: models,pdfUrl: model?.session?.pdf?.url ?? '',pdfname: model?.session?.pdf?.name ?? '',
                             ));
                             }else{

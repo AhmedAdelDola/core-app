@@ -49,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () => NamedNavigatorImpl.push(const AboutAppScreen()),
                   img: AppImages.aboutApp,
                   title: 'عن التطبيق',
-                  subTitle: 'اعرف المزيد عن A plus',
+                  subTitle: 'اعرف المزيد عن ${appSettings?.tenant?.name ?? ''}',
                 ),
 
                 ProfileItem(

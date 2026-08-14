@@ -45,11 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
             } else if (state.message.contains('required')) {
               
               if (!showPasswordField) {
-                                              setState(() {
-                                                showPasswordField = true;
-                                              });
-                                              return;
-                                            }
+               setState(() {
+                   showPasswordField = true;
+                  });
+                   return;
+                    }
 
             }else {
               showErrorToast(state.message);
