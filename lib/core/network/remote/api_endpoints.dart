@@ -1,6 +1,7 @@
 class EndPoints {
   /// ============================== Auth ==================================
   static const String login = 'auth/login';
+  static const String requestOtp = 'auth/request-otp';
   static const String verifyOtp = 'auth/verify';
   static const String stagesEndPoint = 'registration-options';
   static const String registerStudent = 'auth/register';

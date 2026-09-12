@@ -3,6 +3,7 @@ part of 'repository_imports.dart';
 abstract class Repository {
   /// ================== Auth ==================
   Future<Either<dynamic, LoginResponse>> login({required String phone, String? password, String? otp});
+  Future<Either<dynamic, bool>> requestOtp({required String phone});
   Future<Either<dynamic, List<RegisterStage>>> fetchRegistrationStages();
   Future<Either<dynamic, bool>> registerStudent({
     required String name,

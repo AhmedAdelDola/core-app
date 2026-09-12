@@ -10,8 +10,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController otpController = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  bool showPasswordField = false;
+  bool isPhoneChecked = false;
 
   num? shortestSide;
   bool isTablet = false;
@@ -19,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-   
   }
 
   @override
@@ -29,36 +29,54 @@ class _LoginScreenState extends State<LoginScreen> {
       create: (context) => di<LoginCubit>(),
       child: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
-          if(state is SuccessLoginState) {
+          final cubit = LoginCubit.of(context);
+          if (state is SuccessLoginState) {
             NamedNavigatorImpl.push(
               const HomeLayout(),
               clean: true,
             );
-          }
-          if (state is LoginErrorState) {
-            if (state.message.contains('Phone number not found')) {
+          } else if (state is PhoneNotFoundState) {
+            NamedNavigatorImpl.push(
+              RegisterScreen(phone: state.fullPhone),
+            );
+          } else if (state is StudentExistsState) {
+            setState(() {
+              isPhoneChecked = true;
+            });
+            if (cubit.currentAuthMode == LoginAuthMode.otp) {
+              cubit.requestOtp(phone: phoneController.text.trim());
+            }
+          } else if (state is RequestOtpSuccessState) {
+            showSuccessToast('تم إرسال رمز التحقق بنجاح');
+          } else if (state is RequestOtpErrorState) {
+            showErrorToast(state.message);
+          } else if (state is LoginErrorState) {
+            if (state.message.contains('Phone number not found') ||
+                state.message.contains('not found') ||
+                state.message.contains('404')) {
               NamedNavigatorImpl.push(
                 RegisterScreen(
-                  phone:"${ context.read<LoginCubit>().numberCode }${ phoneController.text.trim()}"
+                  phone: "${cubit.numberCode}${phoneController.text.trim()}",
                 ),
               );
             } else if (state.message.contains('required')) {
-              
-              if (!showPasswordField) {
-               setState(() {
-                   showPasswordField = true;
-                  });
-                   return;
-                    }
-
-            }else {
+              if (!isPhoneChecked) {
+                setState(() {
+                  isPhoneChecked = true;
+                });
+                if (cubit.currentAuthMode == LoginAuthMode.otp) {
+                  cubit.requestOtp(phone: phoneController.text.trim());
+                }
+              }
+            } else {
               showErrorToast(state.message);
             }
-            
           }
         },
         builder: (context, state) {
           final cubit = LoginCubit.of(context);
+          final bool bothEnabled = cubit.isPasswordEnabled && cubit.isOtpEnabled;
+
           return AuthBg(
             child: Scaffold(
               backgroundColor: AppColors.kPrimary,
@@ -68,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     SizedBox(height: 40.h),
                     // Responsive logo
-
                     loginLogo,
 
                     Expanded(
@@ -76,14 +93,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20)),
                         child: SingleChildScrollView(
-                          padding: EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(15),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               24.sbH,
                               // Responsive header
                               AppText(
-                                'تسجيل الدخول',
+                                isPhoneChecked && cubit.currentAuthMode == LoginAuthMode.otp
+                                    ? 'رمز التحقق'
+                                    : 'تسجيل الدخول',
                                 style: TextStyle(
                                   fontSize: 24.sp,
                                   fontWeight: FontWeight.bold,
@@ -119,12 +138,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: Center(
                                       child: MasterTextField(
                                         controller: phoneController,
+                                        readOnly: isPhoneChecked,
                                         keyboardType: const TextInputType
                                             .numberWithOptions(),
                                         validate: AppValidators.number,
                                         textDirection: TextDirection.rtl,
                                         textAlign: TextAlign.right,
-                                        
                                         hintText: 'رقم الهاتف',
                                         inputFormatters: [
                                           TextInputFormatter.withFunction(
@@ -179,6 +198,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                             ],
                                           ),
                                         ),
+                                        suffixWidget: isPhoneChecked
+                                            ? IconButton(
+                                                icon: const Icon(
+                                                  Icons.edit,
+                                                  size: 18,
+                                                  color: AppColors.textColor2,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    isPhoneChecked = false;
+                                                    passwordController.clear();
+                                                    otpController.clear();
+                                                  });
+                                                },
+                                              )
+                                            : null,
                                       ),
                                     ),
                                   ),
@@ -190,35 +225,148 @@ class _LoginScreenState extends State<LoginScreen> {
                                 curve: Curves.easeInOut,
                                 child: Column(
                                   children: [
-                                    if (showPasswordField) ...[
-                                      MasterTextField(
-                                        controller: passwordController,
-                                        isPassword: true,
-                                        hintText: 'كلمة المرور',
-                                        validate: Validator.password,
-                                      ),
-                                      16.sbH,
+                                    if (isPhoneChecked) ...[
+                                      if (cubit.currentAuthMode == LoginAuthMode.password) ...[
+                                        MasterTextField(
+                                          controller: passwordController,
+                                          isPassword: true,
+                                          hintText: 'كلمة المرور',
+                                          validate: Validator.password,
+                                        ),
+                                        16.sbH,
+                                      ] else if (cubit.currentAuthMode == LoginAuthMode.otp) ...[
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 10.w),
+                                          child: Directionality(
+                                            textDirection: TextDirection.ltr,
+                                            child: PinCodeTextField(
+                                              appContext: context,
+                                              length: 4,
+                                              controller: otpController,
+                                              keyboardType: TextInputType.number,
+                                              animationType: AnimationType.fade,
+                                              pinTheme: PinTheme(
+                                                shape: PinCodeFieldShape.box,
+                                                borderRadius: BorderRadius.circular(12.r),
+                                                fieldHeight: 52.h,
+                                                fieldWidth: 52.w,
+                                                activeFillColor: Colors.white,
+                                                inactiveFillColor: Colors.white,
+                                                selectedFillColor: Colors.white,
+                                                activeColor: AppColors.kPrimary,
+                                                inactiveColor: AppColors.borderColor,
+                                                selectedColor: AppColors.kPrimary,
+                                              ),
+                                              enableActiveFill: true,
+                                              cursorColor: AppColors.kPrimary,
+                                              textStyle: TextStyle(
+                                                fontSize: 20.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.textColor,
+                                              ),
+                                              onChanged: (value) {
+                                                setState(() {});
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        12.sbH,
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            if (state is RequestOtpLoadingState)
+                                              const SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(strokeWidth: 2),
+                                              )
+                                            else if (cubit.secondsRemaining > 0)
+                                              AppText(
+                                                'إعادة إرسال الرمز خلال (${cubit.secondsRemaining} ثانية)',
+                                                style: TextStyles.textViewRegular(fontSize: 14.sp)
+                                                    .copyWith(color: AppColors.textColor2),
+                                              )
+                                            else
+                                              InkWell(
+                                                onTap: () {
+                                                  cubit.requestOtp(phone: phoneController.text.trim());
+                                                },
+                                                child: AppText(
+                                                  'إعادة إرسال رمز التحقق',
+                                                  style: TextStyles.textViewMedium(fontSize: 14.sp)
+                                                      .copyWith(
+                                                    color: AppColors.kPrimary,
+                                                    decoration: TextDecoration.underline,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        16.sbH,
+                                      ],
                                     ],
                                     Padding(
                                       padding: EdgeInsets.symmetric(
                                           vertical: isTablet ? 10.sp : 16.sp),
                                       child: ConditionalBtn(
-                                        condition: state is LoginLoadingState,
+                                        condition: state is LoginLoadingState || state is RequestOtpLoadingState,
                                         onTap: () {
                                           FocusScope.of(context).unfocus();
                                           if (formKey.currentState!.validate()) {
-                                            
-                                            cubit.login(
-                                              phone: phoneController.text.trim(),
-                                              password: showPasswordField
-                                                  ? passwordController.text.trim()
-                                                  : null,
-                                            );
+                                            if (!isPhoneChecked) {
+                                              cubit.checkPhone(phone: phoneController.text.trim());
+                                            } else {
+                                              if (cubit.currentAuthMode == LoginAuthMode.password) {
+                                                cubit.login(
+                                                  phone: phoneController.text.trim(),
+                                                  password: passwordController.text.trim(),
+                                                );
+                                              } else {
+                                                if (otpController.text.trim().isEmpty) {
+                                                  showErrorToast('يرجى إدخال رمز التحقق');
+                                                  return;
+                                                }
+                                                cubit.login(
+                                                  phone: phoneController.text.trim(),
+                                                  otp: otpController.text.trim(),
+                                                );
+                                              }
+                                            }
                                           }
                                         },
-                                        text: showPasswordField ? 'تسجيل الدخول' : 'التالي',
+                                        text: !isPhoneChecked
+                                            ? 'التالي'
+                                            : (cubit.currentAuthMode == LoginAuthMode.password
+                                                ? 'تسجيل الدخول'
+                                                : 'تأكيد الدخول'),
                                       ),
                                     ),
+                                    if (isPhoneChecked && bothEnabled) ...[
+                                      10.sbH,
+                                      InkWell(
+                                        onTap: () {
+                                          if (cubit.currentAuthMode == LoginAuthMode.password) {
+                                            cubit.switchAuthMode(LoginAuthMode.otp);
+                                            cubit.requestOtp(phone: phoneController.text.trim());
+                                          } else {
+                                            cubit.switchAuthMode(LoginAuthMode.password);
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 8.h),
+                                          child: AppText(
+                                            cubit.currentAuthMode == LoginAuthMode.password
+                                                ? 'تسجيل الدخول عبر رمز التحقق (OTP) 💬'
+                                                : 'تسجيل الدخول بكلمة المرور 🔑',
+                                            style: TextStyles.textViewMedium(fontSize: 14.sp).copyWith(
+                                              color: AppColors.kPrimary,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                            align: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -237,12 +385,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  
-  
   @override
   void dispose() {
     phoneController.dispose();
     passwordController.dispose();
+    otpController.dispose();
     super.dispose();
   }
 }

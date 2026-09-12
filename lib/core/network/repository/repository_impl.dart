@@ -10,15 +10,27 @@ class RepoImpl extends Repository {
   Future<Either<dynamic, LoginResponse>> login({required String phone, String? password, String? otp}) async {
     return responseHandling<LoginResponse>(
       onSuccess: () async {
-        final response =
-            await dioHelper.post(EndPoints.login, data:password != null ? {
-          'phone': phone,
-          'password': password,
-        } : {
-          'phone': phone,
-          'otp': otp,
-        });
+        final Map<String, dynamic> data = {'phone': phone};
+        if (password != null) {
+          data['password'] = password;
+        }
+        if (otp != null) {
+          data['otp'] = otp;
+        }
+        final response = await dioHelper.post(EndPoints.login, data: data);
         return LoginResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, bool>> requestOtp({required String phone}) async {
+    return responseHandling<bool>(
+      onSuccess: () async {
+        await dioHelper.post(EndPoints.requestOtp, data: {
+          'phone': phone,
+        });
+        return true;
       },
     );
   }
