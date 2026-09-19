@@ -22,68 +22,68 @@ jobs:
           echo "Found clients: $CLIENTS_JSON"
           echo "clients=$CLIENTS_JSON" >> $GITHUB_OUTPUT
 
-  build_android:
-    name: Build & Deploy Android (${{ matrix.client }})
-    needs: discover_clients
-    runs-on: ubuntu-latest
-    environment: ${{ matrix.client }}
-    strategy:
-      matrix:
-        client: ${{ fromJson(needs.discover_clients.outputs.clients) }}
-      fail-fast: false
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # build_android:
+  #   name: Build & Deploy Android (${{ matrix.client }})
+  #   needs: discover_clients
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ matrix.client }}
+  #   strategy:
+  #     matrix:
+  #       client: ${{ fromJson(needs.discover_clients.outputs.clients) }}
+  #     fail-fast: false
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
       
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: '17'
       
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.x'
-          channel: 'stable'
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: '3.44.x'
+  #         channel: 'stable'
 
-      - name: Switch Flavor
-        run: dart scripts/switch_flavor.dart ${{ matrix.client }}
+  #     - name: Switch Flavor
+  #       run: dart scripts/switch_flavor.dart ${{ matrix.client }}
 
-      - name: Decode Keystore
-        env:
-          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
-        run: |
-          echo $KEYSTORE_B64 | base64 --decode > android/app/keystore.jks
+  #     - name: Decode Keystore
+  #       env:
+  #         KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+  #       run: |
+  #         echo $KEYSTORE_B64 | base64 --decode > android/app/keystore.jks
 
-      - name: Generate key.properties
-        env:
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-        run: |
-          echo "storePassword=$STORE_PASSWORD" > android/key.properties
-          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
-          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
-          echo "storeFile=keystore.jks" >> android/key.properties
+  #     - name: Generate key.properties
+  #       env:
+  #         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+  #         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+  #         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+  #       run: |
+  #         echo "storePassword=$STORE_PASSWORD" > android/key.properties
+  #         echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+  #         echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+  #         echo "storeFile=keystore.jks" >> android/key.properties
 
-      - name: Build Android App Bundle
-        run: flutter build appbundle --release
+  #     - name: Build Android App Bundle
+  #       run: flutter build appbundle --release
 
-      - name: Extract Package Name
-        id: get_package_name
-        run: |
-          PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
-          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+  #     - name: Extract Package Name
+  #       id: get_package_name
+  #       run: |
+  #         PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
+  #         echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
 
-      - name: Deploy to Google Play (Internal Testing)
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: ${{ env.PACKAGE_NAME }}
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: internal
-          status: completed
+  #     - name: Deploy to Google Play (Internal Testing)
+  #       uses: r0adkll/upload-google-play@v1
+  #       with:
+  #         serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+  #         packageName: ${{ env.PACKAGE_NAME }}
+  #         releaseFiles: build/app/outputs/bundle/release/app-release.aab
+  #         track: internal
+  #         status: completed
 
   build_ios:
     name: Build & Deploy iOS (${{ matrix.client }})
