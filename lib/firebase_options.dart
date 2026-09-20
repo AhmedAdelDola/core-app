@@ -50,18 +50,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBfzgs_tCnmAMQC_tQzUlkk_d6EOZGg--4',
-    appId: '1:743946405075:android:c0766ff8778a9d97b74026',
-    messagingSenderId: '743946405075',
-    projectId: 'section-65fb3',
-    storageBucket: 'section-65fb3.firebasestorage.app',
+    apiKey: 'AIzaSyD3y7oTm1PbQDIdGDY5sRZ-RgUndmBmZ2A',
+    appId: '1:348520261343:android:048b009352932b75a5eb6a',
+    messagingSenderId: '348520261343',
+    projectId: 'leader-69221',
+    storageBucket: 'leader-69221.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCUbdZxzKIroFMNLLWIy44qP1KxD62EhN8',
-    appId: '1:743946405075:ios:1bd89213ab12a9b1b74026',
-    messagingSenderId: '743946405075',
-    projectId: 'section-65fb3',
-    storageBucket: 'section-65fb3.firebasestorage.app',
-    iosBundleId: 'section.aplus.com',
+    apiKey: 'AIzaSyArtgO8LkCO79atG2qA1hD0lybs6hsp1Q4',
+    appId: '1:348520261343:ios:8b7c9d7e1d1a4e75a5eb6a',
+    messagingSenderId: '348520261343',
+    projectId: 'leader-69221',
+    storageBucket: 'leader-69221.firebasestorage.app',
+    iosBundleId: 'leader.aplus.com',
   );
 }

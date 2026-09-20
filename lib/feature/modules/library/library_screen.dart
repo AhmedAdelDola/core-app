@@ -21,36 +21,54 @@ class _LibraryScreenState extends State<LibraryScreen>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        24.sbH,
+        16.sbH,
         Container(
           height: 48.h,
           width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.all(4.r),
           decoration: BoxDecoration(
-            color: const Color(0xFFF9FAFC),
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
-              color: AppColors.kPrimary.withOpacity(0.3),
-              width: 2,
+              color: const Color(0xFFE2E8F0),
+              width: 1,
             ),
-            borderRadius: BorderRadius.circular(50.r),
           ),
           child: TabBar(
             physics: const NeverScrollableScrollPhysics(),
             controller: _controller,
-            indicatorColor: Colors.transparent,
+            dividerColor: Colors.transparent,
+            indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
-                color: AppColors.kWhite,
-                borderRadius: BorderRadius.circular(50.r)),
+              color: AppColors.kWhite,
+              borderRadius: BorderRadius.circular(10.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             labelColor: AppColors.kPrimary,
-            unselectedLabelColor: AppColors.textColor2,
+            unselectedLabelColor: AppColors.textColor3,
+            labelStyle: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+            ),
             tabs: const [
-              AppText('الملفات'),
-              AppText('الكورسات'),
-              AppText('الالتزامات'),
+              Tab(text: 'الملفات'),
+              Tab(text: 'الكورسات'),
+              Tab(text: 'الالتزامات'),
             ],
           ),
         ),
-        24.sbH,
+        16.sbH,
         Expanded(
           child: TabBarView(
             controller: _controller,

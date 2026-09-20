@@ -53,19 +53,24 @@ class RepoImpl extends Repository {
   Future<Either<dynamic, bool>> registerStudent({
     required String name,
     required String phone,
-    required String email,
-    required String password,
+    String? email,
+    String? password,
     required int levelId,
   }) async {
     return responseHandling<bool>(
       onSuccess: () async {
-        await dioHelper.post(EndPoints.registerStudent, data: {
+        final Map<String, dynamic> data = {
           'name': name,
           'phone': phone,
-          'email': email,
-          'password': password,
           'level_id': levelId,
-        });
+        };
+        if (password != null && password.isNotEmpty) {
+          data['password'] = password;
+        }
+        if (email != null && email.isNotEmpty) {
+          data['email'] = email;
+        }
+        await dioHelper.post(EndPoints.registerStudent, data: data);
         return true;
       },
     );
@@ -235,6 +240,52 @@ class RepoImpl extends Repository {
         final res = await dioHelper.post(
           EndPoints.purchaseProduct,
           data: {'type': type, 'id': id},
+        );
+        return GeneralResponse.fromJson(res.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> purchaseCourseSubscription({
+    required String courseId,
+    required String paymentMethod,
+    String? code,
+  }) {
+    return responseHandling<GeneralResponse>(
+      onSuccess: () async {
+        final data = <String, dynamic>{
+          'payment_method': paymentMethod,
+        };
+        if (code != null && code.trim().isNotEmpty) {
+          data['code'] = code.trim().toUpperCase();
+        }
+        final res = await dioHelper.post(
+          EndPoints.purchaseCourse(courseId),
+          data: data,
+        );
+        return GeneralResponse.fromJson(res.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> purchaseSessionSubscription({
+    required String sessionId,
+    required String paymentMethod,
+    String? code,
+  }) {
+    return responseHandling<GeneralResponse>(
+      onSuccess: () async {
+        final data = <String, dynamic>{
+          'payment_method': paymentMethod,
+        };
+        if (code != null && code.trim().isNotEmpty) {
+          data['code'] = code.trim().toUpperCase();
+        }
+        final res = await dioHelper.post(
+          EndPoints.purchaseSession(sessionId),
+          data: data,
         );
         return GeneralResponse.fromJson(res.data);
       },
@@ -828,4 +879,102 @@ class RepoImpl extends Repository {
   //     },
   //   );
   // }
+
+  /// ============================== Security v2 (Content Protection) ==================================
+
+  @override
+  Future<Either<dynamic, SecurityConfigResponse>> getSecurityConfig() {
+    return responseHandling<SecurityConfigResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.securityConfig);
+        return SecurityConfigResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, AttestationChallengeResponse>> getAttestationChallenge() {
+    return responseHandling<AttestationChallengeResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.post(EndPoints.attestationChallenge);
+        return AttestationChallengeResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, String>> completeAttestation({
+    required String challengeId,
+    required String signature,
+    required List<String> certificateChain,
+    required String playIntegrityToken,
+    required String model,
+    required String appVersion,
+  }) {
+    return responseHandling<String>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          EndPoints.attestationComplete,
+          data: {
+            'challenge_id': challengeId,
+            'signature': signature,
+            'certificate_chain': certificateChain,
+            'play_integrity_token': playIntegrityToken,
+            'model': model,
+            'app_version': appVersion,
+          },
+        );
+        final raw = response.data['data'] is Map ? response.data['data'] : response.data;
+        final deviceId = raw['device_id']?.toString() ?? '';
+        return deviceId;
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ContentChallengeResponse>> createContentChallenge({
+    required String deviceId,
+    required int sessionId,
+    required String contentKind,
+  }) {
+    return responseHandling<ContentChallengeResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          EndPoints.contentChallenges,
+          data: {
+            'device_id': deviceId,
+            'session_id': sessionId,
+            'content_kind': contentKind,
+          },
+        );
+        return ContentChallengeResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ContentAccessResponse>> accessContent({
+    required String challengeId,
+    required String deviceId,
+    required String signature,
+    String? playIntegrityToken,
+  }) {
+    return responseHandling<ContentAccessResponse>(
+      onSuccess: () async {
+        final data = <String, dynamic>{
+          'challenge_id': challengeId,
+          'device_id': deviceId,
+          'signature': signature,
+        };
+        if (playIntegrityToken != null && playIntegrityToken.isNotEmpty) {
+          data['play_integrity_token'] = playIntegrityToken;
+        }
+        final response = await dioHelper.post(
+          EndPoints.contentAccess,
+          data: data,
+        );
+        return ContentAccessResponse.fromJson(response.data);
+      },
+    );
+  }
 }

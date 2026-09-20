@@ -21,6 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final double appBarHeight = isTablet ? 65.h : 85.h;
 
     return AppBar(
+      toolbarHeight: appBarHeight,
       centerTitle: false,
       leading: leading,
       title: child ??
@@ -44,5 +45,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(height ?? 85.h);
+  Size get preferredSize {
+    final width = ScreenUtil().screenWidth;
+    final isTablet = width >= 600;
+    return Size.fromHeight(height ?? (isTablet ? 65.h : 85.h));
+  }
 }

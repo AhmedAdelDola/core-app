@@ -1,35 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
-
-import '../../../../../../../core/consts/images.dart';
-import '../../../../../../../core/theme/colors/app_colors.dart';
-import '../../../../../../../core/util/launcher.dart';
-import '../../../../../../../core/widgets/ui_helpers/extensions.dart';
+import '../../../../../../../core/security/widgets/security_alert_dialogs.dart';
+import '../../../../../../../core/services/screen_security_service.dart';
 import '../../../../../../../models/Session/show_video_response.dart';
 
-class VideoPlayer extends StatelessWidget {
+class VideoPlayer extends StatefulWidget {
   const VideoPlayer({Key? key, required this.model}) : super(key: key);
 
   final ShowVideo? model;
 
   @override
+  State<VideoPlayer> createState() => _VideoPlayerState();
+}
+
+class _VideoPlayerState extends State<VideoPlayer> {
+  bool _isChecking = true;
+  bool _isBlocked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ScreenSecurityService.enable();
+    ScreenSecurityService.addListener(_onRecordingChanged);
+    _checkRecording();
+  }
+
+  Future<void> _checkRecording() async {
+    final recording = await ScreenSecurityService.isScreenRecording();
+    if (!mounted) return;
+    if (recording) {
+      _blockAndClose();
+    } else {
+      setState(() {
+        _isChecking = false;
+      });
+    }
+  }
+
+  void _onRecordingChanged(bool isRecording) {
+    if (isRecording && mounted) {
+      _blockAndClose();
+    }
+  }
+
+  void _blockAndClose() {
+    if (_isBlocked) return;
+    setState(() {
+      _isBlocked = true;
+      _isChecking = false;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      SecurityAlertDialogs.showScreenRecordingDetectedDialog(
+        context,
+        onClose: () {
+          if (mounted && Navigator.canPop(context)) {
+            Navigator.of(context).pop();
+          }
+        },
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    ScreenSecurityService.removeListener(_onRecordingChanged);
+    ScreenSecurityService.disable();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isBlocked || _isChecking) {
+      return const ColoredBox(
+        color: Colors.black,
+        child: SizedBox.expand(),
+      );
+    }
+
     return SizedBox(
-            height: double.infinity,
-            width: double.infinity,
-            child: InAppWebView(
-              initialSettings: InAppWebViewSettings(
-                javaScriptEnabled: true,
-                mediaPlaybackRequiresUserGesture: false,
-                allowsInlineMediaPlayback: true,
-                useHybridComposition: true,
-              ),
-              initialUrlRequest:
-                  URLRequest(url: WebUri(model?.playerUrl ?? "")),
-            ),
-          );
+      height: double.infinity,
+      width: double.infinity,
+      child: InAppWebView(
+        initialSettings: InAppWebViewSettings(
+          javaScriptEnabled: true,
+          mediaPlaybackRequiresUserGesture: false,
+          allowsInlineMediaPlayback: true,
+          useHybridComposition: true,
+        ),
+        initialUrlRequest:
+            URLRequest(url: WebUri(widget.model?.playerUrl ?? "")),
+      ),
+    );
   }
 }

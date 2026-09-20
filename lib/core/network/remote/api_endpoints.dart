@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class EndPoints {
   /// ============================== Auth ==================================
   static const String login = 'auth/login';
@@ -63,10 +65,12 @@ class EndPoints {
   static String getCourseRateReview(int id) => 'course/$id/get_course_review';
   // static String getLessonQuestion(String id) => 'lessons/questions/$id';
 
-  /// ============================== Wallet ==================================
+  /// ============================== Wallet & Purchases ==================================
   static const String getWallet = 'wallet';
   static String ChargeWithCode = 'wallet/redeem-code';
   static String purchaseProduct = 'wallet/purchase';
+  static String purchaseCourse(String id) => 'courses/$id/purchase';
+  static String purchaseSession(String id) => 'sessions/$id/purchase';
   static const String storeProducts = 'wallet/store-products';
   static const String storePurchases = 'wallet/store-purchases';
 
@@ -87,4 +91,17 @@ class EndPoints {
   static String getNonce = 'device/attestation/challenge';
   static String StoreSignature = 'device/attestation/complete';
   static String CheckSignature = 'device/attestation/prove';
+
+  /// ============================== Security v2 (Content Protection) ==================================
+  static String get _server =>
+      dotenv.env['SERVER'] ?? 'https://api.aplusplatforms.com';
+
+  static String get securityConfig => '$_server/api/mobile/v2/security/config';
+  static String get attestationChallenge =>
+      '$_server/api/mobile/v2/device-attestations/challenge';
+  static String get attestationComplete =>
+      '$_server/api/mobile/v2/device-attestations/complete';
+  static String get contentChallenges =>
+      '$_server/api/mobile/v2/content/challenges';
+  static String get contentAccess => '$_server/api/mobile/v2/content/access';
 }

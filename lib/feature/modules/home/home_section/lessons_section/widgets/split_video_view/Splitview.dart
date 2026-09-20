@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:elhanbly/core/widgets/app_texts/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:multi_split_view/multi_split_view.dart';
-import '../../../../../../../core/consts/images.dart';
+import '../../../../../../../core/security/widgets/security_alert_dialogs.dart';
 import '../../../../../../../core/services/di.dart';
+import '../../../../../../../core/services/screen_security_service.dart';
 import '../../../../../../../core/theme/colors/app_colors.dart';
-import '../../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../../models/Session/show_video_response.dart';
 import '../../../../../library/widgets/files_tap/pdf_viewer.dart';
 import '../../../courses_section/view/course_view/subscribe_view/tabs/course_files.dart';
@@ -33,10 +34,15 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
   late MultiSplitViewController _controller;
   bool fingerprint = false;
   bool isSplitEnabled = false; // Track split view state
+  bool _isChecking = true;
+  bool _isBlocked = false;
 
   @override
   void initState() {
     super.initState();
+    ScreenSecurityService.enable();
+    ScreenSecurityService.addListener(_onRecordingChanged);
+    _checkRecording();
     _controller = MultiSplitViewController(areas: [
       Area(
           builder: (context, area) => VideoPlayer(
@@ -64,6 +70,44 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
     }
   }
 
+  Future<void> _checkRecording() async {
+    final recording = await ScreenSecurityService.isScreenRecording();
+    if (!mounted) return;
+    if (recording) {
+      _blockAndClose();
+    } else {
+      setState(() {
+        _isChecking = false;
+      });
+    }
+  }
+
+  void _onRecordingChanged(bool isRecording) {
+    if (isRecording && mounted) {
+      _blockAndClose();
+    }
+  }
+
+  void _blockAndClose() {
+    if (_isBlocked) return;
+    setState(() {
+      _isBlocked = true;
+      _isChecking = false;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      SecurityAlertDialogs.showScreenRecordingDetectedDialog(
+        context,
+        onClose: () {
+          if (mounted && Navigator.canPop(context)) {
+            Navigator.of(context).pop();
+          }
+        },
+      );
+    });
+  }
+
   void _toggleSplitView() {
     setState(() {
       isSplitEnabled = !isSplitEnabled;
@@ -72,6 +116,9 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isBlocked || _isChecking) {
+      return const Scaffold(backgroundColor: Colors.black);
+    }
     bool isTablet = MediaQuery.of(context).size.width >= 600;
 
     return BlocProvider(
@@ -139,6 +186,12 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
             ),
           );
         }));
+  }
+  @override
+  void dispose() {
+    ScreenSecurityService.removeListener(_onRecordingChanged);
+    ScreenSecurityService.disable();
+    super.dispose();
   }
 }
 
@@ -235,4 +288,6 @@ class AxisItem extends StatelessWidget {
       },
     );
   }
+
+  
 }

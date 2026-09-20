@@ -12,6 +12,7 @@ import '../../../../../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../../../../../core/widgets/app_texts/text_scroll.dart';
 import '../../../../../../../../../../core/widgets/network_img.dart';
+import '../../../../../../../../../../core/widgets/purchase_modal/course_purchase_modal.dart';
 import '../../../../../../../../../../core/widgets/ui_helpers/extensions.dart';
 import '../../../../../../lessons_section/widgets/lesson_screen.dart';
 import '../../../../../../lessons_section/widgets/session_screen.dart';
@@ -19,16 +20,32 @@ import '../../../../../../lessons_section/widgets/sheet_screen.dart';
 
 class LessonCard extends StatelessWidget {
   final Session? model;
-  const LessonCard({super.key, required this.model});
+  final VoidCallback? onPurchased;
+  const LessonCard({super.key, required this.model, this.onPurchased});
 
   @override
   Widget build(BuildContext context) {
     bool isTablet = MediaQuery.of(context).size.shortestSide > 600;
+    final bool isLocked = model?.canAccess == false;
+
     return InkWell(
       onTap: () {
-        if (
-            model?.isPublished != 0 ||
-            model?.isPublished != 0) {
+        if (isLocked) {
+          CoursePurchaseModal.show(
+            context: context,
+            type: PurchaseTargetType.session,
+            id: model?.id?.toString() ?? '0',
+            title: model?.title ?? '',
+            price: model?.price ?? model?.singleSessionPrice ?? '0',
+            onSuccess: () {
+              model?.canAccess = true;
+              onPurchased?.call();
+            },
+          );
+          return;
+        }
+
+        if (model?.isPublished != 0) {
           // Attachment
           switch (model?.type) {
             case 'pdf':
@@ -36,14 +53,9 @@ class LessonCard extends StatelessWidget {
                 id: model?.id ?? 0,
                 title: model?.title ?? '',
                 subTitle: model?.type ?? '',
-               
               ));
               break;
-            // case 'Sheet':
-            //   NamedNavigatorImpl.push(SheetDetailsScreen(model?.id ?? 0));
-            //   break;
             case 'Homework':
-              //
               break;
             case 'recorded_video':
               NamedNavigatorImpl.push(SessionDetilesScreen(
@@ -82,10 +94,12 @@ class LessonCard extends StatelessWidget {
                               color: AppColors.textFieldBorderColor, width: 1),
                         ),
                         child: CircleAvatar(
-                backgroundColor: AppColors.kPrimary,
-                radius: 20,
-                child: SvgPicture.asset(AppImages.playVideoSvg,color: AppColors.kWhite,width: 25,) ,
-              ),
+                          backgroundColor: isLocked ? Colors.grey.shade400 : AppColors.kPrimary,
+                          radius: 20,
+                          child: isLocked
+                              ? const Icon(Icons.lock_rounded, color: AppColors.kWhite, size: 22)
+                              : SvgPicture.asset(AppImages.playVideoSvg, color: AppColors.kWhite, width: 25),
+                        ),
                             
                       ),
                       // if (model?.isFree == 1)
@@ -198,28 +212,11 @@ class LessonCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 25,
-                       backgroundColor: AppColors.kPrimary,
-                        child:  SvgPicture.asset(AppImages.playVideoSvg,color: AppColors.kWhite,width: 40,),
-                           
+                        backgroundColor: isLocked ? Colors.grey.shade400 : AppColors.kPrimary,
+                        child: isLocked
+                            ? const Icon(Icons.lock_rounded, color: AppColors.kWhite, size: 26)
+                            : SvgPicture.asset(AppImages.playVideoSvg, color: AppColors.kWhite, width: 40),
                       ),
-                      // if (model?.isFree == 1)
-                      //   Positioned(
-                      //     bottom: 4.h,
-                      //     child: Container(
-                      //       padding: EdgeInsets.symmetric(
-                      //           horizontal: 6.w, vertical: 2.h),
-                      //       decoration: BoxDecoration(
-                      //         color: AppColors.kPrimary,
-                      //         borderRadius: BorderRadius.circular(6.r),
-                      //         border: Border.all(color: AppColors.kPrimary),
-                      //       ),
-                      //       child: AppText(
-                      //         'مجاني',
-                      //         size: 10.sp,
-                      //         color: AppColors.kWhite,
-                      //       ),
-                      //     ),
-                      //   ),
                     ],
                   ),
                   12.sbW,
@@ -230,35 +227,62 @@ class LessonCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flexible(
                               child: AppText(
                                 model?.title ?? '',
-                                // size: 12.sp,
-                                // color: AppColors.kBlack,
                                 style: TextStyles.textViewMedium(),
                               ),
                             ),
-                            if (model?.type != 'Attachment')
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 6.w, vertical: 2.h),
-                                decoration: BoxDecoration(
-                                  color: AppColors.kGreen.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  border: Border.all(
-                                    color: AppColors.kGreen.withOpacity(0.2),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isLocked)
+                                  Container(
+                                    margin: EdgeInsets.only(left: 4.w),
+                                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber.shade50,
+                                      borderRadius: BorderRadius.circular(6.r),
+                                      border: Border.all(color: Colors.amber.shade400),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.lock_outline_rounded, size: 10.sp, color: Colors.amber.shade900),
+                                        2.sbW,
+                                        AppText(
+                                          (model?.price != null && model?.price != '0')
+                                              ? '${model?.price} ج.م'
+                                              : 'مقفلة',
+                                          size: 9.sp,
+                                          color: Colors.amber.shade900,
+                                          weight: w600,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                child: AppText(
-                                  '${model?.durationMinutes ?? 0} دقيقة',
-                                  size: 10.sp,
-                                  color: AppColors.kGreen,
-                                ),
-                              ),
+                                if (model?.type != 'Attachment')
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 6.w, vertical: 2.h),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.kGreen.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      border: Border.all(
+                                        color: AppColors.kGreen.withOpacity(0.2),
+                                      ),
+                                    ),
+                                    child: AppText(
+                                      '${model?.durationMinutes ?? 0} دقيقة',
+                                      size: 10.sp,
+                                      color: AppColors.kGreen,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                         // 6.sbH,

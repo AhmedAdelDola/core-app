@@ -1,10 +1,12 @@
+import 'dart:io';
 import 'package:elhanbly/models/Session/get_session_info_response.dart';
 import 'package:elhanbly/models/Session/show_video_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../../core/network/repository/repository_imports.dart';
-import '../../../../../../models/home_entities/lessons/get_lesson_response.dart';
+import '../../../../../../core/security/content_protection_service.dart';
+import '../../../../../../core/services/di.dart';
 
 part 'lessons_section_state.dart';
 
@@ -81,14 +83,32 @@ class LessonsSectionCubit extends Cubit<LessonsSectionState> {
   ShowVideo? ShowVideoModel;
   Future<void> getvideo(String id) async {
     emit(GetSubjectCoursesLoadingState());
-    final f = await repo.getvideo(id);
-    f.fold(
-      (l) => emit(GetSubjectCoursesErrorState(l.toString())),
-      (r) {
-        ShowVideoModel = r;
-        emit(GetSubjectCoursesSuccessState());
-      },
-    );
+    try {
+      final sessionId = int.tryParse(id) ?? 0;
+      if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+        final contentProtection = di<ContentProtectionService>();
+        final accessResponse = await contentProtection.requestMediaAccess(
+          sessionId: sessionId,
+        );
+        if (accessResponse.playerUrl != null &&
+            accessResponse.playerUrl!.isNotEmpty) {
+          ShowVideoModel = ShowVideo(playerUrl: accessResponse.playerUrl);
+          emit(GetSubjectCoursesSuccessState());
+          return;
+        }
+      }
+
+      final f = await repo.getvideo(id);
+      f.fold(
+        (l) => emit(GetSubjectCoursesErrorState(l.toString())),
+        (r) {
+          ShowVideoModel = r;
+          emit(GetSubjectCoursesSuccessState());
+        },
+      );
+    } catch (e) {
+      emit(GetSubjectCoursesErrorState(e.toString()));
+    }
   }
 
   bool SplitAxis = true;

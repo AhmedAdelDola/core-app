@@ -16,6 +16,8 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../common/country_picker_cubit.dart';
 import '../../../../core/navigator/named_navigator_impl.dart';
+import '../../../../core/navigator/named_navigator_routes.dart';
+import '../../../core/consts/client_config.dart';
 import '../../../core/consts/images.dart';
 import '../../../core/services/di.dart';
 import '../../../core/theme/colors/app_colors.dart';

@@ -1,13 +1,13 @@
+import 'dart:io';
+import 'package:elhanbly/core/widgets/purchase_modal/course_purchase_modal.dart';
 import 'package:elhanbly/feature/modules/library/widgets/files_tap/pdf_viewer.dart';
-import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
-import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/charge_wallet_widgets.dart';
-import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/in_app_purchase_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../../core/consts/images.dart';
-import '../../../../../../core/consts/strings.dart';
 import '../../../../../../core/navigator/named_navigator_impl.dart';
+import '../../../../../../core/security/content_protection_service.dart';
+import '../../../../../../core/security/widgets/security_alert_dialogs.dart';
 import '../../../../../../core/services/di.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/widgets/app_bar/custom_curved_appbar.dart';
@@ -15,13 +15,11 @@ import '../../../../../../core/widgets/app_buttons/custom_button.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../core/widgets/app_texts/text_scroll.dart';
 import '../../../../../../core/widgets/loader/app_loader.dart';
+import '../../../../../../core/widgets/ui_helpers/alert_message.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
-import '../../courses_section/view/course_view/course_view_widgets/course_details_instructor.dart';
 import '../../courses_section/view/course_view/course_view_widgets/course_lessons_section/lesson_profile/lesson_profile_item.dart';
 import '../cubit/lessons_section_cubit.dart';
 import 'split_video_view/Splitview.dart';
-
-import '../../../../../../core/widgets/app_bar/qr_scanner.dart';
 import '../../../../../../core/widgets/app_buttons/master_button.dart';
 import 'split_video_view/video_player.dart';
 
@@ -39,11 +37,25 @@ class SessionDetilesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => di<LessonsSectionCubit>()..getSessionInfo('$id'),
-      child: BlocBuilder<LessonsSectionCubit, LessonsSectionState>(
+      child: BlocConsumer<LessonsSectionCubit, LessonsSectionState>(
+        listener: (context, state) {
+          if (state is GetSubjectCoursesErrorState) {
+            final err = state.error;
+            if (err.contains('MOBILE_APP_UPDATE_REQUIRED') || err.contains('426')) {
+              SecurityAlertDialogs.showUpdateRequiredDialog(context);
+            } else if (err.contains('DEVICE_NOT_TRUSTED') ||
+                err.contains('APP_INTEGRITY_FAILED') ||
+                err.contains('DEVICE_REVOKED')) {
+              SecurityAlertDialogs.showDeviceNotTrustedDialog(context);
+            } else {
+              showErrorToast(err);
+            }
+          }
+        },
         builder: (context, state) {
           final cubit = LessonsSectionCubit.of(context);
           final model = cubit.getSessionModel;
-          if (state is GetSubjectCoursesLoadingState)
+          if (state is GetSubjectCoursesLoadingState && model == null)
             return Scaffold(body: const AppLoader());
 
           return Scaffold(
@@ -216,14 +228,33 @@ class SessionDetilesScreen extends StatelessWidget {
                             child: CustomButton(
                                           text: 'عرض الملف',
                                           onTap: () async {
-                                            // PrintLog.w(model?.id);
-                                            // await cubit
-                                            //     .getAttachmentFile('${model?.id}')
-                                            //     .whenComplete(() {
-                                            //   PrintLog.w(cubit.getAttachmentModel?.data.link);
-                                              NamedNavigatorImpl.push(
-                                                  PdfViewers(pdfurl: model?.session?.pdf?.url ,name: model?.session?.pdf?.name ,));
-                                            // });
+                                            String? finalPdfUrl = model?.session?.pdf?.url;
+                                            if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+                                              try {
+                                                final contentProtection = di<ContentProtectionService>();
+                                                final access = await contentProtection.requestPdfAccess(
+                                                  sessionId: model?.session?.id ?? id,
+                                                  fallbackUrl: finalPdfUrl,
+                                                );
+                                                if (access.pdfUrl != null && access.pdfUrl!.isNotEmpty) {
+                                                  finalPdfUrl = access.pdfUrl;
+                                                }
+                                              } catch (e) {
+                                                final err = e.toString();
+                                                if (!context.mounted) return;
+                                                if (err.contains('MOBILE_APP_UPDATE_REQUIRED') || err.contains('426')) {
+                                                  SecurityAlertDialogs.showUpdateRequiredDialog(context);
+                                                  return;
+                                                } else if (err.contains('DEVICE_NOT_TRUSTED') ||
+                                                    err.contains('APP_INTEGRITY_FAILED') ||
+                                                    err.contains('DEVICE_REVOKED')) {
+                                                  SecurityAlertDialogs.showDeviceNotTrustedDialog(context);
+                                                  return;
+                                                }
+                                              }
+                                            }
+                                            NamedNavigatorImpl.push(
+                                                PdfViewers(pdfurl: finalPdfUrl, name: model?.session?.pdf?.name));
                                           },
                                         ),
                           ),
@@ -234,6 +265,7 @@ class SessionDetilesScreen extends StatelessWidget {
                           onTap: () async {
                             await cubit.getvideo('${model?.session?.id}');
                             final models = cubit.ShowVideoModel;
+                            if (!context.mounted) return;
                             bool isTablet = MediaQuery.of(context).size.width >= 600;
                             if(isTablet){
                             NamedNavigatorImpl.push(SplitViewScreen(model: models,pdfUrl: model?.session?.pdf?.url ?? '',pdfname: model?.session?.pdf?.name ?? '',
@@ -248,51 +280,22 @@ class SessionDetilesScreen extends StatelessWidget {
                     ],
                   ),
                 )
-                : BlocBuilder<WalletCubit, WalletState>(
-                    builder: (context, walletState) {
-                      final walletCubit = context.read<WalletCubit>();
-                      final balance = double.tryParse(
-                            '${walletCubit.wallet?.wallet?.balance ?? '0'}') ??
-                          0.0;
-                      final price = double.tryParse(
-                            '${model?.session?.singleSessionPrice ?? '0'}') ??
-                          0.0;
-
-                      return MasterButton(
-                        onPressed: () async {
-                          if (walletCubit.wallet == null) {
-                            await walletCubit.getWalletHistory();
-                          }
-
-                          final freshBalance = double.tryParse(
-                                '${walletCubit.wallet?.wallet?.balance ?? '0'}') ??
-                              0.0;
-
-                          if (price == 0) {
-                            await walletCubit.purchaseProduct(
-                              type: 'session',
-                              id: model?.session?.id.toString() ?? '',
-                            );
-                            await cubit.getSessionInfo(id.toString());
-                          } else if (freshBalance < price) {
-                            NamedNavigatorImpl.push(
-                              walletCubit.isCodeAvailable
-                                  ? ChargeWalletScreen(cubit: walletCubit)
-                                  : InAppPurchaseScreen(cubit: walletCubit),
-                            );
-                          } else {
-                            await walletCubit.purchaseProduct(
-                              type: 'session',
-                              id: model?.session?.id.toString() ?? '',
-                            );
-                            await cubit.getSessionInfo(id.toString());
-                          }
+                : MasterButton(
+                    onPressed: () {
+                      CoursePurchaseModal.show(
+                        context: context,
+                        type: PurchaseTargetType.session,
+                        id: model?.session?.id?.toString() ?? id.toString(),
+                        title: model?.session?.title ?? '',
+                        price: model?.session?.singleSessionPrice?.toString() ?? '0',
+                        onSuccess: () {
+                          cubit.getSessionInfo(id.toString());
                         },
-                        text:
-                            '  اشترك الان (${model?.session?.singleSessionPrice != 0 ? '${model?.session?.singleSessionPrice} جنيه' : 'مجانا'}  )',
-                        margin: EdgeInsets.all(25.sp),
                       );
                     },
+                    text:
+                        '  اشترك الان (${model?.session?.singleSessionPrice != null && model?.session?.singleSessionPrice != '0' && model?.session?.singleSessionPrice != 0 ? '${model?.session?.singleSessionPrice} جنيه' : 'مجانا'}  )',
+                    margin: EdgeInsets.all(25.sp),
                   ),
           );
         },

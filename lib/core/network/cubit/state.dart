@@ -33,3 +33,10 @@ class ErrorState extends NetworkStates {
 
   const ErrorState(this.error);
 }
+
+class AppUpdateRequiredState extends NetworkStates {
+  final String error;
+
+  const AppUpdateRequiredState(this.error);
+}
+

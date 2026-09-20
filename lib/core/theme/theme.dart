@@ -75,6 +75,12 @@ abstract class CustomMaterialAppTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(style: CustomMaterialAppTheme.elevatedButtonTheme),
     appBarTheme: CustomMaterialAppTheme.appBarTheme,
     scaffoldBackgroundColor: AppColors.kBackground,
+    canvasColor: AppColors.kBackground,
+    cardColor: AppColors.kWhite,
+    colorScheme: ColorScheme.light(
+      primary: AppColors.kPrimary,
+      surface: AppColors.kWhite,
+    ),
     primaryColor: AppColors.kPrimary,
     fontFamily: fontFamilyDINNextLT,
     datePickerTheme: DatePickerThemeData(

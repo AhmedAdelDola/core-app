@@ -27,7 +27,7 @@ val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.0"
 
 android {
-    namespace = "section.aplus.com"
+    namespace = "leader.aplus.com"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -36,7 +36,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "section.aplus.com"
+        applicationId = "leader.aplus.com"
         minSdk = 24
         targetSdk = 36
         multiDexEnabled = true
@@ -88,6 +88,7 @@ android {
 dependencies {
     implementation("androidx.webkit:webkit:1.13.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.play:integrity:1.4.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 

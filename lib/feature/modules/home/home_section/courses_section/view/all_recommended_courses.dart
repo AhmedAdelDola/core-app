@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 
+import '../../../../../../core/consts/images.dart';
+import '../../../../../../core/theme/colors/app_colors.dart';
+import '../../../../../../core/theme/theme.dart';
 import '../../../../../../core/widgets/app_bar/custom_curved_appbar.dart';
+import '../../../../../../core/widgets/app_texts/app_text.dart';
+import '../../../../../../core/widgets/ui_helpers/extensions.dart';
 import '../../../cubit/home_cubit/home_cubit.dart';
 import '../widgets/course_card_item.dart';
 
@@ -29,6 +35,32 @@ class AllRecommendedCoursesScreen extends StatelessWidget {
       body: BlocBuilder<HomeCubit, HomeStates>(
         builder: (context, state) {
           final cubit = HomeCubit.of(context);
+          final courses = cubit.home?.recommendedCourses;
+
+          if (courses == null || courses.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 180.h,
+                    child: LottieBuilder.asset(
+                      AppJsonFiles.emptyState,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  16.sbH,
+                  AppText(
+                    'لا توجد كورسات متاحة حالياً',
+                    style: TextStyles.textViewRegular(
+                      fontSize: 16.sp,
+                      color: AppColors.textColor2,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
           return isLargeScreen
               ? GridView.builder(

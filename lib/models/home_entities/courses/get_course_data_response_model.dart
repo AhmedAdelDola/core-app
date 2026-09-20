@@ -289,6 +289,8 @@ class Session {
   int? resumeFrom;
   int? durationMinutes;
   String? durationLabel;
+  String? singleSessionPrice;
+  String? price;
 
   Session({
     this.id,
@@ -306,6 +308,8 @@ class Session {
     this.resumeFrom,
     this.durationMinutes,
     this.durationLabel,
+    this.singleSessionPrice,
+    this.price,
   });
 
   factory Session.fromJson(Map<String, dynamic>? json) {
@@ -326,6 +330,8 @@ class Session {
       resumeFrom: (json['resume_from'] as num?)?.toInt(),
       durationMinutes: (json['duration_minutes'] as num?)?.toInt(),
       durationLabel: json['duration_label'] as String?,
+      singleSessionPrice: json['single_session_price']?.toString(),
+      price: json['price']?.toString() ?? json['single_session_price']?.toString(),
     );
   }
 
@@ -345,5 +351,7 @@ class Session {
         'resume_from': resumeFrom,
         'duration_minutes': durationMinutes,
         'duration_label': durationLabel,
+        'single_session_price': singleSessionPrice,
+        'price': price,
       };
 }

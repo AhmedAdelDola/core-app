@@ -49,23 +49,31 @@ class DioImpl extends DioHelper {
       });
   }
 
+  String _resolveUrl(String url) {
+    if (url.startsWith('/')) {
+      final server = dotenv.env['SERVER'] ?? 'https://api.aplusplatforms.com';
+      return '$server$url';
+    }
+    return url;
+  }
+
   @override
   Future<Response<T>> get<T>(String url, {Map<String, dynamic>? queryParams}) {
-    return _dio.get(url, queryParameters: queryParams);
+    return _dio.get(_resolveUrl(url), queryParameters: queryParams);
   }
 
   @override
   Future<Response<T>> post<T>(String url, {dynamic data, Map<String, dynamic>? queryParams}) {
-    return _dio.post(url, data: data, queryParameters: queryParams);
+    return _dio.post(_resolveUrl(url), data: data, queryParameters: queryParams);
   }
 
   @override
   Future<Response<T>> put<T>(String url, {dynamic data, Map<String, dynamic>? queryParams}) {
-    return _dio.put(url, data: data, queryParameters: queryParams);
+    return _dio.put(_resolveUrl(url), data: data, queryParameters: queryParams);
   }
 
   @override
   Future<Response<T>> delete<T>(String url, {dynamic data, Map<String, dynamic>? queryParams}) {
-    return _dio.delete(url, data: data, queryParameters: queryParams);
+    return _dio.delete(_resolveUrl(url), data: data, queryParameters: queryParams);
   }
 }

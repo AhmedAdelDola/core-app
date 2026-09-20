@@ -1,8 +1,8 @@
 part of 'register_imports.dart';
 
 class RegisterScreen extends StatefulWidget {
-   RegisterScreen({super.key, required this.phone});
-   String phone;
+  const RegisterScreen({super.key, required this.phone});
+  final String phone;
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -12,7 +12,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
@@ -24,7 +23,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -46,28 +44,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
         builder: (context, state) {
           final cubit = RegisterCubit.of(context);
+          final bool isTablet = MediaQuery.sizeOf(context).width >= 600;
           return Scaffold(
             backgroundColor: AppColors.kPrimary,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                24.sbH,
-                _buildHeader(),
-                24.sbH,
-                Expanded(
-                  child: Container(
-                    
-                    decoration: BoxDecoration(
-                      color: AppColors.kWhite,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-                    ),
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-                      child: _buildForm(context, cubit, state),
-                    ),
-                  ),
+            body: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 540 : double.infinity,
                 ),
-              ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    24.sbH,
+                    _buildHeader(),
+                    24.sbH,
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.kWhite,
+                          borderRadius: isTablet
+                              ? BorderRadius.circular(24.r)
+                              : BorderRadius.vertical(
+                                  top: Radius.circular(24.r),
+                                ),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 24.h,
+                          ),
+                          child: _buildForm(context, cubit, state),
+                        ),
+                      ),
+                    ),
+                    if (isTablet) 24.sbH,
+                  ],
+                ),
+              ),
             ),
           );
         },
@@ -122,6 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final showStageSelector = cubit.stages.length > 1;
     final levelItems = cubit.currentLevels.map((level) => level.name).toList();
+    final bool isPasswordEnabled = appSettings?.settings?.passwordLoginEnabled ?? true;
 
     return Form(
       key: _formKey,
@@ -140,24 +154,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             hintText: widget.phone,
             readOnly: true,
           ),
-                             
-          
           16.sbH,
-          MasterTextField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            hintText: 'البريد الالكتروني',
-            validate: Validator.email,
-          ),
-          16.sbH,
-          MasterTextField(
-            controller: _passwordController,
-            isPassword: true,
-            hintText: 'كلمة المرور',
-            validate: Validator.password,
-          ),
-          16.sbH,
-          
+          if (isPasswordEnabled) ...[
+            MasterTextField(
+              controller: _passwordController,
+              isPassword: true,
+              hintText: 'كلمة المرور',
+              validate: Validator.password,
+            ),
+            16.sbH,
+          ],
           if (showStageSelector) ...[
             AppDropdown(
               hintText: 'اختر المرحلة',
@@ -192,8 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               cubit.register(
                 name: _nameController.text.trim(),
                 phone: widget.phone,
-                email: _emailController.text.trim(),
-                password: _passwordController.text.trim(),
+                password: isPasswordEnabled ? _passwordController.text.trim() : null,
               );
             },
           ),

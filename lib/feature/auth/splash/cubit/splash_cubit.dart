@@ -9,6 +9,7 @@ import '../../../../core/local/user_preferences/user_preferences_helper.dart';
 import '../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../core/navigator/named_navigator_routes.dart';
 import '../../../../core/network/repository/repository_imports.dart';
+import '../../../../core/security/content_protection_service.dart';
 import '../../../../core/services/di.dart';
 import 'onboarding_models.dart';
 
@@ -40,6 +41,13 @@ class SplashCubit extends Cubit<SplashState> {
         log('isLogged ==> $isLogged');
         final token_ = di.isRegistered<String>(instanceName: 'fcmToken') ? fcmToken : 'not_registered';
         log('FCM TOKEN ==> $token_');
+        try {
+          if (di.isRegistered<ContentProtectionService>()) {
+            di<ContentProtectionService>().getSecurityConfig().then((_) {}, onError: (e) {
+              log('Security config prefetch error: $e');
+            });
+          }
+        } catch (_) {}
         emit(AuthenticatedState());
       } else {
         emit(UnAuthenticatedState());
@@ -65,7 +73,7 @@ class SplashCubit extends Cubit<SplashState> {
   void changePage() {
     if (isLast) {
       UserPreferencesHelper().saveSeenOnBoarding(true);
-      NamedNavigatorImpl.pushNamed(Routes.guestHome, clean: true);
+      NamedNavigatorImpl.pushNamed(Routes.login, clean: true);
     } else {
       controller.nextPage(
         duration: const Duration(milliseconds: 300),

@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:elhanbly/feature/auth/common/country_picker_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/repository/repository_imports.dart';
 import '../../../../models/user_response/login_response.dart';
+import '../../../../core/security/content_protection_service.dart';
 import '../../../../core/services/di.dart';
 import '../../../../core/local/cache_helper.dart';
 import '../../../../core/local/enum_init.dart';
@@ -103,6 +105,7 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
         try {
           di<CacheHelper>().put(CachingKey.isLogged, true);
           di<CacheHelper>().put(CachingKey.userData, r.toJson());
+          _prefetchSecurityConfig();
         } catch (_) {}
         emit(SuccessLoginState(r));
       },
@@ -141,10 +144,22 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
         try {
           di<CacheHelper>().put(CachingKey.isLogged, true);
           di<CacheHelper>().put(CachingKey.userData, r.toJson());
+          _prefetchSecurityConfig();
         } catch (_) {}
         emit(SuccessLoginState(r));
       },
     );
+  }
+
+  Future<void> _prefetchSecurityConfig() async {
+    try {
+      if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+        final cfg = await di<ContentProtectionService>().getSecurityConfig();
+        if (cfg.isEnforced || cfg.isMonitor) {
+          await di<ContentProtectionService>().enrollDevice();
+        }
+      }
+    } catch (_) {}
   }
 
   @override

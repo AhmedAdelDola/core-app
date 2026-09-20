@@ -5,6 +5,7 @@ import 'package:elhanbly/feature/modules/home/home_section/lessons_section/cubit
 import 'package:elhanbly/feature/modules/library/cubit/library_cubit/library_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/profile_imports.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nested/nested.dart';
 
@@ -15,6 +16,7 @@ import '../../feature/auth/splash/cubit/splash_cubit.dart';
 import '../navigator/named_navigator_impl.dart';
 import '../network/cubit/cubit.dart';
 import '../network/cubit/state.dart';
+import '../security/widgets/security_alert_dialogs.dart';
 import '../services/di.dart';
 import '../widgets/ui_helpers/alert_message.dart';
 
@@ -39,19 +41,22 @@ List<SingleChildWidget> get providers {
   ];
 }
 
-void networkListener(context, state) {
-  switch (state.runtimeType) {
-    case UnauthenticatedState:
+void networkListener(BuildContext context, NetworkStates state) {
+  switch (state) {
+    case UnauthenticatedState _:
       NamedNavigatorImpl.push(const LoginScreen(), clean: true);
       return;
-    case SocketErrorState:
+    case AppUpdateRequiredState _:
+      SecurityAlertDialogs.showUpdateRequiredDialog(context);
+      return;
+    case SocketErrorState _:
       showErrorToast('لديك مشكلة في الاتصال بالانترنت');
       break;
-    case ClientErrorState:
+    case ClientErrorState _:
       break;
-    case ServerErrorState:
+    case ServerErrorState _:
       break;
-    case ErrorState:
+    case ErrorState _:
       break;
     default:
   }

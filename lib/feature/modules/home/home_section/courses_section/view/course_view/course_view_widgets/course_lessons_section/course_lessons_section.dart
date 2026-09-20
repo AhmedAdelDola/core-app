@@ -1,5 +1,6 @@
 // ignore_for_file: no_leading_underscores_for_local_identifiers
 
+import 'package:elhanbly/core/theme/colors/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -45,6 +46,45 @@ class _CourseLessonsSectionState extends State<CourseLessonsSection> {
               ),
             ),
             10.sbH,
+            if (model.isEmpty)
+              Container(
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 16.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.menu_book_rounded,
+                      size: 36.sp,
+                      color: AppColors.textColor2.withOpacity(0.4),
+                    ),
+                    8.sbH,
+                    AppText(
+                      'لا توجد أبواب أو دروس متاحة حالياً',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor,
+                      ),
+                    ),
+                    4.sbH,
+                    AppText(
+                      'سيتم إضافة محتوى الكورس قريباً',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppColors.textColor2,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
             isTablet
                 ? GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

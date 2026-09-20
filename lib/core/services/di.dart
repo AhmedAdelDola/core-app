@@ -21,6 +21,8 @@ import '../network/cubit/cubit.dart';
 import '../network/dio/dio_helper.dart';
 import '../network/dio/wrapper.dart';
 import '../network/repository/repository_imports.dart';
+import '../security/content_protection_service.dart';
+import '../security/device_attestation_service.dart';
 import 'notifications/local_notifications.dart';
 
 GetIt di = GetIt.I;
@@ -54,6 +56,16 @@ Future init() async {
   di.registerLazySingleton<Repository>(() => RepoImpl(di<DioHelper>()));
   di.registerLazySingleton<CacheHelper>(
     () => CacheImpl(di<SharedPreferences>()),
+  );
+  di.registerLazySingleton<DeviceAttestationService>(
+    () => DeviceAttestationService(),
+  );
+  di.registerLazySingleton<ContentProtectionService>(
+    () => ContentProtectionService(
+      repository: di<Repository>(),
+      attestationService: di<DeviceAttestationService>(),
+      cacheHelper: di<CacheHelper>(),
+    ),
   );
   di.registerFactory<BottomBarCubit>(() => BottomBarCubit(di<Repository>()));
 

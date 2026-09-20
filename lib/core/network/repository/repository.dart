@@ -8,8 +8,8 @@ abstract class Repository {
   Future<Either<dynamic, bool>> registerStudent({
     required String name,
     required String phone,
-    required String email,
-    required String password,
+    String? email,
+    String? password,
     required int levelId,
   });
   Future<Either<dynamic, HomeResponse>> getHome();
@@ -71,6 +71,16 @@ abstract class Repository {
   Future<Either<dynamic, WalletResponse>> getWallet();
   Future<Either<dynamic, GeneralResponse>> chargeWallet({required String Code,});
     Future<Either<dynamic, GeneralResponse>> purchaseProduct({required String type,required String id,});
+    Future<Either<dynamic, GeneralResponse>> purchaseCourseSubscription({
+      required String courseId,
+      required String paymentMethod,
+      String? code,
+    });
+    Future<Either<dynamic, GeneralResponse>> purchaseSessionSubscription({
+      required String sessionId,
+      required String paymentMethod,
+      String? code,
+    });
     Future<Either<dynamic, StoreProductsResponse>> getStoreProducts();
     Future<Either<dynamic, GeneralResponse>> verifyStorePurchase({required Map<String, dynamic> data});
     Future<Either<dynamic, CodeAvailabilityResponse>> checkCodeAvailability({required int version});
@@ -149,4 +159,27 @@ abstract class Repository {
   //   required String last_point,
   // });
   // Future<Either<dynamic, Map<String,dynamic>>> current_version();
+
+  /// ============================== Security v2 (Content Protection) ==================================
+  Future<Either<dynamic, SecurityConfigResponse>> getSecurityConfig();
+  Future<Either<dynamic, AttestationChallengeResponse>> getAttestationChallenge();
+  Future<Either<dynamic, String>> completeAttestation({
+    required String challengeId,
+    required String signature,
+    required List<String> certificateChain,
+    required String playIntegrityToken,
+    required String model,
+    required String appVersion,
+  });
+  Future<Either<dynamic, ContentChallengeResponse>> createContentChallenge({
+    required String deviceId,
+    required int sessionId,
+    required String contentKind,
+  });
+  Future<Either<dynamic, ContentAccessResponse>> accessContent({
+    required String challengeId,
+    required String deviceId,
+    required String signature,
+    String? playIntegrityToken,
+  });
 }

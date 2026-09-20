@@ -16,12 +16,17 @@ import '../../../../../cubit/courses_section_cubit.dart';
 import 'lesson_card.dart';
 import 'lesson_profile_item.dart';
 
-class LessonProfile extends StatelessWidget {
+class LessonProfile extends StatefulWidget {
   final Lesson lesson;
   final String title2;
 
   const LessonProfile({super.key, required this.lesson, required this.title2});
 
+  @override
+  State<LessonProfile> createState() => _LessonProfileState();
+}
+
+class _LessonProfileState extends State<LessonProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +37,7 @@ class LessonProfile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AppTextScroll(
-              lesson.title ?? '',
+              widget.lesson.title ?? '',
               size: 28.sp,
               weight: w500,
               color: AppColors.kWhite,
@@ -40,7 +45,7 @@ class LessonProfile extends StatelessWidget {
               mode: TextScrollMode.begin,
             ),
             AppTextScroll(
-              title2,
+              widget.title2,
               size: 20.sp,
               weight: w400,
               color: AppColors.kWhite,
@@ -61,7 +66,7 @@ class LessonProfile extends StatelessWidget {
           ),
           14.sbH,
           AppText(
-            lesson.title ?? 'غير متوفر',
+            widget.lesson.title ?? 'غير متوفر',
             size: 16.sp,
             align: TextAlign.start,
             maxLines: 3,
@@ -79,8 +84,13 @@ class LessonProfile extends StatelessWidget {
           ),
           14.sbH,
           ...List.generate(
-            lesson.sessions?.length ?? 0,
-            (i) => LessonCard(model: lesson.sessions?[i]),
+            widget.lesson.sessions?.length ?? 0,
+            (i) => LessonCard(
+              model: widget.lesson.sessions?[i],
+              onPurchased: () {
+                setState(() {});
+              },
+            ),
           ),
         ],
       ),

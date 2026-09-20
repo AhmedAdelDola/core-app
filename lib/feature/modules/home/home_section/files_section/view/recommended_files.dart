@@ -1,15 +1,13 @@
-import 'package:elhanbly/models/home_entities/home/get_home.dart';
-
-import '../../../../../../core/navigator/named_navigator_impl.dart';
-import '../widgets/no_fiels_added.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/widgets/app_bar/custom_curved_appbar.dart';
-import '../../../../../../core/widgets/ui_helpers/extensions.dart';
-import '../../../../../../models/home_entities/files/get_recommended_files_response.dart';
+import '../../../../../../models/home_entities/home/get_home.dart';
 import '../../../cubit/home_cubit/home_cubit.dart';
 import '../../../widgets/show_all_widget.dart';
+import '../widgets/no_fiels_added.dart';
 import 'recommended_files_item.dart';
 
 class RecommendedFiles extends StatelessWidget {
@@ -17,24 +15,53 @@ class RecommendedFiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
         final cubit = HomeCubit.of(context);
-        if (cubit.home?.featuredFiles?.isEmpty ?? true) {
+        final files = cubit.home?.featuredFiles;
+
+        if (files == null || files.isEmpty) {
           return const NoFilesAdded();
         } else {
           return Column(
             children: [
               ShowAllWidget(
                 'الملفات المقترحة',
-                () => NamedNavigatorImpl.push(RecommendedFilesScreen(model: cubit.home?.featuredFiles ?? [])),
+                () => NamedNavigatorImpl.push(
+                  RecommendedFilesScreen(model: files),
+                ),
               ),
-              24.sbH,
-              ...List.generate(
-                cubit.home?.featuredFiles?.length ?? 0,
-                (i) => RecommendedFilesItem(model: cubit.home?.featuredFiles?[i]),
+              SizedBox(height: isTablet ? 14.h : 10.h),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 20.w : 10.w,
+                ),
+                child: isTablet
+                    ? GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 4.8,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemCount: files.length,
+                        itemBuilder: (c, i) => RecommendedFilesItem(
+                          model: files[i],
+                        ),
+                      )
+                    : Column(
+                        children: List.generate(
+                          files.length,
+                          (i) => RecommendedFilesItem(model: files[i]),
+                        ),
+                      ),
               ),
-              24.sbH,
             ],
           );
         }
@@ -50,12 +77,28 @@ class RecommendedFilesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final bool isTablet = screenWidth >= 600;
+
     return Scaffold(
       appBar: const CustomAppBar(title: 'الملفات المقترحة'),
-      body: ListView.builder(
-        itemCount: model.length,
-        itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
-      ),
+      body: isTablet
+          ? GridView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 4.8,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: model.length,
+              itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
+            )
+          : ListView.builder(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              itemCount: model.length,
+              itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
+            ),
     );
   }
 }

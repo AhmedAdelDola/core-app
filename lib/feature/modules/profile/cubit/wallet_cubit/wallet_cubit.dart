@@ -50,43 +50,108 @@ class WalletCubit extends Cubit<WalletState> {
     );
   }
   Future<void> getWalletHistory() async {
+    if (isClosed) return;
     emit(GetWalletHistoryLoadingState());
     checkCodeAvailability();
     final f = await repo.getWallet();
+    if (isClosed) return;
     f.fold(
-      (l) => emit(GetWalletHistoryErrorState(l.toString())),
+      (l) {
+        if (!isClosed) emit(GetWalletHistoryErrorState(l.toString()));
+      },
       (r) {
         wallet = r;
-        emit(GetWalletHistorySuccessState());
+        if (!isClosed) emit(GetWalletHistorySuccessState());
       },
     );
   }
 
   Future<void> chargeWallet({required String Code,}) async {
+    if (isClosed) return;
     emit(ChargeWalletLoadingState());
     final f = await repo.chargeWallet(Code: Code);
+    if (isClosed) return;
     f.fold(
-      (l) => emit(ChargeWalletErrorState(l.toString())),
+      (l) {
+        if (!isClosed) emit(ChargeWalletErrorState(l.toString()));
+      },
       (r) {
-        emit(ChargeWalletSuccessState(r.message ?? 'تم شحن المحفظة بنجاح'));
+        if (!isClosed) emit(ChargeWalletSuccessState(r.message ?? 'تم شحن المحفظة بنجاح'));
         getWalletHistory();
       },
     );
   }
 
   Future<void> purchaseProduct({required String type,required String id,}) async {
+    if (isClosed) return;
     emit(PurchaseProductLoadingState());
     final f = await repo.purchaseProduct(type: type,id: id);
+    if (isClosed) return;
     f.fold(
-          (l) => emit(PurchaseProductErrorState(l.toString())),
-          (r) {
-        emit(PurchaseProductSuccessState(r.message ?? 'تم شراء المنتج بنجاح'));
+      (l) {
+        if (!isClosed) emit(PurchaseProductErrorState(l.toString()));
+      },
+      (r) {
+        if (!isClosed) emit(PurchaseProductSuccessState(r.message ?? 'تم شراء المنتج بنجاح'));
         getWalletHistory();
       },
     );
   }
 
+  Future<bool> purchaseCourse({
+    required String courseId,
+    required String paymentMethod,
+    String? code,
+  }) async {
+    if (isClosed) return false;
+    emit(PurchaseProductLoadingState());
+    final f = await repo.purchaseCourseSubscription(
+      courseId: courseId,
+      paymentMethod: paymentMethod,
+      code: code,
+    );
+    if (isClosed) return false;
+    return f.fold(
+      (l) {
+        if (!isClosed) emit(PurchaseProductErrorState(l.toString()));
+        return false;
+      },
+      (r) {
+        if (!isClosed) emit(PurchaseProductSuccessState(r.message ?? 'تم تفعيل الاشتراك بنجاح'));
+        getWalletHistory();
+        return true;
+      },
+    );
+  }
+
+  Future<bool> purchaseSession({
+    required String sessionId,
+    required String paymentMethod,
+    String? code,
+  }) async {
+    if (isClosed) return false;
+    emit(PurchaseProductLoadingState());
+    final f = await repo.purchaseSessionSubscription(
+      sessionId: sessionId,
+      paymentMethod: paymentMethod,
+      code: code,
+    );
+    if (isClosed) return false;
+    return f.fold(
+      (l) {
+        if (!isClosed) emit(PurchaseProductErrorState(l.toString()));
+        return false;
+      },
+      (r) {
+        if (!isClosed) emit(PurchaseProductSuccessState(r.message ?? 'تم تفعيل الحصة بنجاح'));
+        getWalletHistory();
+        return true;
+      },
+    );
+  }
+
   Future<void> checkCodeAvailability() async {
+    if (isClosed) return;
     emit(CheckCodeAvailabilityLoadingState());
     int version = 1;
     try {
@@ -97,13 +162,14 @@ class WalletCubit extends Cubit<WalletState> {
     }
 
     final f = await repo.checkCodeAvailability(version: version);
+    if (isClosed) return;
     f.fold(
       (l) {
-        emit(CheckCodeAvailabilityErrorState(l.toString()));
+        if (!isClosed) emit(CheckCodeAvailabilityErrorState(l.toString()));
       },
       (r) {
         isCodeAvailable = r.isCodeAvailable ?? true;
-        emit(CheckCodeAvailabilitySuccessState());
+        if (!isClosed) emit(CheckCodeAvailabilitySuccessState());
       },
     );
   }

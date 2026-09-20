@@ -23,11 +23,33 @@ class NetworkCubit extends Cubit<NetworkStates> {
   Future<void> onErrorCallback(DioException error) async {
     final response = error.response;
     final path = error.requestOptions.path;
+    final data = error.requestOptions.data;
+
+    // Do not show error toast when checking phone existence during login (only phone is sent)
+    final isCheckPhoneRequest = path.contains('auth/login') &&
+        (data is Map && !data.containsKey('password') && !data.containsKey('otp'));
+    if (isCheckPhoneRequest) {
+      return;
+    }
+
+    final isSecurityConfigRequest = path.contains('security/config');
+    if (isSecurityConfigRequest && response?.statusCode == 404) {
+      return;
+    }
+
     final isProfileRelatedRequest = path.contains('/auth/profile') || path.contains('/auth/me');
 
     if (response != null) {
       final message = response.data?['message']?.toString() ?? 'Something went wrong try again later';
       PrintLog.e(message);
+
+      final isUpdateRequired = (response.statusCode == 426) ||
+          message.contains('MOBILE_APP_UPDATE_REQUIRED');
+
+      if (isUpdateRequired) {
+        safeEmit(AppUpdateRequiredState(message));
+        return;
+      }
 
       final isUnauthenticated = (response.statusCode == 401) ||
           (response.statusCode == 500 && message.contains('Unauthenticated'));

@@ -13,8 +13,9 @@ class ShowAllWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.sizeOf(context).width >= 600;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 24.w : 20.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -22,29 +23,30 @@ class ShowAllWidget extends StatelessWidget {
             title,
             style: TextStyle(fontSize: 18.sp, fontWeight: w700),
           ),
-          InkWell(
-            onTap: onTap,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                AppText(
-                  'عرض الكل',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: w400,
+          if (onTap != null)
+            InkWell(
+              onTap: onTap,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AppText(
+                    'عرض الكل',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: w400,
+                      color: AppColors.textColor4,
+                    ),
+                  ),
+                  4.sbW,
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
                     color: AppColors.textColor4,
                   ),
-                ),
-                4.sbW,
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: AppColors.textColor4,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

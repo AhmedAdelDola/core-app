@@ -20,4 +20,21 @@ class Strings {
       'It appears that you are currently logged in on another device. For security purposes, our system only allows you to be logged in on one device at a time.';
   static const String lorim =
       'القانون يعرف عمومًا على أنه نظام من القواعد التي يتم إنشاؤها وتطبيقها من خلال المؤسسات الاجتماعية أو الحكومية لتنظيم السلوك، على الرغم من أن تعريفه الدقيق هو مسألة نقاش طويلة الأمد. تم وصفه بشكل مختلف على أنه علم وفن العدالة.';
+
+  /// =================== Purchase Modal Strings ===================
+  static const String purchaseTitleCourse = 'الاشتراك في الكورس';
+  static const String purchaseTitleSession = 'الاشتراك في الحصة';
+  static const String walletTab = 'الخصم من المحفظة';
+  static const String codeTab = 'كود التفعيل المباشر';
+  static const String currentBalance = 'رصيد المحفظة الحالي:';
+  static const String requiredAmount = 'المبلغ المطلوب:';
+  static const String confirmWalletPurchase = 'تأكيد الشراء من المحفظة';
+  static const String insufficientBalance = 'رصيد محفظتك غير كافٍ للاشتراك';
+  static const String chargeWalletNow = 'شحن المحفظة الآن';
+  static const String enterActivationCode = 'أدخل كود التفعيل';
+  static const String codeHint = 'مثال: ABC-1234';
+  static const String activateCodeBtn = 'تفعيل الكود الفوري';
+  static const String pleaseEnterCode = 'يرجى إدخال كود التفعيل';
+  static const String free = 'مجاناً';
+  static const String egp = 'جنيه';
 }

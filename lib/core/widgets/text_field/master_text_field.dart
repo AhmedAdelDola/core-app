@@ -132,6 +132,7 @@ class _MasterTextFieldState extends State<MasterTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      textAlign: widget.textAlign ?? TextAlign.start,
       readOnly: widget.readOnly ?? false,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       controller: widget.controller,

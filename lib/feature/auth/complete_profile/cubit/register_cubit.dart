@@ -67,8 +67,8 @@ class RegisterCubit extends Cubit<RegisterState> {
   Future<void> register({
     required String name,
     required String phone,
-    required String email,
-    required String password,
+    String? email,
+    String? password,
   }) async {
     if (selectedLevel == null) {
       emit(RegisterErrorState('الرجاء اختيار الصف الدراسي'));

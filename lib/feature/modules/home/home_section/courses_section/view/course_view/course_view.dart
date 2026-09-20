@@ -1,7 +1,5 @@
 import 'package:elhanbly/core/navigator/named_navigator_impl.dart';
-import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
-import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/charge_wallet_widgets.dart';
-import 'package:elhanbly/feature/modules/profile/pages/wallet/pages/in_app_purchase_screen.dart';
+import 'package:elhanbly/core/widgets/purchase_modal/course_purchase_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -49,23 +47,29 @@ class CourseViewScreen extends StatelessWidget {
                   children: [
                     CourseImageWithData(
                       isFree: false,
-                      title: model?.course?.title ?? '',
-                      imagesUrlsLength: 2,
-
+                      imageUrl: model?.course?.imageUrl,
+                      price: model?.course?.price,
                     ),
                   ],
                 ),
                 SingleChildScrollView(
                   child: Column(
                     children: [
-                      SizedBox(height: 357.h),
+                      SizedBox(height: 235.h),
                       Container(
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: AppColors.kWhite,
                           borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(30),
+                            topLeft: Radius.circular(28.r),
+                            topRight: Radius.circular(28.r),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, -3),
+                            ),
+                          ],
                         ),
                         child: model?.subscription?.hasActiveSubscription == true
                             ? const SubscribeView()
@@ -77,52 +81,41 @@ class CourseViewScreen extends StatelessWidget {
                 customAppBar,
               ],
             ),
-           bottomNavigationBar: model?.course?.hasActiveSubscription == true
+            bottomNavigationBar: model?.course?.hasActiveSubscription == true
                 ? null
-                : BlocBuilder<WalletCubit, WalletState>(
-                    builder: (context, walletState) {
-                      final walletCubit = context.read<WalletCubit>();
-                      final balance = double.tryParse(
-                            '${walletCubit.wallet?.wallet?.balance ?? '0'}') ??
-                          0.0;
-                      final price = double.tryParse(
-                            '${model?.course?.price ?? '0'}') ??
-                          0.0;
-
-                      return MasterButton(
-                        onPressed: () async {
-                          if (walletCubit.wallet == null) {
-                            await walletCubit.getWalletHistory();
-                          }
-
-                          final freshBalance = double.tryParse(
-                                '${walletCubit.wallet?.wallet?.balance ?? '0'}') ??
-                              0.0;
-
-                          if (price == 0) {
-                            await walletCubit.purchaseProduct(
-                              type: 'course',
-                              id: model?.course?.id.toString() ?? '',
-                            );
-                            await cubit.getCourseData(id.toString());
-                          } else if (freshBalance < price) {
-                            NamedNavigatorImpl.push(
-                              walletCubit.isCodeAvailable
-                                  ? ChargeWalletScreen(cubit: walletCubit)
-                                  : InAppPurchaseScreen(cubit: walletCubit),
-                            );
-                          } else {
-                            await walletCubit.purchaseProduct(
-                              type: 'course',
-                              id: model?.course?.id.toString() ?? '',
-                            );
-                          await cubit.getCourseData(id.toString());                          }
-                        },
-                        text:
-                            '  اشترك الان (${model?.course?.price != 0 ? '${model?.course?.price} جنيه' : 'مجانا'}  )',
-                        margin: EdgeInsets.all(25.sp),
-                      );
-                    },
+                : Container(
+                    padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.kWhite,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    child: MasterButton(
+                      onPressed: () {
+                        CoursePurchaseModal.show(
+                          context: context,
+                          type: PurchaseTargetType.course,
+                          id: model?.course?.id?.toString() ?? id,
+                          title: model?.course?.title ?? '',
+                          price: model?.course?.price?.toString() ?? '0',
+                          onSuccess: () {
+                            cubit.getAllCourseData(id);
+                          },
+                        );
+                      },
+                      text: () {
+                        final p = double.tryParse('${model?.course?.price ?? '0'}') ?? 0.0;
+                        if (p == 0.0) {
+                          return 'اشترك الآن (مجاناً)';
+                        }
+                        return 'اشترك الآن ($p جنيه)';
+                      }(),
+                    ),
                   ),
           );
         },

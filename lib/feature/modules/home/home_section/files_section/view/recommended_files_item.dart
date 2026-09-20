@@ -1,19 +1,14 @@
-import 'package:elhanbly/core/consts/images.dart';
-import 'package:elhanbly/core/widgets/app_texts/text_scroll.dart';
-import 'package:elhanbly/feature/modules/home/home_section/lessons_section/widgets/lesson_screen.dart';
-import 'package:elhanbly/feature/modules/home/home_section/lessons_section/widgets/session_screen.dart';
-import 'package:elhanbly/models/home_entities/home/get_home.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../../../../../core/consts/images.dart';
 import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
-import 'recommended_files_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../../../../../models/home_entities/files/get_recommended_files_response.dart';
+import '../../../../../../models/home_entities/home/get_home.dart';
+import '../../lessons_section/widgets/session_screen.dart';
 
 class RecommendedFilesItem extends StatelessWidget {
   final FeaturedFile? model;
@@ -37,48 +32,60 @@ class RecommendedFilesItem extends StatelessWidget {
         
       },
       child: Container(
-        width: MediaQuery.of(context).size.width,
-        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         decoration: BoxDecoration(
           color: AppColors.kWhite,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: AppColors.textFieldBorderColor, width: 1),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(
+            color: AppColors.borderColor.withOpacity(0.6),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           child: Row(
             children: [
-               CircleAvatar(
+              CircleAvatar(
                 backgroundColor: AppColors.kPrimary,
                 radius: 20,
-                child:model?.type == 'video'? SvgPicture.asset(AppImages.playVideoSvg,color: AppColors.kWhite,width: 25,) :Icon( Icons.picture_as_pdf, color: AppColors.kWhite),
+                child: model?.type == 'video'
+                    ? SvgPicture.asset(
+                        AppImages.playVideoSvg,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.kWhite,
+                          BlendMode.srcIn,
+                        ),
+                        width: 22,
+                      )
+                    : const Icon(Icons.picture_as_pdf, color: AppColors.kWhite),
               ),
-              Flexible(
+              12.sbW,
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppTextScroll(
-                            model?.session?.title ?? '',
-                            size: 16.sp,
-                            weight: w700,
-                            color: AppColors.textColor,
-                            align: TextAlign.right,
-                          ),
-                          8.sbH,
-                          AppText(
-                            '${model?.type} ',
-                            size: 14.sp,
-                            weight: w400,
-                            color: AppColors.textColor4,
-                          ),
-                        ],
-                      ),
+                    AppText(
+                      model?.session?.title ?? '',
+                      size: 15.sp,
+                      weight: w700,
+                      color: AppColors.textColor,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    4.sbH,
+                    AppText(
+                      model?.type == 'video' ? 'فيديو' : 'ملف PDF',
+                      size: 12.sp,
+                      weight: w400,
+                      color: AppColors.textColor4,
                     ),
                   ],
                 ),

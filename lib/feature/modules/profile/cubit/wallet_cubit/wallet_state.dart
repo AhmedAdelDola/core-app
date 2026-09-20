@@ -34,7 +34,9 @@ class PurchaseProductErrorState extends WalletState {
 
   PurchaseProductErrorState(this.error);
 }
-class PurchaseProductSuccessState extends WalletState {  final String massage;
+class PurchaseProductSuccessState extends WalletState {
+  final String massage;
+  String get message => massage;
   PurchaseProductSuccessState(this.massage);
 }
 

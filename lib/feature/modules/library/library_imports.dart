@@ -29,6 +29,7 @@ import 'widgets/files_tap/screens/chapter_lessons_screen.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../core/consts/images.dart';
+import '../../home_layout/cubit/home_lay_out_cubit.dart';
 part 'library_screen.dart';
 part 'widgets/courses_tab/courses_tab.dart';
 // part 'widgets/files_tap/files_tap.dart';

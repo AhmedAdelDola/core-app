@@ -22,31 +22,43 @@ class CustomBottomNavigationBar extends StatefulWidget {
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final bool isTablet = screenWidth >= 600;
+
+    Widget navContent = Row(
+      mainAxisAlignment:
+          isTablet ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.spaceBetween,
+      children: [
+        bottomNavigationItem(0, 'الرئيسية', AppImages.homeNav),
+        // bottomNavigationItem(1, 'التدريبات', AppImages.fileNav),
+        bottomNavigationItem(1, 'المكتبة', AppImages.libraryNav),
+        // bottomNavigationItem(3, 'الإشعارات', AppImages.notificationNav),
+        bottomNavigationItem(2, 'المزيد', AppImages.moreNav),
+      ],
+    );
+
+    if (isTablet) {
+      navContent = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: navContent,
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsetsDirectional.only(
-          bottom: 10, start: 28, end: 28, top: 10),
+      padding: EdgeInsetsDirectional.only(
+        bottom: 10,
+        start: isTablet ? 16 : 28,
+        end: isTablet ? 16 : 28,
+        top: 10,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.kBackground,
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(20),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: AppColors.kBlack.withOpacity(0.9),
-        //     blurRadius: 12.r,
-        //     offset: const Offset(0, -2), // changes position of shadow
-        //   ),
-        // ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          bottomNavigationItem(0, 'الرئيسية', AppImages.homeNav),
-          // bottomNavigationItem(1, 'التدريبات', AppImages.fileNav),
-          bottomNavigationItem(1, 'المكتبة', AppImages.libraryNav),
-          // bottomNavigationItem(3, 'الإشعارات', AppImages.notificationNav),
-          bottomNavigationItem(2, 'المزيد', AppImages.moreNav),
-        ],
-      ),
+      child: navContent,
     );
   }
 

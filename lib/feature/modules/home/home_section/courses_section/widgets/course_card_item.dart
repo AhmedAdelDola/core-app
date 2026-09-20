@@ -6,9 +6,7 @@ import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/theme/theme.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
-import '../../../../../../core/widgets/app_texts/text_scroll.dart';
 import '../../../../../../core/widgets/network_img.dart';
-import '../../../../../../core/widgets/ui_helpers/app_rating_bar.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
 import '../../../../../../core/local/cache_helper.dart';
 import '../../../../../../core/local/enum_init.dart';
@@ -44,7 +42,7 @@ class CourseCardItem extends StatelessWidget {
           onTap ??
           () {
             bool isLogged =
-                di<CacheHelper>().getBool(CachingKey.isLogged) ?? false;
+                di<CacheHelper>().getBool(CachingKey.isLogged);
             if (isLogged) {
               NamedNavigatorImpl.push(
                 CourseViewScreen(id: "${model?.id ?? 0}"),
@@ -122,98 +120,75 @@ class CourseCardItem extends StatelessWidget {
       child: Container(
         width:
             width ??
-            (isLargeScreen ? 220 : MediaQuery.of(context).size.width * 0.44),
+            (isLargeScreen ? 230 : MediaQuery.of(context).size.width * 0.44),
         height: height,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isLargeScreen ? 12 : 12.r),
+        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.kWhite,
+          borderRadius: BorderRadius.circular(isLargeScreen ? 14 : 14.r),
+          border: Border.all(
+            color: AppColors.borderColor.withOpacity(0.6),
+            width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(isLargeScreen ? 14 : 14.r),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FloatingTextOnImg(img: model?.imageUrl ?? '', isFree: 0),
               Padding(
-                padding: EdgeInsets.all(isLargeScreen ? 12 : 12.w),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isLargeScreen ? 12 : 10.w,
+                  vertical: isLargeScreen ? 10 : 8.h,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Row(
-                        //   children: [
-                        //     AppRatingBar(
-                        //       size:
-                        //           isLargeScreen ? (isDesktop ? 15 : 14) : 20,
-                        //       initialRating: double.tryParse(
-                        //           '${model?.?.rate ?? 0.0}'),
-                        //       onRatingUpdate: null,
-                        //     ),
-                        //     SizedBox(width: isLargeScreen ? 6 : 8.w),
-                        //     Flexible(
-                        //       child: AppText(
-                        //         '${model.rating?.rate ?? 0.0} (${model.rating?.raters ?? 0.0})',
-                        //         textDirection: TextDirection.ltr,
-                        //         size: isLargeScreen
-                        //             ? (isDesktop ? 12 : 11)
-                        //             : null,
-                        //         style: TextStyles.textViewMedium(
-                        //           color: AppColors.textColor5,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ],
-                        // ),
-                        SizedBox(height: isLargeScreen ? 8 : 5.h),
-                        isLargeScreen
-                            ? AppTextScroll(
-                                model?.title ?? '',
-                                size: isDesktop ? 15 : 14,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                color: AppColors.textColor,
-                                centerText: false,
-                              )
-                            : AppTextScroll(
-                                model?.title ?? '',
-                                size: 18.sp,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                color: AppColors.textColor,
-                                centerText: false,
-                              ),
-                      ],
+                    AppText(
+                      model?.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyles.textViewBold(
+                        size: isLargeScreen ? (isDesktop ? 15 : 14) : 15.sp,
+                        color: AppColors.textColor,
+                      ),
                     ),
-                    SizedBox(height: isLargeScreen ? 8 : 5.h),
+                    6.sbH,
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadiusGeometry.circular(50),
+                          borderRadius: BorderRadius.circular(50),
                           child: NetworkImagesWidgets(
                             url:
                                 model?.teacher?.imageUrl ??
                                 Strings.placeHolderImg,
-
                             height: isLargeScreen
-                                ? (isDesktop ? 26 : 24)
-                                : 32.h,
-                            width: isLargeScreen ? (isDesktop ? 26 : 24) : 32.w,
+                                ? (isDesktop ? 24 : 22)
+                                : 24.h,
+                            width: isLargeScreen
+                                ? (isDesktop ? 24 : 22)
+                                : 24.w,
                           ),
                         ),
-                        SizedBox(width: isLargeScreen ? 8 : 8.w),
-                        Flexible(
+                        8.sbW,
+                        Expanded(
                           child: AppText(
                             align: TextAlign.start,
                             model?.teacher?.name ?? '',
                             maxLines: 1,
-                            size: isLargeScreen ? (isDesktop ? 13 : 12) : null,
+                            size: isLargeScreen ? (isDesktop ? 13 : 12) : 12.sp,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyles.textViewMedium(
+                            style: TextStyles.textViewRegular(
                               color: AppColors.textColor5,
                             ),
                           ),

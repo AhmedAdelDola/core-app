@@ -41,7 +41,7 @@ class AppColors {
 
   /// ================================================================================================
   static const Color kPrimaryBackground = Color(0xff87279F);
-  static const Color kBackground = Color(0xfffefbff);
+  static const Color kBackground = Color(0xffFFFFFF);
   static const Color kWhite = Color(0xffFFFFFF);
   static const Color kBlack = Color(0xff000000);
   static const Color kIndicatorColor = Color(0xff2a2a2a);
@@ -53,7 +53,7 @@ class AppColors {
   static const Color kDarkGray = Color(0xff7E7E7E);
   static const Color kGrayText = Color(0xff7C7C7C);
   static const Color kDarkGreyText = Color(0xff535353);
-  static const Color kBottomNavColor = Color(0xffFEFBFF);
+  static const Color kBottomNavColor = Color(0xffFFFFFF);
   // ================================================================
 
   static const Color kDarkModePrimaryBackground = Color(0xff535178);
@@ -70,5 +70,5 @@ class AppColors {
   static const Color kDarkModeDarkGray = Color(0xff7E7E7E);
   static const Color kDarkModeGrayText = Color(0xff7C7C7C);
   static const Color kDarkModeDarkGreyText = Color(0xff535353);
-  static const Color kDarkModeBottomNavColor = Color(0xffFEFBFF);
+  static const Color kDarkModeBottomNavColor = Color(0xffFFFFFF);
 }

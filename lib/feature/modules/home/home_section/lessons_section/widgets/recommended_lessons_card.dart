@@ -3,16 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../core/consts/images.dart';
-import '../../../../../../core/consts/strings.dart';
 import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/theme/theme.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
-import '../../../../../../core/widgets/app_texts/text_scroll.dart';
-import '../../../../../../core/widgets/network_img.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
-import '../../../../../../models/home_entities/lessons/get_lessons_response.dart';
-import 'lesson_screen.dart';
 import 'session_screen.dart';
 
 class RecommendedLessonsCard extends StatelessWidget {
@@ -36,106 +31,110 @@ class RecommendedLessonsCard extends StatelessWidget {
         ),
       ),
       child: Container(
-        width: isLargeScreen ? 200.w : 190.w,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: isLargeScreen ? 230 : 190.w,
+        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(isLargeScreen ? 12 : 12.r),
-        ),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isLargeScreen ? 12 : 12.r),
+          color: AppColors.kWhite,
+          borderRadius: BorderRadius.circular(isLargeScreen ? 14 : 14.r),
+          border: Border.all(
+            color: AppColors.borderColor.withOpacity(0.6),
+            width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(isLargeScreen ? 14 : 14.r),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(isLargeScreen ? 12 : 12.r),
-                  topRight: Radius.circular(isLargeScreen ? 12 : 12.r),
-                ),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.asset(AppImages.playStore, fit: BoxFit.cover),
-                ),
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.asset(AppImages.playStore, fit: BoxFit.cover),
+                  ),
+                  Positioned(
+                    bottom: 8.h,
+                    left: 8.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 3.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            size: isLargeScreen ? 14 : 14.sp,
+                            color: Colors.white,
+                          ),
+                          3.sbW,
+                          AppText(
+                            'فيديو',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isLargeScreen ? 11 : 11.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Padding(
-                padding: EdgeInsets.all(isLargeScreen ? 12 : 12.w),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isLargeScreen ? 12 : 10.w,
+                  vertical: isLargeScreen ? 10 : 8.h,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    AppText(
+                      model?.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyles.textViewBold(
+                        size: isLargeScreen ? (isDesktop ? 15 : 14) : 15.sp,
+                        color: AppColors.textColor,
+                      ),
+                    ),
+                    6.sbH,
+                    Row(
                       children: [
-                        isLargeScreen
-                            ? AppTextScroll(
-                                model?.title ?? '',
-                                size: isDesktop ? 15 : 14,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                color: AppColors.textColor,
-                                centerText: false,
-                              )
-                            : AppTextScroll(
-                                model?.title ?? '',
-                                size: 18.sp,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                color: AppColors.textColor,
-                                centerText: false,
-                              ),
-                        SizedBox(height: isLargeScreen ? 6 : 5.h),
-                        isLargeScreen
-                            ? AppText(
-                                model?.course?.title ?? '',
-                                size: isDesktop ? 13 : 12,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                color: AppColors.textColor,
-                                centerText: false,
-                              )
-                            : AppTextScroll(
-                                model?.course?.title ?? '',
-                                size: 18.sp,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                color: AppColors.textColor,
-                                centerText: false,
-                              ),
+                        Icon(
+                          Icons.menu_book_rounded,
+                          size: isLargeScreen ? 14 : 14.sp,
+                          color: AppColors.textColor5,
+                        ),
+                        6.sbW,
+                        Expanded(
+                          child: AppText(
+                            model?.course?.title ?? '',
+                            maxLines: 1,
+                            size: isLargeScreen ? (isDesktop ? 13 : 12) : 12.sp,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyles.textViewRegular(
+                              color: AppColors.textColor5,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    SizedBox(height: isLargeScreen ? 8 : 5.h),
-
-                    // Row(
-                    //   children: [
-                    //     NetworkImagesWidgets(
-                    //       url: model.lesson..?.avatar ?? '',
-                    //       height: isLargeScreen ? 24 : 22.h,
-                    //       width: isLargeScreen ? 24 : 22.w,
-                    //     ),
-                    //     SizedBox(width: isLargeScreen ? 8 : 8.w),
-                    //     Expanded(
-                    //       child: isLargeScreen
-                    //           ? AppText(
-                    //               model.teacher?.name ?? '',
-                    //               maxLines: 1,
-                    //               size: isDesktop ? 12 : 11,
-                    //               overflow: TextOverflow.ellipsis,
-                    //               style: TextStyles.textViewMedium(
-                    //                   color: AppColors.textColor5),
-                    //             )
-                    //           : AppTextScroll(
-                    //               model.teacher?.name ?? '',
-                    //               maxLines: 1,
-                    //               overflow: TextOverflow.ellipsis,
-                    //               style: TextStyles.textViewMedium(
-                    //                   color: AppColors.textColor5),
-                    //             ),
-                    //     ),
-                    //   ],
-                    // ),
                   ],
                 ),
               ),

@@ -49,6 +49,14 @@ class FakeRepository implements Repository {
   RepositoryStub<LibraryCoursesResponse>? getLibraryCoursesStub;
   RepositoryStub<GetSessionInfoResponse>? getSessionInfoStub;
   RepositoryStub<ShowVideo>? getVideoStub;
+  RepositoryStub<GeneralResponse>? purchaseCourseSubscriptionStub;
+  RepositoryStub<GeneralResponse>? purchaseSessionSubscriptionStub;
+  String? lastPurchaseCourseId;
+  String? lastPurchaseCourseMethod;
+  String? lastPurchaseCourseCode;
+  String? lastPurchaseSessionId;
+  String? lastPurchaseSessionMethod;
+  String? lastPurchaseSessionCode;
 
   LoginRequest? lastLoginRequest;
   RegisterStudentRequest? lastRegisterStudentRequest;
@@ -75,18 +83,21 @@ class FakeRepository implements Repository {
   }
 
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
   Future<Either<dynamic, bool>> registerStudent({
     required String name,
     required String phone,
-    required String email,
-    required String password,
+    String? email,
+    String? password,
     required int levelId,
   }) {
     lastRegisterStudentRequest = RegisterStudentRequest(
       name: name,
       phone: phone,
-      email: email,
-      password: password,
+      email: email ?? '',
+      password: password ?? '',
       levelId: levelId,
     );
     return _call(registerStudentStub, 'registerStudent');
@@ -161,6 +172,30 @@ class FakeRepository implements Repository {
   }) {
     lastPurchaseProductRequest = PurchaseProductRequest(type: type, id: id);
     return _call(purchaseProductStub, 'purchaseProduct');
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> purchaseCourseSubscription({
+    required String courseId,
+    required String paymentMethod,
+    String? code,
+  }) {
+    lastPurchaseCourseId = courseId;
+    lastPurchaseCourseMethod = paymentMethod;
+    lastPurchaseCourseCode = code;
+    return _call(purchaseCourseSubscriptionStub, 'purchaseCourseSubscription');
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> purchaseSessionSubscription({
+    required String sessionId,
+    required String paymentMethod,
+    String? code,
+  }) {
+    lastPurchaseSessionId = sessionId;
+    lastPurchaseSessionMethod = paymentMethod;
+    lastPurchaseSessionCode = code;
+    return _call(purchaseSessionSubscriptionStub, 'purchaseSessionSubscription');
   }
 
   @override

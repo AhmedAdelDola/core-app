@@ -25,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     shortestSide = MediaQuery.of(context).size.shortestSide;
+    isTablet = (shortestSide ?? 0) >= 600 || MediaQuery.sizeOf(context).width >= 600;
     return BlocProvider(
       create: (context) => di<LoginCubit>(),
       child: BlocConsumer<LoginCubit, LoginState>(
@@ -59,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   phone: "${cubit.numberCode}${phoneController.text.trim()}",
                 ),
               );
-            } else if (state.message.contains('required')) {
+            } else if (!isPhoneChecked || state.message.contains('required')) {
               if (!isPhoneChecked) {
                 setState(() {
                   isPhoneChecked = true;
@@ -84,16 +85,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: formKey,
                 child: Column(
                   children: [
-                    SizedBox(height: 40.h),
+                    SizedBox(height: isTablet ? 20.h : 40.h),
                     // Responsive logo
                     loginLogo,
 
                     Expanded(
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.kWhite,
+                          borderRadius: isTablet
+                              ? BorderRadius.circular(24.r)
+                              : BorderRadius.vertical(
+                                  top: Radius.circular(24.r),
+                                ),
+                        ),
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(15),
+                          padding: EdgeInsets.all(isTablet ? 24 : 15),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -131,8 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  showCountryDropDown(cubit, setState),
-                                  10.sbW,
                                   Expanded(
                                     flex: 7,
                                     child: Center(
@@ -142,8 +148,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         keyboardType: const TextInputType
                                             .numberWithOptions(),
                                         validate: AppValidators.number,
-                                        textDirection: TextDirection.rtl,
-                                        textAlign: TextAlign.right,
+                                        textDirection: TextDirection.ltr,
+                                        textAlign: TextAlign.left,
                                         hintText: 'رقم الهاتف',
                                         inputFormatters: [
                                           TextInputFormatter.withFunction(
@@ -173,32 +179,38 @@ class _LoginScreenState extends State<LoginScreen> {
                                               .digitsOnly,
                                           LengthLimitingTextInputFormatter(11),
                                         ],
-                                        prefixWidget: Container(
-                                          width: 90.w,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8),
-                                          child: Row(
-                                            children: [
-                                              AppText(
-                                                cubit.numberCode ?? '',
-                                                style:
-                                                    TextStyles.textViewRegular(
-                                                            fontSize: 16.sp)
-                                                        .copyWith(
-                                                            color: AppColors
-                                                                .textColor2),
-                                              ),
-                                              SvgPicture.asset(
-                                                AppImages.phone,
-                                                colorFilter:
-                                                    const ColorFilter.mode(
-                                                        AppColors.textColor,
-                                                        BlendMode.srcIn),
-                                              ),
-                                            ],
+                                        suffixWidget: Container(
+                                          padding: EdgeInsets.only(
+                                              left: 8.w, right: 10.w),
+                                          child: Directionality(
+                                            textDirection: TextDirection.ltr,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SvgPicture.asset(
+                                                  AppImages.phone,
+                                                  width: 18.w,
+                                                  height: 18.h,
+                                                  colorFilter:
+                                                      const ColorFilter.mode(
+                                                          AppColors.textColor,
+                                                          BlendMode.srcIn),
+                                                ),
+                                                6.sbW,
+                                                AppText(
+                                                  cubit.numberCode ?? '',
+                                                  style:
+                                                      TextStyles.textViewRegular(
+                                                              fontSize: 16.sp)
+                                                          .copyWith(
+                                                              color: AppColors
+                                                                  .textColor2),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                        suffixWidget: isPhoneChecked
+                                        prefixWidget: isPhoneChecked
                                             ? IconButton(
                                                 icon: const Icon(
                                                   Icons.edit,
@@ -217,6 +229,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                   ),
+                                  10.sbW,
+                                  showCountryDropDown(cubit, setState),
                                 ],
                               ),
                               20.sbH,
@@ -243,6 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                               appContext: context,
                                               length: 4,
                                               controller: otpController,
+                                              autoDisposeControllers: false,
                                               keyboardType: TextInputType.number,
                                               animationType: AnimationType.fade,
                                               pinTheme: PinTheme(
@@ -368,6 +383,39 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ],
                                   ],
+                                ),
+                              ),
+                              12.sbH,
+                              InkWell(
+                                onTap: () {
+                                  if (Navigator.of(context).canPop()) {
+                                    NamedNavigatorImpl.pop();
+                                  } else {
+                                    NamedNavigatorImpl.pushNamed(Routes.guestHome, clean: true);
+                                  }
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AppText(
+                                        'الدخول كزائر',
+                                        style: TextStyles.textViewMedium(fontSize: 15.sp).copyWith(
+                                          color: AppColors.textColor2,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        align: TextAlign.center,
+                                      ),
+                                      6.sbW,
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 13.sp,
+                                        color: AppColors.textColor2,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

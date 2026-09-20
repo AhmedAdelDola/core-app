@@ -10,7 +10,6 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     registerScreenSecurityChannel()
-    ScreenSecurityManager.shared.enable(window: window)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -32,6 +31,9 @@ import UIKit
       if call.method == "enable" {
         ScreenSecurityManager.shared.enable(window: self?.window)
         result(nil)
+      } else if call.method == "disable" {
+        ScreenSecurityManager.shared.disable()
+        result(nil)
       } else {
         result(FlutterMethodNotImplemented)
       }
@@ -45,11 +47,13 @@ final class ScreenSecurityManager {
   private var privacyView: UIView?
   private var secureTextField: UITextField?
   private var isObserverRegistered = false
+  private var isEnabled = false
   private weak var targetWindow: UIWindow?
 
   private init() {}
 
   func enable(window: UIWindow? = nil) {
+    isEnabled = true
     if let window = window {
       self.targetWindow = window
     }
@@ -57,6 +61,25 @@ final class ScreenSecurityManager {
     registerObservers()
     secureContent()
     updatePrivacyOverlay()
+  }
+
+  func disable() {
+    isEnabled = false
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.privacyView?.removeFromSuperview()
+      self.privacyView = nil
+
+      if let textField = self.secureTextField {
+        textField.isSecureTextEntry = false
+        if let window = self.resolveWindow(),
+           let controllerView = window.rootViewController?.view {
+          window.layer.addSublayer(controllerView.layer)
+        }
+        textField.removeFromSuperview()
+        self.secureTextField = nil
+      }
+    }
   }
 
   private func registerObservers() {
@@ -103,8 +126,9 @@ final class ScreenSecurityManager {
   }
 
   private func secureContent() {
+    guard isEnabled else { return }
     DispatchQueue.main.async { [weak self] in
-      guard let self = self else { return }
+      guard let self = self, self.isEnabled else { return }
       guard self.secureTextField == nil else { return }
       guard let window = self.resolveWindow() else {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
@@ -158,16 +182,19 @@ final class ScreenSecurityManager {
   }
 
   @objc private func showPrivacyOverlay() {
+    guard isEnabled else { return }
     setPrivacyOverlayVisible(true)
   }
 
   @objc private func didBecomeActive() {
-    secureContent()
-    updatePrivacyOverlay()
+    if isEnabled {
+      secureContent()
+      updatePrivacyOverlay()
+    }
   }
 
   @objc private func updatePrivacyOverlay() {
-    setPrivacyOverlayVisible(isScreenRecording)
+    setPrivacyOverlayVisible(isEnabled && isScreenRecording)
   }
 
   private var isScreenRecording: Bool {
@@ -179,7 +206,7 @@ final class ScreenSecurityManager {
       guard let self = self else { return }
       guard let window = self.resolveWindow() else { return }
 
-      if visible {
+      if visible && self.isEnabled {
         if self.privacyView == nil {
           let overlay = UIView(frame: window.bounds)
           overlay.backgroundColor = .black
