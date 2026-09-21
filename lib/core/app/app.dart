@@ -11,6 +11,8 @@ import '../network/cubit/state.dart';
 import '../theme/theme.dart';
 import 'providers.dart';
 
+import '../util/responsive/responsive_helper.dart';
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -53,12 +55,12 @@ class MyApp extends StatelessWidget {
   Size _getDesignSize(BoxConstraints constraints) {
     final width = constraints.maxWidth;
 
-    // Tablet landscape
-    if (width >= 900) {
+    // Tablet landscape / desktop
+    if (width >= ResponsiveBreakpoints.tabletLandscapeMin) {
       return const Size(1024, 768);
     }
     // Tablet portrait
-    else if (width >= 600) {
+    else if (width >= ResponsiveBreakpoints.tabletPortraitMin) {
       return const Size(768, 1024);
     }
     // Phone

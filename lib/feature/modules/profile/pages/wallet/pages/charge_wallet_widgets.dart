@@ -17,6 +17,7 @@ import '../../../../../../core/consts/images.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/theme/theme.dart';
 import '../../../../../../core/util/launcher.dart';
+import '../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../core/util/text_input_formatter.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../core/widgets/loader/app_loader.dart';
@@ -55,9 +56,11 @@ class ChargeWalletScreen extends StatelessWidget {
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               physics: const BouncingScrollPhysics(),
-              child: Form(
-                key: formKey,
-                child: Column(
+              child: AdaptiveContainer(
+                maxWidth: ResponsiveBreakpoints.maxFormWidth,
+                child: Form(
+                  key: formKey,
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Balance Summary Card
@@ -238,7 +241,8 @@ class ChargeWalletScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            );
+            ),
+          );
           },
         ),
       ),

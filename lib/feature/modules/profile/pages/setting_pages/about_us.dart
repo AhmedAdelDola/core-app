@@ -27,10 +27,12 @@ class AboutAppScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: const CustomAppBar(title: 'عن التطبيق'),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Column(
+      body: AdaptiveContainer(
+        maxWidth: 680,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
           children: [
             // ── Hero Branding Header ──────────────────────────────────
             Container(
@@ -427,6 +429,7 @@ class AboutAppScreen extends StatelessWidget {
             SizedBox(height: 12.h),
           ],
         ),
+      ),
       ),
     );
   }

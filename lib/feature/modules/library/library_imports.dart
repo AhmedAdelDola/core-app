@@ -7,6 +7,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../../../core/consts/strings.dart';
 import '../../../core/navigator/named_navigator_impl.dart';
 import '../../../core/services/di.dart';
+import '../../../core/util/responsive/responsive_helper.dart';
 import '../../../core/theme/colors/app_colors.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/app_bar/custom_curved_appbar.dart';

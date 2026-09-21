@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/widgets/app_bar/custom_curved_appbar.dart';
 import '../../../../../../models/home_entities/home/get_home.dart';
@@ -15,8 +16,14 @@ class RecommendedFiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth >= 600;
+    final bool isTablet = AppResponsive.isTabletOrLarger(context);
+    final int crossAxisCount = AppResponsive.gridColumns(
+      context,
+      mobile: 1,
+      tabletPortrait: 2,
+      tabletLandscape: 3,
+      desktop: 3,
+    );
 
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
@@ -37,15 +44,15 @@ class RecommendedFiles extends StatelessWidget {
               SizedBox(height: isTablet ? 14.h : 10.h),
               Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 20.w : 10.w,
+                  horizontal: isTablet ? 20.w : 14.w,
                 ),
                 child: isTablet
                     ? GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
                           childAspectRatio: 4.8,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 8,
@@ -77,28 +84,37 @@ class RecommendedFilesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final bool isTablet = screenWidth >= 600;
+    final bool isTablet = AppResponsive.isTabletOrLarger(context);
+    final int crossAxisCount = AppResponsive.gridColumns(
+      context,
+      mobile: 1,
+      tabletPortrait: 2,
+      tabletLandscape: 3,
+      desktop: 3,
+    );
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'الملفات المقترحة'),
-      body: isTablet
-          ? GridView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 4.8,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 10,
+      body: AdaptiveContainer(
+        maxWidth: ResponsiveBreakpoints.maxContentWidth,
+        child: isTablet
+            ? GridView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 4.8,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: model.length,
+                itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
+              )
+            : ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                itemCount: model.length,
+                itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
               ),
-              itemCount: model.length,
-              itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
-            )
-          : ListView.builder(
-              padding: EdgeInsets.symmetric(vertical: 12.h),
-              itemCount: model.length,
-              itemBuilder: (c, i) => RecommendedFilesItem(model: model[i]),
-            ),
+      ),
     );
   }
 }

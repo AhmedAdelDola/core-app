@@ -26,16 +26,19 @@ Widget showCountryDropDown(
           margin: EdgeInsets.only(right: 8.w),
           padding: EdgeInsets.symmetric(vertical: 4.h),
           decoration: boxDecoration,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.keyboard_arrow_down_sharp),
-              AppText(
-                Utils.countryCodeToEmoji(cubit.countryCode ?? ''),
-                style: TextStyles.textViewRegular(fontSize: 24.sp)
-                    .copyWith(color: AppColors.textColor),
-              ),
-            ],
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.keyboard_arrow_down_sharp, size: 18.sp),
+                AppText(
+                  Utils.countryCodeToEmoji(cubit.countryCode ?? ''),
+                  style: TextStyles.textViewRegular(fontSize: 20.sp)
+                      .copyWith(color: AppColors.textColor),
+                ),
+              ],
+            ),
           ),
         ),
       ),

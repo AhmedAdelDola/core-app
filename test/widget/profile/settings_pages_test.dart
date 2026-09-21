@@ -2,9 +2,14 @@ import 'package:elhanbly/feature/modules/profile/profile_imports.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/test_bootstrap.dart';
 import '../../helpers/widget_test_app.dart';
 
 void main() {
+  setUp(() async {
+    await configureTestDependencies();
+  });
+
   testWidgets('AboutAppScreen renders scaffold and body text', (tester) async {
     await pumpWidgetTestApp(tester, const AboutAppScreen());
 
@@ -17,6 +22,6 @@ void main() {
 
     expect(find.byType(Scaffold), findsOneWidget);
     expect(find.byType(ListView), findsOneWidget);
-    expect(find.byIcon(Icons.circle), findsWidgets);
+    expect(find.text('اتفاقية الاستخدام والخصوصية'), findsOneWidget);
   });
 }

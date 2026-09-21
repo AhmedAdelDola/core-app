@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 import '../../../core/services/di.dart';
+import '../../../core/util/responsive/responsive_helper.dart';
 import '../../../core/widgets/loader/app_loader.dart';
 import 'cubit/home_cubit/home_cubit.dart';
 import 'home_section/courses_section/view/recommended_courses_section.dart';
@@ -21,8 +22,8 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           final cubit = HomeCubit.of(context);
           if (state is GetHomeLoadingState) return const AppLoader();
-         
-          final isTablet = MediaQuery.sizeOf(context).width >= 600;
+
+          final isTablet = AppResponsive.isTabletOrLarger(context);
 
           return SmartRefresher(
             controller: cubit.refreshController,
@@ -32,16 +33,19 @@ class HomeScreen extends StatelessWidget {
               cubit.refreshController.refreshCompleted();
             },
             child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(height: isTablet ? 16.h : 12.h),
-                  const RecommendedCoursesSection(),
-                  SizedBox(height: isTablet ? 16.h : 12.h),
-                  const RecommendedLessonsSection(),
-                  SizedBox(height: isTablet ? 16.h : 12.h),
-                  const RecommendedFiles(),
-                  SizedBox(height: isTablet ? 80.h : 70.h),
-                ],
+              child: AdaptiveContainer(
+                maxWidth: ResponsiveBreakpoints.maxContentWidth,
+                child: Column(
+                  children: [
+                    SizedBox(height: isTablet ? 16.h : 12.h),
+                    const RecommendedCoursesSection(),
+                    SizedBox(height: isTablet ? 16.h : 12.h),
+                    const RecommendedLessonsSection(),
+                    SizedBox(height: isTablet ? 16.h : 12.h),
+                    const RecommendedFiles(),
+                    SizedBox(height: isTablet ? 80.h : 70.h),
+                  ],
+                ),
               ),
             ),
           );

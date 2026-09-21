@@ -12,6 +12,7 @@ import '../../../../../../core/local/cache_helper.dart';
 import '../../../../../../core/local/enum_init.dart';
 import '../../../../../../core/navigator/named_navigator_routes.dart';
 import '../../../../../../core/services/di.dart';
+import '../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../core/widgets/app_buttons/master_button.dart';
 import '../view/course_view/course_view.dart';
 import 'floating_text_on_img.dart';
@@ -21,6 +22,7 @@ class CourseCardItem extends StatelessWidget {
   final double? width;
   final double? height;
   final VoidCallback? onTap;
+  final bool inGrid;
 
   const CourseCardItem({
     super.key,
@@ -28,14 +30,13 @@ class CourseCardItem extends StatelessWidget {
     this.width,
     this.height,
     this.onTap,
+    this.inGrid = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth >= 600 && screenWidth < 1200;
-    final bool isDesktop = screenWidth >= 1200;
-    final bool isLargeScreen = isTablet || isDesktop;
+    final bool isLargeScreen = AppResponsive.isTabletOrLarger(context);
+    final bool isDesktop = AppResponsive.isDesktop(context);
 
     return InkWell(
       onTap:
@@ -118,9 +119,10 @@ class CourseCardItem extends StatelessWidget {
             }
           },
       child: Container(
-        width:
-            width ??
-            (isLargeScreen ? 230 : MediaQuery.of(context).size.width * 0.44),
+        width: inGrid
+            ? double.infinity
+            : (width ??
+                (isLargeScreen ? 230 : MediaQuery.of(context).size.width * 0.44)),
         height: height,
         margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(

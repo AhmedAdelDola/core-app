@@ -12,23 +12,13 @@ import '../../../../../../core/widgets/ui_helpers/extensions.dart';
 import '../../../cubit/home_cubit/home_cubit.dart';
 import '../widgets/recommended_lessons_card.dart';
 
+import '../../../../../../core/util/responsive/responsive_helper.dart';
+
 class AllRecommendedLessonsScreen extends StatelessWidget {
   const AllRecommendedLessonsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth >= 600 && screenWidth < 900;
-    final bool isDesktop = screenWidth >= 900;
-    final bool isLargeScreen = isTablet || isDesktop;
-
-    int crossAxisCount = 1;
-    if (isDesktop) {
-      crossAxisCount = 4;
-    } else if (isTablet) {
-      crossAxisCount = 3;
-    }
-
     return Scaffold(
       appBar: const CustomAppBar(title: 'الحصص المقترحة'),
       body: BlocBuilder<HomeCubit, HomeStates>(
@@ -61,36 +51,50 @@ class AllRecommendedLessonsScreen extends StatelessWidget {
             );
           }
 
-          return isLargeScreen
-              ? GridView.builder(
-                  padding: EdgeInsets.all(isDesktop ? 24 : 16),
+          final isTablet = AppResponsive.isTabletOrLarger(context);
+          final isDesktop = AppResponsive.isDesktop(context);
+          final crossAxisCount = AppResponsive.gridColumns(
+            context,
+            mobile: 2,
+            tabletPortrait: 3,
+            tabletLandscape: 4,
+            desktop: 4,
+          );
+
+          final double spacing = isDesktop ? 16.0 : (isTablet ? 12.0 : 10.0);
+          final double paddingVal = isDesktop ? 24.0 : (isTablet ? 16.0 : 12.0);
+
+          return AdaptiveContainer(
+            maxWidth: ResponsiveBreakpoints.maxContentWidth,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final cardWidth =
+                    (constraints.maxWidth -
+                        paddingVal * 2 -
+                        (crossAxisCount - 1) * spacing) /
+                    crossAxisCount;
+                final detailsHeight = !isTablet ? 88.0 : 78.0;
+                final cardHeight = cardWidth * (9 / 16) + detailsHeight;
+
+                return GridView.builder(
+                  padding: EdgeInsets.all(paddingVal),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.85,
-                    crossAxisSpacing: isDesktop ? 20 : 16,
-                    mainAxisSpacing: isDesktop ? 20 : 16,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
+                    mainAxisExtent: cardHeight,
                   ),
                   itemCount: sessions.length,
                   itemBuilder: (context, index) {
                     return RecommendedLessonsCard(
                       model: sessions[index],
-                    );
-                  },
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
-                  itemCount: sessions.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6.h),
-                      child: Center(
-                        child: RecommendedLessonsCard(
-                          model: sessions[index],
-                        ),
-                      ),
+                      inGrid: true,
                     );
                   },
                 );
+              },
+            ),
+          );
         },
       ),
     );

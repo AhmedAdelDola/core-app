@@ -10,6 +10,7 @@ import '../../navigator/named_navigator_impl.dart';
 import '../../services/di.dart';
 import '../../theme/colors/app_colors.dart';
 import '../../theme/theme.dart';
+import '../../util/responsive/responsive_helper.dart';
 import '../../util/text_input_formatter.dart';
 import '../app_buttons/master_button.dart';
 import '../app_texts/app_text.dart';
@@ -165,27 +166,33 @@ class _CoursePurchaseModalState extends State<CoursePurchaseModal> {
               ) ??
               0.0;
           final isBalanceSufficient = walletBalance >= itemPrice;
+          final isTablet = AppResponsive.isTabletOrLarger(context);
 
-          return Container(
-            padding: EdgeInsets.only(
-              bottom: bottomInset > 0 ? bottomInset + 16.h : 24.h,
-              top: 12.h,
-              left: 20.w,
-              right: 20.w,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.kWhite,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24.r),
-                topRight: Radius.circular(24.r),
-              ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Top Drag Handle
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Container(
+                padding: EdgeInsets.only(
+                  bottom: bottomInset > 0 ? bottomInset + 16.h : 24.h,
+                  top: 12.h,
+                  left: 20.w,
+                  right: 20.w,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.kWhite,
+                  borderRadius: isTablet
+                      ? BorderRadius.circular(24.r)
+                      : BorderRadius.only(
+                          topLeft: Radius.circular(24.r),
+                          topRight: Radius.circular(24.r),
+                        ),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Top Drag Handle
                   Center(
                     child: Container(
                       width: 44.w,
@@ -324,6 +331,8 @@ class _CoursePurchaseModalState extends State<CoursePurchaseModal> {
                 ],
               ),
             ),
+          ),
+          ),
           );
         },
       ),

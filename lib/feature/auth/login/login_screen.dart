@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     shortestSide = MediaQuery.of(context).size.shortestSide;
-    isTablet = (shortestSide ?? 0) >= 600 || MediaQuery.sizeOf(context).width >= 600;
+    isTablet = AppResponsive.isTabletOrLarger(context);
     return BlocProvider(
       create: (context) => di<LoginCubit>(),
       child: BlocConsumer<LoginCubit, LoginState>(
@@ -48,35 +48,16 @@ class _LoginScreenState extends State<LoginScreen> {
               cubit.requestOtp(phone: phoneController.text.trim());
             }
           } else if (state is RequestOtpSuccessState) {
-            showSuccessToast('تم إرسال رمز التحقق بنجاح');
+            showSuccessToast('تم إرسال كود التحقق بنجاح');
+          } else if (state is LoginErrorState) {
+            showErrorToast(state.message);
           } else if (state is RequestOtpErrorState) {
             showErrorToast(state.message);
-          } else if (state is LoginErrorState) {
-            if (state.message.contains('Phone number not found') ||
-                state.message.contains('not found') ||
-                state.message.contains('404')) {
-              NamedNavigatorImpl.push(
-                RegisterScreen(
-                  phone: "${cubit.numberCode}${phoneController.text.trim()}",
-                ),
-              );
-            } else if (!isPhoneChecked || state.message.contains('required')) {
-              if (!isPhoneChecked) {
-                setState(() {
-                  isPhoneChecked = true;
-                });
-                if (cubit.currentAuthMode == LoginAuthMode.otp) {
-                  cubit.requestOtp(phone: phoneController.text.trim());
-                }
-              }
-            } else {
-              showErrorToast(state.message);
-            }
           }
         },
         builder: (context, state) {
           final cubit = LoginCubit.of(context);
-          final bool bothEnabled = cubit.isPasswordEnabled && cubit.isOtpEnabled;
+          final bothEnabled = cubit.isPasswordEnabled && cubit.isOtpEnabled;
 
           return AuthBg(
             child: Scaffold(
@@ -90,21 +71,28 @@ class _LoginScreenState extends State<LoginScreen> {
                     loginLogo,
 
                     Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppColors.kWhite,
-                          borderRadius: isTablet
-                              ? BorderRadius.circular(24.r)
-                              : BorderRadius.vertical(
-                                  top: Radius.circular(24.r),
-                                ),
-                        ),
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.all(isTablet ? 24 : 15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: isTablet
+                                ? ResponsiveBreakpoints.maxFormWidth
+                                : double.infinity,
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: AppColors.kWhite,
+                              borderRadius: isTablet
+                                  ? BorderRadius.circular(24.r)
+                                  : BorderRadius.vertical(
+                                      top: Radius.circular(24.r),
+                                    ),
+                            ),
+                            child: SingleChildScrollView(
+                              padding: EdgeInsets.all(isTablet ? 24 : 15),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
                               24.sbH,
                               // Responsive header
                               AppText(
@@ -423,7 +411,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                  ],
+                  ),
+                ),
+              ],
                 ),
               ),
             ),

@@ -34,46 +34,49 @@ class ShowAppDialog {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
           ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: EdgeInsetsDirectional.symmetric(horizontal: 24.w, vertical: 20.h),
-                child: InkWell(
-                  onTap: () => NamedNavigatorImpl.pop(),
-                  child: const Icon(
-                    Icons.close,
-                    color: Color(0xff999999),
-                    size: 16,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsetsDirectional.symmetric(horizontal: 24.w, vertical: 20.h),
+                  child: InkWell(
+                    onTap: () => NamedNavigatorImpl.pop(),
+                    child: const Icon(
+                      Icons.close,
+                      color: Color(0xff999999),
+                      size: 16,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                width: double.infinity,
-                height: 323.h,
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  children: [
-                    30.sbH,
-                    content,
-                    16.sbH,
-                    if (confirmText != null)
-                      CustomButton(
-                        text: confirmText,
-                        onTap: onConfirm ?? () => log('Button Click'),
-                      ),
-                    if (canselText != null) 8.sbH,
-                    if (canselText != null)
-                      CustomButton(
-                        text: canselText,
-                        onTap: () => NamedNavigatorImpl.pop(),
-                        color: AppColors.kWhite,
-                        textColor: AppColors.textColor,
-                        borderColor: AppColors.kWhite,
-                      ),
-                  ],
+                Container(
+                  width: double.infinity,
+                  height: 323.h,
+                  padding: EdgeInsets.all(20.w),
+                  child: Column(
+                    children: [
+                      30.sbH,
+                      content,
+                      16.sbH,
+                      if (confirmText != null)
+                        CustomButton(
+                          text: confirmText,
+                          onTap: onConfirm ?? () => log('Button Click'),
+                        ),
+                      if (canselText != null) 8.sbH,
+                      if (canselText != null)
+                        CustomButton(
+                          text: canselText,
+                          onTap: () => NamedNavigatorImpl.pop(),
+                          color: AppColors.kWhite,
+                          textColor: AppColors.textColor,
+                          borderColor: AppColors.kWhite,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -94,7 +97,10 @@ class ShowAppDialog {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
           ),
-          child: child,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: child,
+          ),
         );
       },
     );

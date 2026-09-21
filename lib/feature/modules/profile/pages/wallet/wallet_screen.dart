@@ -28,11 +28,13 @@ class WalletScreen extends StatelessWidget {
                 cubit.getWalletHistory();
               },
               color: AppColors.kPrimary,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                slivers: [
+              child: AdaptiveContainer(
+                maxWidth: ResponsiveBreakpoints.maxCardWidth,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
                   SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,6 +280,7 @@ class WalletScreen extends StatelessWidget {
                       ),
                     ),
                 ],
+                ),
               ),
             );
           },

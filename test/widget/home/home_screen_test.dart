@@ -29,7 +29,8 @@ void main() {
     registerWidgetTestCubits();
 
     await pumpWidgetTestApp(tester, const HomeScreen());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.byType(SingleChildScrollView), findsOneWidget);

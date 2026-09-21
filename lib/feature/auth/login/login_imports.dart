@@ -28,6 +28,7 @@ import '../../../core/widgets/app_buttons/conditional_builder.dart';
 import '../../../core/widgets/app_texts/app_text.dart';
 import '../../../core/widgets/text_field/master_text_field.dart';
 import '../../../core/widgets/ui_helpers/extensions.dart';
+import '../../../core/util/responsive/responsive_helper.dart';
 import 'cubit/login_cubit.dart';
 
 part 'login_screen.dart';

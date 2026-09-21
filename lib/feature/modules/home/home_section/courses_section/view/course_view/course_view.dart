@@ -3,6 +3,7 @@ import 'package:elhanbly/core/widgets/purchase_modal/course_purchase_modal.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../../core/services/di.dart';
 import '../../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../../core/widgets/app_buttons/master_button.dart';
@@ -83,38 +84,41 @@ class CourseViewScreen extends StatelessWidget {
             ),
             bottomNavigationBar: model?.course?.hasActiveSubscription == true
                 ? null
-                : Container(
-                    padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
-                    decoration: BoxDecoration(
-                      color: AppColors.kWhite,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, -4),
-                        ),
-                      ],
-                    ),
-                    child: MasterButton(
-                      onPressed: () {
-                        CoursePurchaseModal.show(
-                          context: context,
-                          type: PurchaseTargetType.course,
-                          id: model?.course?.id?.toString() ?? id,
-                          title: model?.course?.title ?? '',
-                          price: model?.course?.price?.toString() ?? '0',
-                          onSuccess: () {
-                            cubit.getAllCourseData(id);
-                          },
-                        );
-                      },
-                      text: () {
-                        final p = double.tryParse('${model?.course?.price ?? '0'}') ?? 0.0;
-                        if (p == 0.0) {
-                          return 'اشترك الآن (مجاناً)';
-                        }
-                        return 'اشترك الآن ($p جنيه)';
-                      }(),
+                : AdaptiveContainer(
+                    maxWidth: ResponsiveBreakpoints.maxCardWidth,
+                    child: Container(
+                      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.kWhite,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      child: MasterButton(
+                        onPressed: () {
+                          CoursePurchaseModal.show(
+                            context: context,
+                            type: PurchaseTargetType.course,
+                            id: model?.course?.id?.toString() ?? id,
+                            title: model?.course?.title ?? '',
+                            price: model?.course?.price?.toString() ?? '0',
+                            onSuccess: () {
+                              cubit.getAllCourseData(id);
+                            },
+                          );
+                        },
+                        text: () {
+                          final p = double.tryParse('${model?.course?.price ?? '0'}') ?? 0.0;
+                          if (p == 0.0) {
+                            return 'اشترك الآن (مجاناً)';
+                          }
+                          return 'اشترك الآن ($p جنيه)';
+                        }(),
+                      ),
                     ),
                   ),
           );

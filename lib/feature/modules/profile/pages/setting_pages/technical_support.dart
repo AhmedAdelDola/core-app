@@ -10,11 +10,13 @@ class TechnicalSupport extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: const CustomAppBar(title: 'الدعم الفني'),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        children: [
-          // Top Banner
+      body: AdaptiveContainer(
+        maxWidth: 680,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          children: [
+            // Top Banner
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -261,6 +263,7 @@ class TechnicalSupport extends StatelessWidget {
             }),
           ],
         ],
+      ),
       ),
     );
   }

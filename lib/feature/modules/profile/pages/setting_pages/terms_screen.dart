@@ -55,10 +55,12 @@ class TermsOfUseScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: const CustomAppBar(title: 'شروط الإستخدام'),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        children: [
+      body: AdaptiveContainer(
+        maxWidth: 680,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          children: [
           // Header Card
           Container(
             padding: EdgeInsets.all(16.w),
@@ -206,6 +208,7 @@ class TermsOfUseScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -22,6 +22,7 @@ import '../../../core/services/di.dart';
 import '../../../core/theme/colors/app_colors.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/util/launcher.dart';
+import '../../../core/util/responsive/responsive_helper.dart';
 import '../../../core/util/utils.dart';
 import '../../../core/util/validator/validator.dart';
 import '../../../core/widgets/app_bar/custom_curved_appbar.dart';

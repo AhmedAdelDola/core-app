@@ -15,6 +15,8 @@ import '../../../core/widgets/ui_helpers/extensions.dart';
 import 'cubit/onboarding_models.dart';
 import 'cubit/splash_cubit.dart';
 
+import '../../../core/util/responsive/responsive_helper.dart';
+
 class OnBoardingScreen extends StatelessWidget {
   const OnBoardingScreen({super.key});
 
@@ -23,106 +25,123 @@ class OnBoardingScreen extends StatelessWidget {
     return BlocBuilder<SplashCubit, SplashState>(
       builder: (context, state) {
         final cubit = SplashCubit.of(context);
+        final isTablet = AppResponsive.isTabletOrLarger(context);
+
         return Container(
           color: AppColors.kWhite,
           child: Scaffold(
             backgroundColor: AppColors.kPrimary,
-            body: Column(
-              children: [
-                60.sbH,
-                SkipBtn(cubit.isLast),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: PageView.builder(
-                      controller: cubit.controller,
-                      // physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: cubit.onPageChanged,
-                      itemCount: 3,
-                      itemBuilder: (context, i) =>
-                          SvgPicture.asset(OnBoardingModel.images[i]),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  SizedBox(height: isTablet ? 20.h : 16.h),
+                  SkipBtn(cubit.isLast),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 40.w : 20,
+                      ),
+                      child: PageView.builder(
+                        controller: cubit.controller,
+                        onPageChanged: cubit.onPageChanged,
+                        itemCount: 3,
+                        itemBuilder: (context, i) => Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: isTablet ? 320.h : double.infinity,
+                              maxWidth: isTablet ? 450 : double.infinity,
+                            ),
+                            child: SvgPicture.asset(
+                              OnBoardingModel.images[i],
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  constraints: BoxConstraints(
-                    minWidth: MediaQuery.of(context).size.width,
-                    maxWidth: MediaQuery.of(context).size.width,
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Center(
-                        child: Card(
-                          margin: const EdgeInsets.all(16),
+                  AdaptiveContainer(
+                    maxWidth: ResponsiveBreakpoints.maxFormWidth,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 24 : 16,
+                      vertical: isTablet ? 12 : 8,
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  20.sbH,
-                                  AppText(
-                                    OnBoardingModel.titleIntro[cubit.pageIndex],
-                                    style: TextStyle(
-                                      fontSize: 28.sp,
-                                      fontWeight: w700,
-                                      color: AppColors.textColor,
-                                    ),
+                          child: Padding(
+                            padding: EdgeInsets.all(isTablet ? 24.0 : 20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                20.sbH,
+                                AppText(
+                                  OnBoardingModel.titleIntro[cubit.pageIndex],
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 22.sp : 28.sp,
+                                    fontWeight: w700,
+                                    color: AppColors.textColor,
                                   ),
-                                  17.sbH,
-                                  AppText(
-                                    OnBoardingModel.bodyIntro[cubit.pageIndex],
-                                    align: TextAlign.center,
-                                    style: TextStyles.textViewRegular()
-                                        .copyWith(color: AppColors.textColor2),
-                                    maxLines: 10,
-                                  ),
-                                  24.sbH,
-                                  _indecator(cubit),
-                                  24.sbH,
-                                  CustomButton(
-                                    text:
-                                        cubit.isLast ? 'انضم الينا' : 'التالى',
-                                    onTap: () => cubit.changePage(),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                17.sbH,
+                                AppText(
+                                  OnBoardingModel.bodyIntro[cubit.pageIndex],
+                                  align: TextAlign.center,
+                                  style: TextStyles.textViewRegular()
+                                      .copyWith(
+                                        color: AppColors.textColor2,
+                                        fontSize: isTablet ? 14.sp : 15.sp,
+                                      ),
+                                  maxLines: 10,
+                                ),
+                                24.sbH,
+                                _indecator(cubit),
+                                24.sbH,
+                                CustomButton(
+                                  text:
+                                      cubit.isLast ? 'انضم الينا' : 'التالى',
+                                  onTap: () => cubit.changePage(),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        top: -15,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 65,
-                          width: 65,
-                          decoration:  BoxDecoration(
-                            color: AppColors.kPrimary,
-                            shape: BoxShape.circle,
-                            border: Border.fromBorderSide(
-                              BorderSide(
-                                color: AppColors.kWhite,
-                                width: 5,
-                              ),
-                            ),
-                          ),
+                        Positioned(
+                          top: -15,
+                          left: 0,
+                          right: 0,
                           child: Center(
-                              child: SvgPicture.asset(
-                                  OnBoardingModel.icons[cubit.pageIndex])),
+                            child: Container(
+                              height: 65,
+                              width: 65,
+                              decoration: BoxDecoration(
+                                color: AppColors.kPrimary,
+                                shape: BoxShape.circle,
+                                border: const Border.fromBorderSide(
+                                  BorderSide(
+                                    color: AppColors.kWhite,
+                                    width: 5,
+                                  ),
+                                ),
+                              ),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  OnBoardingModel.icons[cubit.pageIndex],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

@@ -46,12 +46,14 @@ class _PersonalDataState extends State<PersonalData> {
             },
             builder: (context, state) {
               var cubit = UpdateProfileCubit.of(context);
-              final isTablet = MediaQuery.sizeOf(context).width >= 600;
+              final isTablet = AppResponsive.isTabletOrLarger(context);
               final avatarSize = isTablet ? 120.0 : 100.w;
               final editRadius = isTablet ? 18.0 : 15.0;
-              return Form(
-                key: formKey,
-                child: Column(
+              return AdaptiveContainer(
+                maxWidth: ResponsiveBreakpoints.maxFormWidth,
+                child: Form(
+                  key: formKey,
+                  child: Column(
                   children: <Widget>[
                     Stack(
                       alignment: AlignmentGeometry.bottomRight,
@@ -225,7 +227,8 @@ class _PersonalDataState extends State<PersonalData> {
                     20.sbH,
                   ],
                 ),
-              );
+              ),
+            );
             },
           ),
         ),

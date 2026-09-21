@@ -5,18 +5,16 @@ class CoursesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth >= 600 && screenWidth < 1000;
-    final bool isDesktop = screenWidth >= 1000;
-    final bool isLargeScreen = isTablet || isDesktop;
-
-    // Determine grid columns based on screen size
-    int crossAxisCount = 1;
-    if (isDesktop) {
-      crossAxisCount = 4;
-    } else if (isTablet) {
-      crossAxisCount = 3;
-    }
+    final bool isTablet = AppResponsive.isTablet(context);
+    final bool isDesktop = AppResponsive.isDesktop(context);
+    final bool isLargeScreen = AppResponsive.isTabletOrLarger(context);
+    final int crossAxisCount = AppResponsive.gridColumns(
+      context,
+      mobile: 1,
+      tabletPortrait: 3,
+      tabletLandscape: 4,
+      desktop: 4,
+    );
 
     return BlocProvider<LibraryCubit>(
       create: (context) => di<LibraryCubit>()..getLibraryCourses(),

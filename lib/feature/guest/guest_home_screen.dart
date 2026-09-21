@@ -10,6 +10,7 @@ import '../../core/navigator/named_navigator_routes.dart';
 import '../../core/theme/colors/app_colors.dart';
 import '../../core/theme/theme.dart';
 import '../../core/widgets/app_texts/app_text.dart';
+import '../../core/util/responsive/responsive_helper.dart';
 import '../modules/home/home_section/courses_section/widgets/course_card_item.dart';
 import 'cubit/guest_home_cubit.dart';
 
@@ -85,48 +86,52 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                   ),
                 );
               }
-              return Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      'الدورات المميزة',
-                      style: TextStyles.textViewBold(
-                        size: 18.sp,
-                        color: AppColors.textColor,
+              return AdaptiveContainer(
+                maxWidth: ResponsiveBreakpoints.maxContentWidth,
+                child: Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        'الدورات المميزة',
+                        style: TextStyles.textViewBold(
+                          size: 18.sp,
+                          color: AppColors.textColor,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 16.h),
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final crossAxisCount = constraints.maxWidth >= 900
-                              ? 3
-                              : 2;
-                          const spacing = 10.0;
-                          final cardWidth =
-                              (constraints.maxWidth -
-                                  (crossAxisCount - 1) * spacing) /
-                              crossAxisCount;
-                          // Phone cards use larger text and teacher avatars than
-                          // tablet cards, so reserve enough room for their details.
-                          final detailsHeight = constraints.maxWidth < 600
-                              ? 118.0
-                              : 108.0;
-                          final cardHeight =
-                              cardWidth * (9 / 16) + detailsHeight;
+                      SizedBox(height: 16.h),
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final crossAxisCount = AppResponsive.gridColumns(
+                              context,
+                              mobile: 2,
+                              tabletPortrait: 3,
+                              tabletLandscape: 4,
+                              desktop: 4,
+                            );
+                            const spacing = 10.0;
+                            final cardWidth =
+                                (constraints.maxWidth -
+                                    (crossAxisCount - 1) * spacing) /
+                                crossAxisCount;
+                            // Reserve proper room for details
+                            final isMobile = AppResponsive.isMobile(context);
+                            final detailsHeight = isMobile ? 88.0 : 78.0;
+                            final cardHeight =
+                                cardWidth * (9 / 16) + detailsHeight;
 
-                          return GridView.builder(
-                            padding: EdgeInsets.only(bottom: 16.h),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  crossAxisSpacing: spacing,
-                                  mainAxisSpacing: spacing,
-                                  mainAxisExtent: cardHeight,
-                                ),
-                            itemCount: featuredCourses.length,
+                            return GridView.builder(
+                              padding: EdgeInsets.only(bottom: 16.h),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount,
+                                    crossAxisSpacing: spacing,
+                                    mainAxisSpacing: spacing,
+                                    mainAxisExtent: cardHeight,
+                                  ),
+                              itemCount: featuredCourses.length,
                             itemBuilder: (context, index) {
                               return GestureDetector(
                                 onTap: () {
@@ -210,6 +215,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                                 },
                                 child: CourseCardItem(
                                   model: featuredCourses[index],
+                                  inGrid: true,
                                 ),
                               );
                             },
@@ -219,7 +225,8 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                     ),
                   ],
                 ),
-              );
+              ),
+            );
             }
             return const SizedBox();
           },

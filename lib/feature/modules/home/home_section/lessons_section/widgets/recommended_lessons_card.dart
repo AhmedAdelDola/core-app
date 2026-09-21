@@ -7,20 +7,26 @@ import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/theme/theme.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
+import '../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
 import 'session_screen.dart';
 
 class RecommendedLessonsCard extends StatelessWidget {
   final SuggestedSession? model;
+  final bool inGrid;
+  final double? width;
 
-  const RecommendedLessonsCard({super.key, required this.model});
+  const RecommendedLessonsCard({
+    super.key,
+    required this.model,
+    this.inGrid = false,
+    this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth >= 600 && screenWidth < 1000;
-    final bool isDesktop = screenWidth >= 1000;
-    final bool isLargeScreen = isTablet || isDesktop;
+    final bool isLargeScreen = AppResponsive.isTabletOrLarger(context);
+    final bool isDesktop = AppResponsive.isDesktop(context);
 
     return InkWell(
       onTap: () => NamedNavigatorImpl.push(
@@ -31,7 +37,9 @@ class RecommendedLessonsCard extends StatelessWidget {
         ),
       ),
       child: Container(
-        width: isLargeScreen ? 230 : 190.w,
+        width: inGrid
+            ? double.infinity
+            : (width ?? (isLargeScreen ? 230 : 190.w)),
         margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(
           color: AppColors.kWhite,
