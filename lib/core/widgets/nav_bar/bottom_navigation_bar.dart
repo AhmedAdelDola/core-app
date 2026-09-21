@@ -39,6 +39,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
 
     if (isTablet) {
       navContent = Center(
+        heightFactor: 1.0,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
           child: navContent,
@@ -58,7 +59,10 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: navContent,
+      child: SafeArea(
+        top: false,
+        child: navContent,
+      ),
     );
   }
 
