@@ -24,55 +24,53 @@ class AppResponsive {
   static double width(BuildContext context) => MediaQuery.sizeOf(context).width;
   static double height(BuildContext context) => MediaQuery.sizeOf(context).height;
 
-  static bool isMobile(BuildContext context) =>
-      width(context) < ResponsiveBreakpoints.tabletPortraitMin;
+  static double shortestSide(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.width < size.height ? size.width : size.height;
+  }
+
+  static bool isLandscape(BuildContext context) =>
+      width(context) > height(context);
 
   static bool isTablet(BuildContext context) {
-    final w = width(context);
-    return w >= ResponsiveBreakpoints.tabletPortraitMin &&
-        w < ResponsiveBreakpoints.desktopMin;
+    return shortestSide(context) >= ResponsiveBreakpoints.tabletPortraitMin;
   }
 
-  static bool isTabletPortrait(BuildContext context) {
-    final w = width(context);
-    return w >= ResponsiveBreakpoints.tabletPortraitMin &&
-        w < ResponsiveBreakpoints.tabletLandscapeMin;
-  }
+  static bool isMobile(BuildContext context) => !isTablet(context);
 
-  static bool isTabletLandscape(BuildContext context) {
-    final w = width(context);
-    return w >= ResponsiveBreakpoints.tabletLandscapeMin &&
-        w < ResponsiveBreakpoints.desktopMin;
-  }
+  static bool isTabletPortrait(BuildContext context) =>
+      isTablet(context) && !isLandscape(context);
+
+  static bool isTabletLandscape(BuildContext context) =>
+      isTablet(context) && isLandscape(context);
 
   static bool isDesktop(BuildContext context) =>
       width(context) >= ResponsiveBreakpoints.desktopMin;
 
   static bool isTabletOrLarger(BuildContext context) =>
-      width(context) >= ResponsiveBreakpoints.tabletPortraitMin;
-
-  static bool isLandscape(BuildContext context) =>
-      MediaQuery.orientationOf(context) == Orientation.landscape;
+      isTablet(context) || isDesktop(context);
 
   /// Resolves a value according to the current screen size
   static T value<T>(
     BuildContext context, {
     required T mobile,
+    T? mobileLandscape,
     T? tabletPortrait,
     T? tabletLandscape,
     T? desktop,
     T? tablet,
   }) {
-    final w = width(context);
-
-    if (w >= ResponsiveBreakpoints.desktopMin) {
+    if (isDesktop(context)) {
       return desktop ?? tabletLandscape ?? tablet ?? mobile;
     }
-    if (w >= ResponsiveBreakpoints.tabletLandscapeMin) {
+    if (isTabletLandscape(context)) {
       return tabletLandscape ?? tablet ?? mobile;
     }
-    if (w >= ResponsiveBreakpoints.tabletPortraitMin) {
+    if (isTabletPortrait(context)) {
       return tabletPortrait ?? tablet ?? mobile;
+    }
+    if (isLandscape(context)) {
+      return mobileLandscape ?? mobile;
     }
     return mobile;
   }
@@ -81,14 +79,15 @@ class AppResponsive {
   static int gridColumns(
     BuildContext context, {
     int mobile = 2,
-    int tabletPortrait = 3,
-    int tabletLandscape = 4,
+    int? mobileLandscape,
+    int tabletPortrait = 2,
+    int tabletLandscape = 3,
     int desktop = 4,
   }) {
-    final w = width(context);
-    if (w >= ResponsiveBreakpoints.desktopMin) return desktop;
-    if (w >= ResponsiveBreakpoints.tabletLandscapeMin) return tabletLandscape;
-    if (w >= ResponsiveBreakpoints.tabletPortraitMin) return tabletPortrait;
+    if (isDesktop(context)) return desktop;
+    if (isTabletLandscape(context)) return tabletLandscape;
+    if (isTabletPortrait(context)) return tabletPortrait;
+    if (isLandscape(context)) return mobileLandscape ?? 2;
     return mobile;
   }
 }

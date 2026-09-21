@@ -54,18 +54,15 @@ class MyApp extends StatelessWidget {
 
   Size _getDesignSize(BoxConstraints constraints) {
     final width = constraints.maxWidth;
+    final height = constraints.maxHeight;
+    final isLandscape = width > height;
+    final shortestSide = width < height ? width : height;
+    final isTabletDevice = shortestSide >= ResponsiveBreakpoints.tabletPortraitMin;
 
-    // Tablet landscape / desktop
-    if (width >= ResponsiveBreakpoints.tabletLandscapeMin) {
-      return const Size(1024, 768);
-    }
-    // Tablet portrait
-    else if (width >= ResponsiveBreakpoints.tabletPortraitMin) {
-      return const Size(768, 1024);
-    }
-    // Phone
-    else {
-      return const Size(411, 843);
+    if (isTabletDevice) {
+      return isLandscape ? const Size(1024, 768) : const Size(768, 1024);
+    } else {
+      return isLandscape ? const Size(843, 411) : const Size(411, 843);
     }
   }
 }

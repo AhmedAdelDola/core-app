@@ -57,7 +57,7 @@ class AllRecommendedLessonsScreen extends StatelessWidget {
             context,
             mobile: 2,
             tabletPortrait: 3,
-            tabletLandscape: 4,
+            tabletLandscape: 3,
             desktop: 4,
           );
 
@@ -73,7 +73,7 @@ class AllRecommendedLessonsScreen extends StatelessWidget {
                         paddingVal * 2 -
                         (crossAxisCount - 1) * spacing) /
                     crossAxisCount;
-                final detailsHeight = !isTablet ? 88.0 : 78.0;
+                final detailsHeight = isTablet ? 94.0 : 88.0;
                 final cardHeight = cardWidth * (9 / 16) + detailsHeight;
 
                 return GridView.builder(

@@ -11,8 +11,8 @@ class CoursesTab extends StatelessWidget {
     final int crossAxisCount = AppResponsive.gridColumns(
       context,
       mobile: 1,
-      tabletPortrait: 3,
-      tabletLandscape: 4,
+      tabletPortrait: 2,
+      tabletLandscape: 3,
       desktop: 4,
     );
 
@@ -82,25 +82,29 @@ class CoursesTab extends StatelessWidget {
             );
           }
           return isLargeScreen
-              ? LayoutBuilder(
-                  builder: (context, constraints) {
-                    final horizontalPadding = isDesktop ? 48.0 : 32.0;
-                    final spacing = isDesktop ? 20.0 : 16.0;
-                    final cardWidth =
-                        (constraints.maxWidth -
-                            horizontalPadding -
-                            (crossAxisCount - 1) * spacing) /
-                        crossAxisCount;
+              ? Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1100),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final horizontalPadding = isDesktop ? 48.0 : 32.0;
+                        final spacing = isDesktop ? 20.0 : 16.0;
+                        final cardWidth =
+                            (constraints.maxWidth -
+                                horizontalPadding -
+                                (crossAxisCount - 1) * spacing) /
+                            crossAxisCount;
 
-                    return GridView.builder(
-                      padding: EdgeInsets.all(isDesktop ? 24 : 16),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: spacing,
-                        mainAxisSpacing: spacing,
-                        mainAxisExtent: cardWidth * (9 / 16) + 140.h,
-                      ),
-                      itemCount: libraryCourses?.length ?? 0,
+                        return GridView.builder(
+                          padding: EdgeInsets.all(isDesktop ? 24 : 16),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: spacing,
+                            mainAxisExtent: cardWidth * (9 / 16) + 130.0,
+                          ),
+                          itemCount: libraryCourses?.length ?? 0,
                       itemBuilder: (_, i) {
                         final model = libraryCourses![i];
                         final bool hasStageOrLevel =
@@ -230,8 +234,8 @@ class CoursesTab extends StatelessWidget {
                                               borderRadius: BorderRadius.circular(50),
                                               child: CachedNetworkImage(
                                                 imageUrl: model.teacher?.imageUrl ?? '',
-                                                height: isDesktop ? 28.h : 24.h,
-                                                width: isDesktop ? 28.w : 24.w,
+                                                height: isDesktop ? 28.0 : 24.0,
+                                                width: isDesktop ? 28.0 : 24.0,
                                                 fit: BoxFit.cover,
                                                 errorWidget: (_, __, ___) => Image.asset(AppImages.genderPng, fit: BoxFit.cover),
                                               ),
@@ -270,7 +274,9 @@ class CoursesTab extends StatelessWidget {
                       },
                     );
                   },
-                )
+                ),
+              ),
+            )
               : ListView.separated(
                   padding: EdgeInsets.only(
                     left: 16.w,

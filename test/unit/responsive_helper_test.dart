@@ -64,7 +64,7 @@ void main() {
       expect(isTablet, isTrue);
       expect(isTabletPortrait, isTrue);
       expect(isTabletLandscape, isFalse);
-      expect(columns, equals(3));
+      expect(columns, equals(2));
       expect(testValue, equals('tablet'));
     });
 
@@ -88,7 +88,7 @@ void main() {
 
       expect(isTabletLandscape, isTrue);
       expect(isTabletOrLarger, isTrue);
-      expect(columns, equals(4));
+      expect(columns, equals(3));
     });
 
     testWidgets('AdaptiveContainer enforces maxWidth on wide screens', (tester) async {

@@ -9,6 +9,7 @@ import '../../../navigator/named_navigator_impl.dart';
 import '../../../services/di.dart';
 import '../../../theme/colors/app_colors.dart';
 import '../../app_texts/app_text.dart';
+import '../../../util/responsive/responsive_helper.dart';
 import '../qr_scanner.dart';
 import 'default_app_bar_widgets.dart';
 
@@ -18,9 +19,8 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= 600;
-    final double iconSize = isTablet ? 20.0 : 24.0;
-    final double appBarHeight = isTablet ? 50.h : 60.h;
+    final isTablet = AppResponsive.isTablet(context);
+    final double appBarHeight = isTablet ? 72.0 : 65.0;
 
     return BlocBuilder<BottomBarCubit, BottomBarState>(
       builder: (context, state) {
@@ -34,7 +34,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
                   cubit.currentIndex != 1)
               ? const AppBarImageWidget()
               : null,
-          actions: action ?? null,
+          actions: action,
           
         );
       },
@@ -42,7 +42,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(60.h);
+  Size get preferredSize => const Size.fromHeight(72.0);
 }
 
 Widget setAppBarTitle(int i) {
