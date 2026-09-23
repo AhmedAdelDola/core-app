@@ -23,7 +23,10 @@ class HomeScreen extends StatelessWidget {
           final cubit = HomeCubit.of(context);
           if (state is GetHomeLoadingState) return const AppLoader();
 
-          final isTablet = AppResponsive.isTabletOrLarger(context);
+          final isTablet = AppResponsive.isTablet(context);
+          final isMobileLandscape = AppResponsive.isMobileLandscape(context);
+          final double sectionSpacing = isTablet ? 16.h : (isMobileLandscape ? 8.0 : 12.h);
+          final double bottomPadding = isTablet ? 80.h : (isMobileLandscape ? 50.0 : 70.h);
 
           return SmartRefresher(
             controller: cubit.refreshController,
@@ -37,13 +40,13 @@ class HomeScreen extends StatelessWidget {
                 maxWidth: ResponsiveBreakpoints.maxContentWidth,
                 child: Column(
                   children: [
-                    SizedBox(height: isTablet ? 16.h : 12.h),
+                    SizedBox(height: sectionSpacing),
                     const RecommendedCoursesSection(),
-                    SizedBox(height: isTablet ? 16.h : 12.h),
+                    SizedBox(height: sectionSpacing),
                     const RecommendedLessonsSection(),
-                    SizedBox(height: isTablet ? 16.h : 12.h),
+                    SizedBox(height: sectionSpacing),
                     const RecommendedFiles(),
-                    SizedBox(height: isTablet ? 80.h : 70.h),
+                    SizedBox(height: bottomPadding),
                   ],
                 ),
               ),

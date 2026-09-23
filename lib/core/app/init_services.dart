@@ -23,7 +23,13 @@ Future<void> initServices() async {
 Future<void> listenAppFirebaseMessaging() async {
   final LocalNotificationService localNotificationService =
       di<LocalNotificationService>();
-  await localNotificationService.initialize();
+  await localNotificationService.initialize(
+    onSelectNotification: (payload) {
+      if (payload != null && payload.isNotEmpty) {
+        AppFirebaseMessaging.handleRawNotificationPayload(payload);
+      }
+    },
+  );
   AppFirebaseMessaging.setForegroundNotificationPresentationOptions();
   AppFirebaseMessaging.onMessage(localNotificationService);
   AppFirebaseMessaging.getInitialMessage(localNotificationService);

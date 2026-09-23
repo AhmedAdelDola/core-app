@@ -23,8 +23,6 @@ class _CourseLessonsSectionState extends State<CourseLessonsSection> {
 
   @override
   Widget build(BuildContext context) {
-    bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-
     return BlocBuilder<CoursesSectionCubit, CoursesSectionState>(
       builder: (context, state) {
         final cubit = CoursesSectionCubit.of(context);
@@ -85,108 +83,33 @@ class _CourseLessonsSectionState extends State<CourseLessonsSection> {
                 ),
               )
             else
-            isTablet
-                ? GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisExtent: 300,
-                      mainAxisSpacing: 16.w,
-                    ),
-                    shrinkWrap: true,
-                    itemCount: model.length,
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    itemBuilder: (c, courseIndex) {
-                      bool isExpanded = _expandedIndex == courseIndex;
-                      return GestureDetector(
-                        child: Row(
-                          children: [
-                            AppText('${courseIndex + 1}.'),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (_expandedIndex == courseIndex) {
-                                    _expandedIndex =
-                                        -1; // Collapse if same item clicked
-                                  } else {
-                                    _expandedIndex =
-                                        courseIndex; // Expand new item
-                                  }
-                                });
-                              },
-                              child: CourseLessonsCard(
-                                onTap: () {
-                                  setState(() {
-                                    if (_expandedIndex == courseIndex) {
-                                      _expandedIndex =
-                                          -1; // Collapse if same item clicked
-                                    } else {
-                                      _expandedIndex =
-                                          courseIndex; // Expand new item
-                                    }
-                                  });
-                                },
-                                name: model[courseIndex]?.title ?? '',
-                                description:
-                                    '',
-                                courseIndex: courseIndex,
-                                model: model,
-                                isExpanded: isExpanded,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  )
-                : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: List.generate(
-                        model.length,
-                        (courseIndex) {
-                          bool isExpanded = _expandedIndex == courseIndex;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 16),
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (_expandedIndex == courseIndex) {
-                                    _expandedIndex =
-                                        -1; // Collapse if clicked again
-                                  } else {
-                                    _expandedIndex =
-                                        courseIndex; // Expand new one
-                                  }
-                                });
-                              },
-                              child: CourseLessonsCard(
-                                onTap: () {
-                                  setState(() {
-                                    if (_expandedIndex == courseIndex) {
-                                      _expandedIndex =
-                                          -1; // Collapse if clicked again
-                                    } else {
-                                      _expandedIndex =
-                                          courseIndex; // Expand new one
-                                    }
-                                  });
-                                },
-                                name: model[courseIndex]?.title ?? '',
-                                description:
-                                    '',
-                                courseIndex: courseIndex,
-                                model: model,
-                                isExpanded: isExpanded,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
+              child: Column(
+                children: List.generate(
+                  model.length,
+                  (courseIndex) {
+                    bool isExpanded = _expandedIndex == courseIndex;
+                    return CourseLessonsCard(
+                      onTap: () {
+                        setState(() {
+                          if (_expandedIndex == courseIndex) {
+                            _expandedIndex = -1;
+                          } else {
+                            _expandedIndex = courseIndex;
+                          }
+                        });
+                      },
+                      name: model[courseIndex].title ?? '',
+                      description: '',
+                      courseIndex: courseIndex,
+                      model: model,
+                      isExpanded: isExpanded,
+                    );
+                  },
+                ),
+              ),
+            ),
           ],
         );
       },

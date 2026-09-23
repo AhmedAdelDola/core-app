@@ -35,6 +35,8 @@ class CourseCardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = AppResponsive.isTablet(context);
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
     final bool isLargeScreen = AppResponsive.isTabletOrLarger(context);
     final bool isDesktop = AppResponsive.isDesktop(context);
 
@@ -122,7 +124,11 @@ class CourseCardItem extends StatelessWidget {
         width: inGrid
             ? double.infinity
             : (width ??
-                (isLargeScreen ? 230 : MediaQuery.of(context).size.width * 0.44)),
+                (isDesktop
+                    ? 230.0
+                    : (isTablet
+                        ? 210.0
+                        : (isMobileLandscape ? 175.0 : MediaQuery.of(context).size.width * 0.44)))),
         height: height,
         margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(
@@ -149,8 +155,8 @@ class CourseCardItem extends StatelessWidget {
               FloatingTextOnImg(img: model?.imageUrl ?? '', isFree: 0),
               Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isLargeScreen ? 12 : 10.w,
-                  vertical: isLargeScreen ? 10 : 8.h,
+                  horizontal: isMobileLandscape ? 8.0 : (isLargeScreen ? 12 : 10.w),
+                  vertical: isMobileLandscape ? 5.0 : (isLargeScreen ? 10 : 8.h),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,11 +167,11 @@ class CourseCardItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyles.textViewBold(
-                        size: isLargeScreen ? (isDesktop ? 15 : 14) : 15.sp,
+                        size: isMobileLandscape ? 13.sp : (isLargeScreen ? (isDesktop ? 15 : 14) : 15.sp),
                         color: AppColors.textColor,
                       ),
                     ),
-                    6.sbH,
+                    (isMobileLandscape ? 3.0 : 6.0).sbH,
                     Row(
                       children: [
                         ClipRRect(
@@ -174,21 +180,26 @@ class CourseCardItem extends StatelessWidget {
                             url:
                                 model?.teacher?.imageUrl ??
                                 Strings.placeHolderImg,
-                            height: isLargeScreen
-                                ? (isDesktop ? 24 : 22)
-                                : 24.h,
-                            width: isLargeScreen
-                                ? (isDesktop ? 24 : 22)
-                                : 24.w,
+                            height: isMobileLandscape
+                                ? 18.0
+                                : (isLargeScreen
+                                    ? (isDesktop ? 24 : 22)
+                                    : 24.0),
+                            width: isMobileLandscape
+                                ? 18.0
+                                : (isLargeScreen
+                                    ? (isDesktop ? 24 : 22)
+                                    : 24.0),
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        8.sbW,
+                        6.sbW,
                         Expanded(
                           child: AppText(
                             align: TextAlign.start,
                             model?.teacher?.name ?? '',
                             maxLines: 1,
-                            size: isLargeScreen ? (isDesktop ? 13 : 12) : 12.sp,
+                            size: isMobileLandscape ? 11.sp : (isLargeScreen ? (isDesktop ? 13 : 12) : 12.sp),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyles.textViewRegular(
                               color: AppColors.textColor5,

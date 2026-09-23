@@ -116,10 +116,11 @@ class LogoutBtn extends StatelessWidget {
           condition: state is LogoutLoading,
           builder: (context) => const AppLoader(),
           fallback: (context) {
+            final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
             return Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              margin: EdgeInsets.symmetric(horizontal: isMobileLandscape ? 2 : 16.w),
               width: double.infinity,
-              height: 48.h,
+              height: isMobileLandscape ? 40.0 : 48.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFFEF2F2),
                 borderRadius: BorderRadius.circular(14.r),

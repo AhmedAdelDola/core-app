@@ -11,12 +11,13 @@ class LessonProfileItem extends StatelessWidget {
   final String? icon;
   final Icon? icons;
 
-  LessonProfileItem(
-      {super.key,
-      required this.title,
-      required this.subTitle,
-      this.icon,
-      this.icons});
+  const LessonProfileItem({
+    super.key,
+    required this.title,
+    required this.subTitle,
+    this.icon,
+    this.icons,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,33 +27,43 @@ class LessonProfileItem extends StatelessWidget {
           width: 40.w,
           height: 40.h,
           decoration: BoxDecoration(
-            color: AppColors.kPrimary.withOpacity(0.2),
+            color: AppColors.kPrimary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10.r),
           ),
-          padding: EdgeInsets.all(5),
-          child:
-              icons ?? SvgPicture.asset(icon ?? '', height: 24.h, width: 24.w, color: AppColors.kPrimary,),
+          padding: const EdgeInsets.all(5),
+          child: icons ??
+              (icon != null
+                  ? SvgPicture.asset(
+                      icon!,
+                      height: 24.h,
+                      width: 24.w,
+                      colorFilter: ColorFilter.mode(
+                        AppColors.kPrimary,
+                        BlendMode.srcIn,
+                      ),
+                    )
+                  : const SizedBox()),
         ),
-        5.sbW,
+        8.sbW,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppText(
               title,
-              size: 16.sp,
+              size: 14.sp,
               align: TextAlign.start,
-              maxLines: 3,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              weight: w400,
-              color: AppColors.textColor2,
+              weight: FontWeight.w600,
+              color: AppColors.textColor,
             ),
             AppText(
               subTitle,
-              size: 16.sp,
+              size: 13.sp,
               align: TextAlign.start,
-              maxLines: 3,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              weight: w400,
+              weight: FontWeight.w400,
               color: AppColors.textColor2,
             ),
           ],

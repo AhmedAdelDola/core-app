@@ -20,7 +20,10 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final isTablet = AppResponsive.isTablet(context);
-    final double appBarHeight = isTablet ? 72.0 : 65.0;
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final double appBarHeight = isTablet
+        ? 72.0
+        : (isMobileLandscape ? 58.0 : 64.0);
 
     return BlocBuilder<BottomBarCubit, BottomBarState>(
       builder: (context, state) {
@@ -42,7 +45,21 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(72.0);
+  Size get preferredSize {
+    try {
+      final view = WidgetsBinding.instance.platformDispatcher.views.firstOrNull;
+      if (view != null) {
+        final size = view.physicalSize / view.devicePixelRatio;
+        final shortestSide = size.width < size.height ? size.width : size.height;
+        final isTablet = shortestSide >= ResponsiveBreakpoints.tabletPortraitMin;
+        if (isTablet) return const Size.fromHeight(72.0);
+        final isLandscape = size.width > size.height;
+        if (isLandscape) return const Size.fromHeight(58.0);
+        return const Size.fromHeight(64.0);
+      }
+    } catch (_) {}
+    return const Size.fromHeight(64.0);
+  }
 }
 
 Widget setAppBarTitle(int i) {

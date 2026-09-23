@@ -7,10 +7,13 @@ class CoursesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isTablet = AppResponsive.isTablet(context);
     final bool isDesktop = AppResponsive.isDesktop(context);
-    final bool isLargeScreen = AppResponsive.isTabletOrLarger(context);
+    final bool isLandscape = AppResponsive.isLandscape(context);
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final bool useGrid = AppResponsive.isTabletOrLarger(context) || isLandscape;
     final int crossAxisCount = AppResponsive.gridColumns(
       context,
       mobile: 1,
+      mobileLandscape: 3,
       tabletPortrait: 2,
       tabletLandscape: 3,
       desktop: 4,
@@ -81,28 +84,29 @@ class CoursesTab extends StatelessWidget {
               ),
             );
           }
-          return isLargeScreen
+          return useGrid
               ? Align(
                   alignment: Alignment.topCenter,
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1100),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        final horizontalPadding = isDesktop ? 48.0 : 32.0;
-                        final spacing = isDesktop ? 20.0 : 16.0;
+                        final horizontalPadding = isDesktop ? 48.0 : (isMobileLandscape ? 20.0 : 32.0);
+                        final spacing = isDesktop ? 20.0 : (isMobileLandscape ? 12.0 : 16.0);
                         final cardWidth =
                             (constraints.maxWidth -
                                 horizontalPadding -
                                 (crossAxisCount - 1) * spacing) /
                             crossAxisCount;
+                        final detailsHeight = isMobileLandscape ? 82.0 : 130.0;
 
                         return GridView.builder(
-                          padding: EdgeInsets.all(isDesktop ? 24 : 16),
+                          padding: EdgeInsets.all(isDesktop ? 24 : (isMobileLandscape ? 10 : 16)),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: crossAxisCount,
                             crossAxisSpacing: spacing,
                             mainAxisSpacing: spacing,
-                            mainAxisExtent: cardWidth * (9 / 16) + 130.0,
+                            mainAxisExtent: cardWidth * (9 / 16) + detailsHeight,
                           ),
                           itemCount: libraryCourses?.length ?? 0,
                       itemBuilder: (_, i) {
@@ -214,14 +218,14 @@ class CoursesTab extends StatelessWidget {
                                 ),
                                 Expanded(
                                   child: Padding(
-                                    padding: EdgeInsets.all(isDesktop ? 14 : 12),
+                                    padding: EdgeInsets.all(isDesktop ? 14 : (isMobileLandscape ? 6 : 12)),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         AppText(
                                           model.title ?? '',
-                                          size: isDesktop ? 15.sp : 14.sp,
-                                          maxLines: 2,
+                                          size: isDesktop ? 15.sp : (isMobileLandscape ? 12.sp : 14.sp),
+                                          maxLines: isMobileLandscape ? 1 : 2,
                                           overflow: TextOverflow.ellipsis,
                                           color: AppColors.textColor,
                                           weight: FontWeight.bold,
@@ -234,8 +238,8 @@ class CoursesTab extends StatelessWidget {
                                               borderRadius: BorderRadius.circular(50),
                                               child: CachedNetworkImage(
                                                 imageUrl: model.teacher?.imageUrl ?? '',
-                                                height: isDesktop ? 28.0 : 24.0,
-                                                width: isDesktop ? 28.0 : 24.0,
+                                                height: isDesktop ? 28.0 : (isMobileLandscape ? 20.0 : 24.0),
+                                                width: isDesktop ? 28.0 : (isMobileLandscape ? 20.0 : 24.0),
                                                 fit: BoxFit.cover,
                                                 errorWidget: (_, __, ___) => Image.asset(AppImages.genderPng, fit: BoxFit.cover),
                                               ),
@@ -245,7 +249,7 @@ class CoursesTab extends StatelessWidget {
                                               child: AppText(
                                                 model.teacher?.name ?? '',
                                                 maxLines: 1,
-                                                size: isDesktop ? 13.sp : 12.sp,
+                                                size: isDesktop ? 13.sp : (isMobileLandscape ? 11.sp : 12.sp),
                                                 align: TextAlign.start,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyles.textViewMedium(
@@ -254,12 +258,12 @@ class CoursesTab extends StatelessWidget {
                                               ),
                                             ),
                                             Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                                              padding: EdgeInsets.symmetric(horizontal: isMobileLandscape ? 8.w : 10.w, vertical: isMobileLandscape ? 3.h : 5.h),
                                               decoration: BoxDecoration(
                                                 color: AppColors.kPrimary,
                                                 borderRadius: BorderRadius.circular(8.r),
                                               ),
-                                              child: AppText('متابعة', color: Colors.white, size: 11.sp, weight: FontWeight.bold),
+                                              child: AppText('متابعة', color: Colors.white, size: isMobileLandscape ? 10.sp : 11.sp, weight: FontWeight.bold),
                                             ),
                                           ],
                                         ),

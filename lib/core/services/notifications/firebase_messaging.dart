@@ -4,6 +4,9 @@ import 'dart:developer';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import '../../navigator/named_navigator_impl.dart';
+import '../../../feature/modules/home/home_section/courses_section/view/course_view/course_view.dart';
+import '../../../feature/modules/home/home_section/lessons_section/widgets/session_screen.dart';
 import '../di.dart';
 import 'fcm_model.dart';
 import 'local_notifications.dart';
@@ -37,77 +40,123 @@ abstract class AppFirebaseMessaging {
   static void onMessage(LocalNotificationService service) {
     FirebaseMessaging.onMessage.listen((RemoteMessage event) {
       if (event.data.isNotEmpty) {
-        log('FCM onMessage: ${event.notification?.title}');
-        log('FCM onMessageOpenedApp body: ${event.notification?.body}');
-        log('FCM onMessageOpenedApp notification: ${event.notification}');
-        log('FCM onMessageOpenedApp data anotherData: ${event.data['anotherData']}');
-        final fcm = json.decode(event.data['anotherData']);
-        final data = FCMModel.fromJson(fcm);
-        log('FCM onMessageOpenedApp data type: ${data.type}');
-        //navigateNotification(type: data.type);
+        log('FCM onMessage data: ${event.data}');
       }
-
       _showLocalNotification(service, event);
     });
   }
 
   static void getInitialMessage(LocalNotificationService service) {
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) async {
-      if (message != null) {
-        log('FCM onMessage: ${message.notification?.title}');
-        log('FCM onMessageOpenedApp body: ${message.notification?.body}');
-        log('FCM onMessageOpenedApp notification: ${message.notification}');
-        log('FCM onMessageOpenedApp data anotherData: ${message.data['anotherData']}');
-        final fcm = json.decode(message.data['anotherData']);
-        final data = FCMModel.fromJson(fcm);
-        log('FCM onMessageOpenedApp data type: ${data.type}');
-        navigateNotification(data: data);
+      if (message != null && message.data.isNotEmpty) {
+        log('FCM getInitialMessage data: ${message.data}');
+        handleNotificationData(message.data);
       }
-
-      //_showLocalNotification(service, message!);
     });
   }
 
   static void onMessageOpenedApp(LocalNotificationService service) {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage event) {
       if (event.data.isNotEmpty) {
-        log('FCM onMessage: ${event.notification?.title}');
-        log('FCM onMessageOpenedApp body: ${event.notification?.body}');
-        log('FCM onMessageOpenedApp notification: ${event.notification}');
-        log('FCM onMessageOpenedApp data anotherData: ${event.data['anotherData']}');
-        final fcm = json.decode(event.data['anotherData']);
-        final data = FCMModel.fromJson(fcm);
-        log('FCM onMessageOpenedApp data type: ${data.type}');
-
-        navigateNotification(data: data);
+        log('FCM onMessageOpenedApp data: ${event.data}');
+        handleNotificationData(event.data);
       }
-
-      // _showLocalNotification(service, event);
     });
   }
 
-  // static void subscribeToTopic(String topic) {
-  //   FirebaseMessaging.instance.subscribeToTopic(topic).then((value) {
-  //     log('FCM subscribeToTopic: Success');
-  //   }).catchError((error) {
-  //     log('FCM subscribeToTopic: Error: ${error.toString()}');
-  //   });
-  // }
+  static void handleRawNotificationPayload(String payload) {
+    try {
+      final decoded = json.decode(payload);
+      if (decoded is Map<String, dynamic>) {
+        handleNotificationData(decoded);
+      }
+    } catch (e) {
+      log('Error decoding notification payload: $e');
+    }
+  }
+
+  static void handleNotificationData(Map<String, dynamic> rawData) {
+    final data = _extractDataMap(rawData);
+    final kind = data['kind']?.toString() ?? data['type']?.toString();
+
+    if (kind == 'session_comment' || kind == 'course_comment') {
+      final sessionId = data['session_id']?.toString() ?? data['sessionId']?.toString();
+      final courseId = data['course_id']?.toString() ?? data['courseId']?.toString();
+      final commentId = int.tryParse('${data['comment_id'] ?? data['commentId']}');
+      final replyId = int.tryParse('${data['reply_id'] ?? data['replyId']}');
+
+      if (sessionId != null && sessionId.isNotEmpty) {
+        NamedNavigatorImpl.push(SessionDetilesScreen(
+          id: int.tryParse(sessionId) ?? 0,
+          title: '',
+          subTitle: '',
+          initialOpenComments: true,
+          highlightCommentId: commentId,
+          highlightReplyId: replyId,
+        ));
+      } else if (courseId != null && courseId.isNotEmpty) {
+        NamedNavigatorImpl.push(CourseViewScreen(
+          id: courseId,
+        ));
+      }
+      return;
+    }
+
+    // Fallback to legacy FCMModel if type is present
+    try {
+      final fcmModel = FCMModel.fromJson(data);
+      navigateNotification(data: fcmModel);
+    } catch (e) {
+      log('FCMModel fallback parse error: $e');
+    }
+  }
+
+  static Map<String, dynamic> _extractDataMap(Map<String, dynamic> rawData) {
+    if (rawData.containsKey('kind') &&
+        (rawData['kind'] == 'session_comment' || rawData['kind'] == 'course_comment')) {
+      return rawData;
+    }
+    if (rawData['anotherData'] != null) {
+      try {
+        final decoded = json.decode(rawData['anotherData'].toString());
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+      } catch (_) {}
+    }
+    if (rawData['data'] != null && rawData['data'] is String) {
+      try {
+        final decoded = json.decode(rawData['data'].toString());
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+      } catch (_) {}
+    } else if (rawData['data'] != null && rawData['data'] is Map<String, dynamic>) {
+      return rawData['data'] as Map<String, dynamic>;
+    }
+    return rawData;
+  }
 
   static void _showLocalNotification(LocalNotificationService service, RemoteMessage event) {
     String title = event.notification?.title ?? '';
     String body = event.notification?.body ?? '';
-    final fcm = json.decode(event.data['anotherData']);
-    final data = FCMModel.fromJson(fcm);
-    _handleOnCancelTrip(data);
-    service.showNotification(id: 100, title: title, body: body);
-  }
-}
+    if (title.isEmpty && event.data['title'] != null) {
+      title = event.data['title'].toString();
+    }
+    if (body.isEmpty && event.data['body'] != null) {
+      body = event.data['body'].toString();
+    }
 
-void _handleOnCancelTrip(FCMModel data) {
-  // if (data.type == 'cancel_trip') {
-  // OnCancelTripSubscription.pushUpdate();
-  // }
+    final data = _extractDataMap(event.data);
+    final payloadString = json.encode(data);
+
+    service.showNotification(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+      payload: payloadString,
+    );
+  }
 }
 
 void navigateNotification({required FCMModel data}) {}

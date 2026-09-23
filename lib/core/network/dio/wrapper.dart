@@ -76,4 +76,9 @@ class DioImpl extends DioHelper {
   Future<Response<T>> delete<T>(String url, {dynamic data, Map<String, dynamic>? queryParams}) {
     return _dio.delete(_resolveUrl(url), data: data, queryParameters: queryParams);
   }
+
+  @override
+  Future<Response<T>> patch<T>(String url, {dynamic data, Map<String, dynamic>? queryParams}) {
+    return _dio.patch(_resolveUrl(url), data: data, queryParameters: queryParams);
+  }
 }

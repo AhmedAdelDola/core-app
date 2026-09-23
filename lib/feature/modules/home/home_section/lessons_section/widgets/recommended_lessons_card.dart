@@ -25,6 +25,8 @@ class RecommendedLessonsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = AppResponsive.isTablet(context);
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
     final bool isLargeScreen = AppResponsive.isTabletOrLarger(context);
     final bool isDesktop = AppResponsive.isDesktop(context);
 
@@ -39,7 +41,12 @@ class RecommendedLessonsCard extends StatelessWidget {
       child: Container(
         width: inGrid
             ? double.infinity
-            : (width ?? (isLargeScreen ? 230 : 190.w)),
+            : (width ??
+                (isDesktop
+                    ? 230.0
+                    : (isTablet
+                        ? 210.0
+                        : (isMobileLandscape ? 175.0 : 190.w)))),
         margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(
           color: AppColors.kWhite,
@@ -69,12 +76,12 @@ class RecommendedLessonsCard extends StatelessWidget {
                     child: Image.asset(AppImages.playStore, fit: BoxFit.cover),
                   ),
                   Positioned(
-                    bottom: 8.h,
-                    left: 8.w,
+                    bottom: isMobileLandscape ? 4.0 : 8.h,
+                    left: isMobileLandscape ? 4.0 : 8.w,
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 3.h,
+                        horizontal: isMobileLandscape ? 5.0 : 8.w,
+                        vertical: isMobileLandscape ? 2.0 : 3.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.7),
@@ -85,7 +92,7 @@ class RecommendedLessonsCard extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.play_arrow_rounded,
-                            size: isLargeScreen ? 14 : 14.sp,
+                            size: isMobileLandscape ? 11.0 : (isLargeScreen ? 14 : 14.sp),
                             color: Colors.white,
                           ),
                           3.sbW,
@@ -93,7 +100,7 @@ class RecommendedLessonsCard extends StatelessWidget {
                             'فيديو',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: isLargeScreen ? 11 : 11.sp,
+                              fontSize: isMobileLandscape ? 9.sp : (isLargeScreen ? 11 : 11.sp),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -105,8 +112,8 @@ class RecommendedLessonsCard extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isLargeScreen ? 12 : 10.w,
-                  vertical: isLargeScreen ? 10 : 8.h,
+                  horizontal: isMobileLandscape ? 8.0 : (isLargeScreen ? 12 : 10.w),
+                  vertical: isMobileLandscape ? 5.0 : (isLargeScreen ? 10 : 8.h),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,16 +124,16 @@ class RecommendedLessonsCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyles.textViewBold(
-                        size: isLargeScreen ? (isDesktop ? 15 : 14) : 15.sp,
+                        size: isMobileLandscape ? 13.sp : (isLargeScreen ? (isDesktop ? 15 : 14) : 15.sp),
                         color: AppColors.textColor,
                       ),
                     ),
-                    6.sbH,
+                    (isMobileLandscape ? 3.0 : 6.0).sbH,
                     Row(
                       children: [
                         Icon(
                           Icons.menu_book_rounded,
-                          size: isLargeScreen ? 14 : 14.sp,
+                          size: isMobileLandscape ? 12.0 : (isLargeScreen ? 14 : 14.sp),
                           color: AppColors.textColor5,
                         ),
                         6.sbW,
@@ -134,7 +141,7 @@ class RecommendedLessonsCard extends StatelessWidget {
                           child: AppText(
                             model?.course?.title ?? '',
                             maxLines: 1,
-                            size: isLargeScreen ? (isDesktop ? 13 : 12) : 12.sp,
+                            size: isMobileLandscape ? 11.sp : (isLargeScreen ? (isDesktop ? 13 : 12) : 12.sp),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyles.textViewRegular(
                               color: AppColors.textColor5,

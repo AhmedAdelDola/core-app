@@ -1,17 +1,21 @@
+import 'package:elhanbly/core/util/responsive/responsive_helper.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../../../core/widgets/ui_helpers/extensions.dart';
-import '../course_view_widgets/course_files_section/course_files_sec.dart';
 import 'package:flutter/material.dart';
 
 import '../course_view_widgets/course_details_header.dart';
 import '../course_view_widgets/course_lessons_section/course_lessons_section.dart';
-import '../course_view_widgets/course_rate_section/course_comments_section.dart';
-
-import '../../../../../../../../core/util/responsive/responsive_helper.dart';
 
 class NotSubscribeView extends StatelessWidget {
-  const NotSubscribeView({super.key});
+  final VoidCallback? onSubscribe;
+  final dynamic courseId;
+
+  const NotSubscribeView({
+    super.key,
+    this.onSubscribe,
+    this.courseId,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../core/consts/images.dart';
 import '../../core/theme/colors/app_colors.dart';
 import '../../core/util/launcher.dart';
+import '../../core/util/responsive/responsive_helper.dart';
 import '../../core/widgets/app_bar/default_app_bar.dart/default_app_bar.dart';
 import '../../core/widgets/nav_bar/bottom_navigation_bar.dart';
 import 'cubit/home_lay_out_cubit.dart';
@@ -28,6 +29,7 @@ class HomeLayout extends StatelessWidget {
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: FloatingActionButton(
+            mini: AppResponsive.isMobileLandscape(context),
             onPressed: () =>
                 AppLauncher.launchWhatsApp(number: "${appSettings?.contacts?.where( (element) => element.type == 'support').first.value ?? ''}"),
             shape: RoundedRectangleBorder(

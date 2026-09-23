@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/colors/app_colors.dart';
+import '../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../core/widgets/ui_helpers/extensions.dart';
 
@@ -13,15 +14,21 @@ class ShowAllWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.sizeOf(context).width >= 600;
+    final isTablet = AppResponsive.isTablet(context);
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isTablet ? 24.w : 20.w),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 24.w : (isMobileLandscape ? 12.w : 20.w),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           AppText(
             title,
-            style: TextStyle(fontSize: 18.sp, fontWeight: w700),
+            style: TextStyle(
+              fontSize: isMobileLandscape ? 15.sp : 18.sp,
+              fontWeight: w700,
+            ),
           ),
           if (onTap != null)
             InkWell(

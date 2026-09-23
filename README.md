@@ -1,4 +1,4 @@
-# elhanbly
+# core app
 
 A new Flutter project.
 

@@ -17,13 +17,16 @@ import '../../cubit/lessons_section_cubit.dart';
 import 'video_player.dart';
 
 class SplitViewScreen extends StatefulWidget {
-  final String pdfUrl,pdfname;
+  final String pdfUrl, pdfname;
   final ShowVideo? model;
+  final dynamic sessionId;
 
   const SplitViewScreen({
     Key? key,
     required this.pdfUrl,
-    required this.model, required this.pdfname,
+    required this.model,
+    required this.pdfname,
+    this.sessionId,
   }) : super(key: key);
 
   @override
@@ -47,6 +50,7 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
       Area(
           builder: (context, area) => VideoPlayer(
                 model: widget.model,
+                sessionId: widget.sessionId,
               )),
       Area(builder: (context, area) => PdfViewers(pdfurl:widget.pdfUrl , name: widget.pdfname,)),
     ]);

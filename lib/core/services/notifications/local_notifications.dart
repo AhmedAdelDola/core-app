@@ -5,7 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 class LocalNotificationService {
   final FlutterLocalNotificationsPlugin _service = FlutterLocalNotificationsPlugin();
 
-  Future<void> initialize() async {
+  Future<void> initialize({void Function(String? payload)? onSelectNotification}) async {
     const AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const DarwinInitializationSettings iosInitializationSettings = DarwinInitializationSettings(
@@ -25,7 +25,14 @@ class LocalNotificationService {
       iOS: iosInitializationSettings,
     );
 
-    bool? isInit = await _service.initialize(settings);
+    bool? isInit = await _service.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (onSelectNotification != null) {
+          onSelectNotification(response.payload);
+        }
+      },
+    );
     await _service
         .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(sound: true, alert: true, badge: true);
@@ -59,9 +66,10 @@ class LocalNotificationService {
     required String title,
     required String body,
     String? icon,
+    String? payload,
   }) async {
     final NotificationDetails details = await _notificationsDetails(icon);
-    await _service.show(id, title, body, details);
+    await _service.show(id, title, body, details, payload: payload);
   }
 
   void onDidReceiveLocalNotification({int? id, String? title, String? body, String? payload}) {

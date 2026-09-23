@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../../../core/consts/images.dart';
 import '../../../../../../../../core/theme/colors/app_colors.dart';
+import '../../../../../../../../core/util/responsive/responsive_helper.dart';
 
 class CourseImageWithData extends StatelessWidget {
   final bool isFree;
@@ -22,11 +23,13 @@ class CourseImageWithData extends StatelessWidget {
     final hasValidImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
     final priceNum = double.tryParse(price ?? '0') ?? 0.0;
     final isActuallyFree = isFree || priceNum == 0.0;
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final double imageHeight = isMobileLandscape ? 160.0 : 270.h;
 
     return Stack(
       children: [
         SizedBox(
-          height: 270.h,
+          height: imageHeight,
           width: double.infinity,
           child: hasValidImage
               ? CachedNetworkImage(
@@ -57,7 +60,7 @@ class CourseImageWithData extends StatelessWidget {
           top: 0,
           left: 0,
           right: 0,
-          height: 100.h,
+          height: isMobileLandscape ? 60.0 : 100.h,
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -73,8 +76,8 @@ class CourseImageWithData extends StatelessWidget {
         ),
         // Price badge in bottom left (or right)
         Positioned(
-          bottom: 35.h,
-          right: 20.w,
+          bottom: isMobileLandscape ? 14.0 : 35.h,
+          right: isMobileLandscape ? 12.0 : 20.w,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
             decoration: BoxDecoration(

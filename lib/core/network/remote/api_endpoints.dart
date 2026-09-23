@@ -104,4 +104,14 @@ class EndPoints {
   static String get contentChallenges =>
       '$_server/api/mobile/v2/content/challenges';
   static String get contentAccess => '$_server/api/mobile/v2/content/access';
+
+  /// ============================== Session Comments ==================================
+  static String sessionComments(dynamic sessionId) => '/api/mobile/v1/sessions/$sessionId/comments';
+  static String sessionCommentItem(dynamic sessionId, dynamic commentId) =>
+      '/api/mobile/v1/sessions/$sessionId/comments/$commentId';
+
+  // Compatibility aliases
+  static String courseComments(dynamic courseId) => sessionComments(courseId);
+  static String courseCommentItem(dynamic courseId, dynamic commentId) =>
+      sessionCommentItem(courseId, commentId);
 }

@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../consts/images.dart';
 import '../../theme/colors/app_colors.dart';
+import '../../util/responsive/responsive_helper.dart';
 import '../app_texts/app_text.dart';
 import '../ui_helpers/extensions.dart';
 
@@ -22,26 +23,27 @@ class CustomBottomNavigationBar extends StatefulWidget {
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final bool isTablet = screenWidth >= 600;
+    final bool isTablet = AppResponsive.isTablet(context);
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final bool isLandscape = AppResponsive.isLandscape(context);
 
     Widget navContent = Row(
       mainAxisAlignment:
-          isTablet ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.spaceBetween,
+          (isTablet || isLandscape) ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.spaceBetween,
       children: [
-        bottomNavigationItem(0, 'الرئيسية', AppImages.homeNav),
-        // bottomNavigationItem(1, 'التدريبات', AppImages.fileNav),
-        bottomNavigationItem(1, 'المكتبة', AppImages.libraryNav),
-        // bottomNavigationItem(3, 'الإشعارات', AppImages.notificationNav),
-        bottomNavigationItem(2, 'المزيد', AppImages.moreNav),
+        bottomNavigationItem(0, 'الرئيسية', AppImages.homeNav, isMobileLandscape),
+        // bottomNavigationItem(1, 'التدريبات', AppImages.fileNav, isMobileLandscape),
+        bottomNavigationItem(1, 'المكتبة', AppImages.libraryNav, isMobileLandscape),
+        // bottomNavigationItem(3, 'الإشعارات', AppImages.notificationNav, isMobileLandscape),
+        bottomNavigationItem(2, 'المزيد', AppImages.moreNav, isMobileLandscape),
       ],
     );
 
-    if (isTablet) {
+    if (isTablet || isLandscape) {
       navContent = Center(
         heightFactor: 1.0,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: BoxConstraints(maxWidth: isTablet ? 500 : 420),
           child: navContent,
         ),
       );
@@ -50,10 +52,10 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     return Container(
       width: double.infinity,
       padding: EdgeInsetsDirectional.only(
-        bottom: 10,
-        start: isTablet ? 16 : 28,
-        end: isTablet ? 16 : 28,
-        top: 10,
+        bottom: isMobileLandscape ? 4 : 10,
+        start: isTablet ? 16 : (isMobileLandscape ? 12 : 28),
+        end: isTablet ? 16 : (isMobileLandscape ? 12 : 28),
+        top: isMobileLandscape ? 4 : 10,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -66,7 +68,8 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     );
   }
 
-  Widget bottomNavigationItem(int index, String label, String iconPath) {
+  Widget bottomNavigationItem(int index, String label, String iconPath, bool isMobileLandscape) {
+    final double iconSize = isMobileLandscape ? 18.0 : 22.0;
     return InkWell(
       key: ValueKey('nav_tab_$index'),
       onTap: () => widget.onItemTap(index),
@@ -75,8 +78,8 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         children: [
           SvgPicture.asset(
             iconPath,
-            width: 24.w,
-            height: 24.h,
+            width: iconSize,
+            height: iconSize,
             colorFilter: ColorFilter.mode(
               index == widget.currentIndex
                   ? AppColors.kPrimary
@@ -84,13 +87,13 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
               BlendMode.srcIn,
             ),
           ),
-          10.sbH,
+          (isMobileLandscape ? 2.0 : 6.0).sbH,
           AppText(
             label,
             color: index == widget.currentIndex
                 ? AppColors.kPrimary
                 : AppColors.textFieldBorderColor,
-            size: index == widget.currentIndex ? 13.sp : 12.sp,
+            size: isMobileLandscape ? 10.sp : (index == widget.currentIndex ? 13.sp : 12.sp),
           )
         ],
       ),

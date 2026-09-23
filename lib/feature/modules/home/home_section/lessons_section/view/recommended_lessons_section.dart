@@ -1,3 +1,4 @@
+import 'package:elhanbly/core/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +20,15 @@ class RecommendedLessonsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLargeScreen = MediaQuery.sizeOf(context).width >= 600;
+    final bool isTablet = AppResponsive.isTablet(context);
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final bool isDesktop = AppResponsive.isDesktop(context);
+    final bool isLargeScreen = isTablet || isDesktop;
+    final double listHeight = isDesktop
+        ? 230.0
+        : (isTablet
+            ? 220.0
+            : (isMobileLandscape ? 178.0 : 205.0));
 
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
@@ -42,7 +51,7 @@ class RecommendedLessonsSection extends StatelessWidget {
                       );
                     },
             ),
-            SizedBox(height: isLargeScreen ? 14.h : 10.h),
+            SizedBox(height: isLargeScreen ? 14.h : (isMobileLandscape ? 6.0 : 10.h)),
             if (isEmpty)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -70,11 +79,11 @@ class RecommendedLessonsSection extends StatelessWidget {
             else
               SizedBox(
                 width: double.infinity,
-                height: isLargeScreen ? 220.h : 200.h,
+                height: listHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isLargeScreen ? 20.w : 16.w,
+                    horizontal: isLargeScreen ? 20.w : (isMobileLandscape ? 12.w : 16.w),
                   ),
                   itemCount: model.length,
                   itemBuilder: (c, i) => RecommendedLessonsCard(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../theme/colors/app_colors.dart';
-import '../app_texts/app_text.dart';
+import '../../util/responsive/responsive_helper.dart';
 import '../app_texts/text_scroll.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -10,15 +10,38 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final double? height;
 
-  const CustomAppBar(
-      {super.key, this.child, this.title, this.height, this.leading});
+  const CustomAppBar({
+    super.key,
+    this.child,
+    this.title,
+    this.height,
+    this.leading,
+  });
+
+  static double getAppBarHeight(BuildContext context) {
+    if (AppResponsive.isMobileLandscape(context)) {
+      return 52.0;
+    } else if (AppResponsive.isTablet(context)) {
+      return AppResponsive.isLandscape(context) ? 62.0 : 68.0;
+    } else {
+      return 72.0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= 600;
-    final double titleFontSize = isTablet ? 20.sp : 28.sp;
-    final double borderRadius = isTablet ? 35.sp : 50.sp;
-    final double appBarHeight = isTablet ? 65.h : 85.h;
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final bool isTablet = AppResponsive.isTablet(context);
+
+    final double titleFontSize = isMobileLandscape
+        ? 16.sp
+        : (isTablet ? 18.sp : 22.sp);
+
+    final double borderRadius = isMobileLandscape
+        ? 20.0
+        : (isTablet ? 28.0 : 36.0);
+
+    final double appBarHeight = height ?? getAppBarHeight(context);
 
     return AppBar(
       toolbarHeight: appBarHeight,
@@ -28,7 +51,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           AppTextScroll(
             title ?? '',
             size: titleFontSize,
-            weight: w500,
+            weight: FontWeight.w600,
             color: AppColors.kWhite,
             align: TextAlign.start,
             mode: TextScrollMode.begin,
@@ -46,8 +69,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize {
-    final width = ScreenUtil().screenWidth;
-    final isTablet = width >= 600;
-    return Size.fromHeight(height ?? (isTablet ? 65.h : 85.h));
+    if (height != null) {
+      return Size.fromHeight(height!);
+    }
+    return const Size.fromHeight(72.0);
   }
 }

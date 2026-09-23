@@ -46,6 +46,15 @@ class FakeDioHelper implements DioHelper {
     return _request<T>('DELETE', url, data: data, queryParams: queryParams);
   }
 
+  @override
+  Future<Response<T>> patch<T>(
+    String url, {
+    dynamic data,
+    Map<String, dynamic>? queryParams,
+  }) {
+    return _request<T>('PATCH', url, data: data, queryParams: queryParams);
+  }
+
   Future<Response<T>> _request<T>(
     String method,
     String url, {

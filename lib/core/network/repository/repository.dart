@@ -182,4 +182,44 @@ abstract class Repository {
     required String signature,
     String? playIntegrityToken,
   });
+
+  /// ============================== Session Comments ==================================
+  Future<Either<dynamic, CourseCommentsResponse>> getSessionComments({
+    required dynamic sessionId,
+    int page = 1,
+    int perPage = 20,
+  });
+  Future<Either<dynamic, CourseCommentItem>> addSessionComment({
+    required dynamic sessionId,
+    required String body,
+  });
+  Future<Either<dynamic, CourseCommentItem>> editSessionComment({
+    required dynamic sessionId,
+    required dynamic commentId,
+    required String body,
+  });
+  Future<Either<dynamic, bool>> deleteSessionComment({
+    required dynamic sessionId,
+    required dynamic commentId,
+  });
+
+  // Compatibility methods
+  Future<Either<dynamic, CourseCommentsResponse>> getCourseComments({
+    required dynamic courseId,
+    int page = 1,
+    int perPage = 20,
+  });
+  Future<Either<dynamic, CourseCommentItem>> addCourseComment({
+    required dynamic courseId,
+    required String body,
+  });
+  Future<Either<dynamic, CourseCommentItem>> editCourseComment({
+    required dynamic courseId,
+    required dynamic commentId,
+    required String body,
+  });
+  Future<Either<dynamic, bool>> deleteCourseComment({
+    required dynamic courseId,
+    required dynamic commentId,
+  });
 }

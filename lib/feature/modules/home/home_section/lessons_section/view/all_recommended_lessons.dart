@@ -53,9 +53,11 @@ class AllRecommendedLessonsScreen extends StatelessWidget {
 
           final isTablet = AppResponsive.isTabletOrLarger(context);
           final isDesktop = AppResponsive.isDesktop(context);
+          final isMobileLandscape = AppResponsive.isMobileLandscape(context);
           final crossAxisCount = AppResponsive.gridColumns(
             context,
             mobile: 2,
+            mobileLandscape: 3,
             tabletPortrait: 3,
             tabletLandscape: 3,
             desktop: 4,
@@ -73,7 +75,7 @@ class AllRecommendedLessonsScreen extends StatelessWidget {
                         paddingVal * 2 -
                         (crossAxisCount - 1) * spacing) /
                     crossAxisCount;
-                final detailsHeight = isTablet ? 94.0 : 88.0;
+                final detailsHeight = isTablet ? 94.0 : (isMobileLandscape ? 84.0 : 88.0);
                 final cardHeight = cardWidth * (9 / 16) + detailsHeight;
 
                 return GridView.builder(

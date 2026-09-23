@@ -38,6 +38,12 @@ class AppResponsive {
 
   static bool isMobile(BuildContext context) => !isTablet(context);
 
+  static bool isMobileLandscape(BuildContext context) =>
+      isMobile(context) && isLandscape(context);
+
+  static bool isMobilePortrait(BuildContext context) =>
+      isMobile(context) && !isLandscape(context);
+
   static bool isTabletPortrait(BuildContext context) =>
       isTablet(context) && !isLandscape(context);
 
@@ -69,6 +75,9 @@ class AppResponsive {
     if (isTabletPortrait(context)) {
       return tabletPortrait ?? tablet ?? mobile;
     }
+    if (isMobileLandscape(context)) {
+      return mobileLandscape ?? mobile;
+    }
     if (isLandscape(context)) {
       return mobileLandscape ?? mobile;
     }
@@ -87,6 +96,7 @@ class AppResponsive {
     if (isDesktop(context)) return desktop;
     if (isTabletLandscape(context)) return tabletLandscape;
     if (isTabletPortrait(context)) return tabletPortrait;
+    if (isMobileLandscape(context)) return mobileLandscape ?? 2;
     if (isLandscape(context)) return mobileLandscape ?? 2;
     return mobile;
   }
@@ -110,14 +120,15 @@ class AdaptiveContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLarge = AppResponsive.isTabletOrLarger(context);
+    final shouldConstrain =
+        AppResponsive.isTabletOrLarger(context) || AppResponsive.isLandscape(context);
 
     Widget content = child;
     if (padding != null) {
       content = Padding(padding: padding!, child: content);
     }
 
-    if (!isLarge) {
+    if (!shouldConstrain) {
       return content;
     }
 

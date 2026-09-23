@@ -7,6 +7,7 @@ import '../../../../../../core/consts/images.dart';
 import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/theme/theme.dart';
+import '../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
 
@@ -20,10 +21,15 @@ class RecommendedCoursesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bool isTablet = screenWidth >= 600 && screenWidth < 1200;
-    final bool isDesktop = screenWidth >= 1200;
+    final bool isTablet = AppResponsive.isTablet(context);
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final bool isDesktop = AppResponsive.isDesktop(context);
     final bool isLargeScreen = isTablet || isDesktop;
+    final double listHeight = isDesktop
+        ? 230.0
+        : (isTablet
+            ? 220.0
+            : (isMobileLandscape ? 178.0 : 205.0));
 
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
@@ -46,7 +52,7 @@ class RecommendedCoursesSection extends StatelessWidget {
                       );
                     },
             ),
-            SizedBox(height: isLargeScreen ? 14.h : 10.h),
+            SizedBox(height: isLargeScreen ? 14.h : (isMobileLandscape ? 6.0 : 10.h)),
             if (isEmpty)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -73,12 +79,12 @@ class RecommendedCoursesSection extends StatelessWidget {
               )
             else
               SizedBox(
-                height: isLargeScreen ? 220.h : 200.h,
+                height: listHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   shrinkWrap: true,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isLargeScreen ? 20.w : 16.w,
+                    horizontal: isLargeScreen ? 20.w : (isMobileLandscape ? 12.w : 16.w),
                   ),
                   itemCount: courses.length,
                   itemBuilder: (c, i) => CourseCardItem(

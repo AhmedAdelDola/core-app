@@ -19,16 +19,20 @@ class _LibraryScreenState extends State<LibraryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final double tabHeight = isMobileLandscape ? 38.0 : 48.0;
+    final verticalSpacing = (isMobileLandscape ? 6.0 : 16.0).sbH;
+
     return Column(
       children: [
-        16.sbH,
+        verticalSpacing,
         AdaptiveContainer(
           maxWidth: 550,
           child: Container(
-            height: 48.0,
+            height: tabHeight,
             width: double.infinity,
-            margin: EdgeInsets.symmetric(horizontal: 16.w),
-            padding: EdgeInsets.all(4.r),
+            margin: EdgeInsets.symmetric(horizontal: isMobileLandscape ? 12.w : 16.w),
+            padding: EdgeInsets.all(isMobileLandscape ? 2.r : 4.r),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(14.r),
@@ -56,11 +60,11 @@ class _LibraryScreenState extends State<LibraryScreen>
               labelColor: AppColors.kPrimary,
               unselectedLabelColor: AppColors.textColor3,
               labelStyle: TextStyle(
-                fontSize: 14.sp,
+                fontSize: isMobileLandscape ? 12.sp : 14.sp,
                 fontWeight: FontWeight.bold,
               ),
               unselectedLabelStyle: TextStyle(
-                fontSize: 13.sp,
+                fontSize: isMobileLandscape ? 11.sp : 13.sp,
                 fontWeight: FontWeight.w500,
               ),
               tabs: const [
@@ -71,7 +75,7 @@ class _LibraryScreenState extends State<LibraryScreen>
             ),
           ),
         ),
-        16.sbH,
+        verticalSpacing,
         Expanded(
           child: TabBarView(
             controller: _controller,

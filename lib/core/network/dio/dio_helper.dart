@@ -8,4 +8,6 @@ abstract class DioHelper {
   Future<Response<T>> delete<T>(String url, {dynamic data, Map<String, dynamic>? queryParams});
 
   Future<Response<T>> put<T>(String url, {dynamic data, Map<String, dynamic>? queryParams});
+
+  Future<Response<T>> patch<T>(String url, {dynamic data, Map<String, dynamic>? queryParams});
 }

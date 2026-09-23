@@ -27,6 +27,7 @@ import 'package:elhanbly/models/user_response/user_data.dart'
     show UserModelResponse;
 import 'package:elhanbly/models/guest/guest_courses_response.dart'
     show GuestCoursesResponse;
+import 'package:elhanbly/models/home_entities/courses/course_comments_model.dart';
 
 typedef RepositoryStub<T> = Future<Either<dynamic, T>> Function();
 
@@ -214,6 +215,80 @@ class FakeRepository implements Repository {
     lastVideoId = id;
     return _call(getVideoStub, 'getvideo');
   }
+
+  RepositoryStub<CourseCommentsResponse>? getSessionCommentsStub;
+  RepositoryStub<CourseCommentItem>? addSessionCommentStub;
+  RepositoryStub<CourseCommentItem>? editSessionCommentStub;
+  RepositoryStub<bool>? deleteSessionCommentStub;
+
+  RepositoryStub<CourseCommentsResponse>? getCourseCommentsStub;
+  RepositoryStub<CourseCommentItem>? addCourseCommentStub;
+  RepositoryStub<CourseCommentItem>? editCourseCommentStub;
+  RepositoryStub<bool>? deleteCourseCommentStub;
+
+  @override
+  Future<Either<dynamic, CourseCommentsResponse>> getSessionComments({
+    required dynamic sessionId,
+    int page = 1,
+    int perPage = 20,
+  }) {
+    return _call(getSessionCommentsStub ?? getCourseCommentsStub, 'getSessionComments');
+  }
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> addSessionComment({
+    required dynamic sessionId,
+    required String body,
+  }) {
+    return _call(addSessionCommentStub ?? addCourseCommentStub, 'addSessionComment');
+  }
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> editSessionComment({
+    required dynamic sessionId,
+    required dynamic commentId,
+    required String body,
+  }) {
+    return _call(editSessionCommentStub ?? editCourseCommentStub, 'editSessionComment');
+  }
+
+  @override
+  Future<Either<dynamic, bool>> deleteSessionComment({
+    required dynamic sessionId,
+    required dynamic commentId,
+  }) {
+    return _call(deleteSessionCommentStub ?? deleteCourseCommentStub, 'deleteSessionComment');
+  }
+
+  @override
+  Future<Either<dynamic, CourseCommentsResponse>> getCourseComments({
+    required dynamic courseId,
+    int page = 1,
+    int perPage = 20,
+  }) =>
+      getSessionComments(sessionId: courseId, page: page, perPage: perPage);
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> addCourseComment({
+    required dynamic courseId,
+    required String body,
+  }) =>
+      addSessionComment(sessionId: courseId, body: body);
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> editCourseComment({
+    required dynamic courseId,
+    required dynamic commentId,
+    required String body,
+  }) =>
+      editSessionComment(sessionId: courseId, commentId: commentId, body: body);
+
+  @override
+  Future<Either<dynamic, bool>> deleteCourseComment({
+    required dynamic courseId,
+    required dynamic commentId,
+  }) =>
+      deleteSessionComment(sessionId: courseId, commentId: commentId);
 
   Future<Either<dynamic, T>> _call<T>(
     RepositoryStub<T>? stub,

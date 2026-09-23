@@ -977,4 +977,129 @@ class RepoImpl extends Repository {
       },
     );
   }
+
+  /// ============================== Session Comments ==================================
+  @override
+  Future<Either<dynamic, CourseCommentsResponse>> getSessionComments({
+    required dynamic sessionId,
+    int page = 1,
+    int perPage = 20,
+  }) {
+    return responseHandling<CourseCommentsResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(
+          EndPoints.sessionComments(sessionId),
+          queryParams: {
+            'page': page,
+            'per_page': perPage,
+          },
+        );
+        return CourseCommentsResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> addSessionComment({
+    required dynamic sessionId,
+    required String body,
+  }) {
+    return responseHandling<CourseCommentItem>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          EndPoints.sessionComments(sessionId),
+          data: {'body': body},
+        );
+        final raw = response.data;
+        if (raw is Map<String, dynamic>) {
+          if (raw['comment'] != null && raw['comment'] is Map<String, dynamic>) {
+            return CourseCommentItem.fromJson(raw['comment'] as Map<String, dynamic>);
+          }
+          if (raw['data'] != null && raw['data'] is Map<String, dynamic>) {
+            return CourseCommentItem.fromJson(raw['data'] as Map<String, dynamic>);
+          }
+          return CourseCommentItem.fromJson(raw);
+        }
+        throw Exception('Invalid comment response structure');
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> editSessionComment({
+    required dynamic sessionId,
+    required dynamic commentId,
+    required String body,
+  }) {
+    return responseHandling<CourseCommentItem>(
+      onSuccess: () async {
+        final response = await dioHelper.patch(
+          EndPoints.sessionCommentItem(sessionId, commentId),
+          data: {'body': body},
+        );
+        final raw = response.data;
+        if (raw is Map<String, dynamic>) {
+          if (raw['comment'] != null && raw['comment'] is Map<String, dynamic>) {
+            return CourseCommentItem.fromJson(raw['comment'] as Map<String, dynamic>);
+          }
+          if (raw['data'] != null && raw['data'] is Map<String, dynamic>) {
+            return CourseCommentItem.fromJson(raw['data'] as Map<String, dynamic>);
+          }
+          return CourseCommentItem.fromJson(raw);
+        }
+        return CourseCommentItem(
+          id: int.tryParse('$commentId') ?? 0,
+          sessionId: int.tryParse('$sessionId') ?? 0,
+          body: body,
+          isPinned: false,
+          isMine: true,
+          editedAt: DateTime.now(),
+        );
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, bool>> deleteSessionComment({
+    required dynamic sessionId,
+    required dynamic commentId,
+  }) {
+    return responseHandling<bool>(
+      onSuccess: () async {
+        await dioHelper.delete(EndPoints.sessionCommentItem(sessionId, commentId));
+        return true;
+      },
+    );
+  }
+
+  // Compatibility methods
+  @override
+  Future<Either<dynamic, CourseCommentsResponse>> getCourseComments({
+    required dynamic courseId,
+    int page = 1,
+    int perPage = 20,
+  }) =>
+      getSessionComments(sessionId: courseId, page: page, perPage: perPage);
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> addCourseComment({
+    required dynamic courseId,
+    required String body,
+  }) =>
+      addSessionComment(sessionId: courseId, body: body);
+
+  @override
+  Future<Either<dynamic, CourseCommentItem>> editCourseComment({
+    required dynamic courseId,
+    required dynamic commentId,
+    required String body,
+  }) =>
+      editSessionComment(sessionId: courseId, commentId: commentId, body: body);
+
+  @override
+  Future<Either<dynamic, bool>> deleteCourseComment({
+    required dynamic courseId,
+    required dynamic commentId,
+  }) =>
+      deleteSessionComment(sessionId: courseId, commentId: commentId);
 }

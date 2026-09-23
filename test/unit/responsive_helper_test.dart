@@ -91,6 +91,35 @@ void main() {
       expect(columns, equals(3));
     });
 
+    testWidgets('identifies mobile landscape screens correctly (843x411)', (tester) async {
+      late bool isMobile;
+      late bool isTablet;
+      late bool isMobileLandscape;
+      late bool isTabletLandscape;
+      late int columns;
+
+      await pumpWidgetTestApp(
+        tester,
+        Builder(
+          builder: (context) {
+            isMobile = AppResponsive.isMobile(context);
+            isTablet = AppResponsive.isTablet(context);
+            isMobileLandscape = AppResponsive.isMobileLandscape(context);
+            isTabletLandscape = AppResponsive.isTabletLandscape(context);
+            columns = AppResponsive.gridColumns(context);
+            return const SizedBox();
+          },
+        ),
+        size: const Size(843, 411),
+      );
+
+      expect(isMobile, isTrue);
+      expect(isTablet, isFalse);
+      expect(isMobileLandscape, isTrue);
+      expect(isTabletLandscape, isFalse);
+      expect(columns, equals(2));
+    });
+
     testWidgets('AdaptiveContainer enforces maxWidth on wide screens', (tester) async {
       await pumpWidgetTestApp(
         tester,

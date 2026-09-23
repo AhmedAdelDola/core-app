@@ -17,8 +17,9 @@ class AppBarImageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTablet = AppResponsive.isTablet(context);
-    final double avatarRadius = isTablet ? 20.0 : 18.0;
-    final double containerSize = isTablet ? 40.0 : 36.0;
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
+    final double avatarRadius = isTablet ? 20.0 : (isMobileLandscape ? 15.0 : 18.0);
+    final double containerSize = isTablet ? 40.0 : (isMobileLandscape ? 30.0 : 36.0);
 
     return Padding(
       padding:
@@ -54,28 +55,31 @@ class AppBarImageWidget extends StatelessWidget {
 
 Widget get appBarNotifcationView {
   return Builder(builder: (context) {
-    final isTablet = MediaQuery.of(context).size.width >= 600;
+    final isTablet = AppResponsive.isTablet(context);
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         AppText(
           align: TextAlign.start,
           'الاشعارات',
           style: TextStyle(
             color: AppColors.textColor,
-            fontSize: isTablet ? 20.sp : 28.sp,
+            fontSize: isTablet ? 20.sp : (isMobileLandscape ? 16.sp : 22.sp),
             fontWeight: w500,
           ),
         ),
-        AppText(
-          align: TextAlign.start,
-          'الاشعارات تحتوي علي جميع تديثات الاشياء التي اشتركت بها',
-          style: TextStyle(
-            color: AppColors.textColor2,
-            fontSize: isTablet ? 12.sp : 16.sp,
-            fontWeight: w400,
-          ),
-        )
+        if (!isMobileLandscape)
+          AppText(
+            align: TextAlign.start,
+            'الاشعارات تحتوي علي جميع تديثات الاشياء التي اشتركت بها',
+            style: TextStyle(
+              color: AppColors.textColor2,
+              fontSize: isTablet ? 12.sp : 14.sp,
+              fontWeight: w400,
+            ),
+          )
       ],
     );
   });
@@ -84,8 +88,9 @@ Widget get appBarNotifcationView {
 Widget get appBarLibraryView {
   return Builder(builder: (context) {
     final isTablet = AppResponsive.isTablet(context);
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
     return Padding(
-      padding: EdgeInsetsDirectional.only(top: 4.h),
+      padding: EdgeInsetsDirectional.only(top: isMobileLandscape ? 0 : 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -95,20 +100,22 @@ Widget get appBarLibraryView {
             'المكتبة',
             style: TextStyle(
               color: AppColors.textColor,
-              fontSize: isTablet ? 22.sp : 19.sp,
+              fontSize: isTablet ? 22.sp : (isMobileLandscape ? 16.sp : 19.sp),
               fontWeight: w700,
             ),
           ),
-          SizedBox(height: 2.h),
-          AppText(
-            align: TextAlign.start,
-            'المكتبة تحتوي علي جميع الاشياء التي اشتركت بها',
-            style: TextStyle(
-              color: AppColors.textColor4,
-              fontSize: isTablet ? 13.sp : 11.5.sp,
-              fontWeight: w400,
+          if (!isMobileLandscape) ...[
+            SizedBox(height: 2.h),
+            AppText(
+              align: TextAlign.start,
+              'المكتبة تحتوي علي جميع الاشياء التي اشتركت بها',
+              style: TextStyle(
+                color: AppColors.textColor4,
+                fontSize: isTablet ? 13.sp : 11.5.sp,
+                fontWeight: w400,
+              ),
             ),
-          )
+          ],
         ],
       ),
     );
@@ -118,8 +125,9 @@ Widget get appBarLibraryView {
 Widget get appBarTrainingView {
   return Builder(builder: (context) {
     final isTablet = AppResponsive.isTablet(context);
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
     return Padding(
-      padding: EdgeInsetsDirectional.only(top: 4.h),
+      padding: EdgeInsetsDirectional.only(top: isMobileLandscape ? 0 : 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -129,20 +137,22 @@ Widget get appBarTrainingView {
             'التدريبات',
             style: TextStyle(
               color: AppColors.textColor,
-              fontSize: isTablet ? 22.sp : 19.sp,
+              fontSize: isTablet ? 22.sp : (isMobileLandscape ? 16.sp : 19.sp),
               fontWeight: w700,
             ),
           ),
-          SizedBox(height: 2.h),
-          AppText(
-            align: TextAlign.start,
-            'بعض الأسئلة التي تساعدك علي ممارسة المنهج',
-            style: TextStyle(
-              color: AppColors.textColor4,
-              fontSize: isTablet ? 13.sp : 11.5.sp,
-              fontWeight: w400,
+          if (!isMobileLandscape) ...[
+            SizedBox(height: 2.h),
+            AppText(
+              align: TextAlign.start,
+              'بعض الأسئلة التي تساعدك علي ممارسة المنهج',
+              style: TextStyle(
+                color: AppColors.textColor4,
+                fontSize: isTablet ? 13.sp : 11.5.sp,
+                fontWeight: w400,
+              ),
             ),
-          )
+          ],
         ],
       ),
     );
@@ -152,8 +162,9 @@ Widget get appBarTrainingView {
 Widget get appBarBodyView {
   return Builder(builder: (context) {
     final isTablet = AppResponsive.isTablet(context);
+    final isMobileLandscape = AppResponsive.isMobileLandscape(context);
     return Padding(
-      padding: EdgeInsetsDirectional.only(top: 4.h),
+      padding: EdgeInsetsDirectional.only(top: isMobileLandscape ? 0 : 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -163,17 +174,19 @@ Widget get appBarBodyView {
             userData?.student?.name ?? 'guest',
             style: TextStyles.textViewBold(
               color: AppColors.textColor,
-              size: isTablet ? 20.sp : 17.sp,
+              size: isTablet ? 20.sp : (isMobileLandscape ? 15.sp : 17.sp),
             ),
           ),
-          SizedBox(height: 2.h),
-          AppText(
-            align: TextAlign.start,
-            '${userData?.student?.level?.stage?.name ?? ''} - ${userData?.student?.level?.name ?? ''}',
-            color: AppColors.textColor4,
-            size: isTablet ? 13.sp : 12.sp,
-            weight: w400,
-          ),
+          if (!isMobileLandscape) ...[
+            SizedBox(height: 2.h),
+            AppText(
+              align: TextAlign.start,
+              '${userData?.student?.level?.stage?.name ?? ''} - ${userData?.student?.level?.name ?? ''}',
+              color: AppColors.textColor4,
+              size: isTablet ? 13.sp : 12.sp,
+              weight: w400,
+            ),
+          ],
         ],
       ),
     );

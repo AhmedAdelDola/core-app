@@ -20,11 +20,15 @@ class ProfileItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
     final effectiveIconColor = iconColor ?? AppColors.kPrimary;
     final effectiveIconBg = iconBgColor ?? effectiveIconColor.withOpacity(0.08);
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 5.h),
+      margin: EdgeInsets.symmetric(
+        horizontal: isMobileLandscape ? 2 : 16.w,
+        vertical: isMobileLandscape ? 3 : 5.h,
+      ),
       decoration: BoxDecoration(
         color: AppColors.kWhite,
         borderRadius: BorderRadius.circular(14.r),
@@ -47,40 +51,46 @@ class ProfileItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(14.r),
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobileLandscape ? 10 : 14.w,
+              vertical: isMobileLandscape ? 8 : 12.h,
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 44.w,
-                  height: 44.h,
-                  padding: EdgeInsets.all(10.r),
+                  width: isMobileLandscape ? 36.0 : 44.w,
+                  height: isMobileLandscape ? 36.0 : 44.h,
+                  padding: EdgeInsets.all(isMobileLandscape ? 8.0 : 10.r),
                   decoration: BoxDecoration(
                     color: effectiveIconBg,
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: SvgPicture.asset(
                     img,
                     colorFilter: ColorFilter.mode(effectiveIconColor, BlendMode.srcIn),
                   ),
                 ),
-                12.sbW,
+                (isMobileLandscape ? 8.0 : 12.0).sbW,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       AppText(
                         title,
                         style: TextStyles.textViewBold(
-                          size: 14.sp,
+                          size: isMobileLandscape ? 12.5.sp : 14.sp,
                           color: AppColors.textColor,
                         ),
                         align: TextAlign.start,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      3.sbH,
+                      (isMobileLandscape ? 2.0 : 3.0).sbH,
                       AppText(
                         subTitle,
                         style: TextStyles.textViewRegular(
-                          fontSize: 11.5.sp,
+                          fontSize: isMobileLandscape ? 10.sp : 11.5.sp,
                           color: AppColors.textColor4,
                         ),
                         align: TextAlign.start,
@@ -90,18 +100,18 @@ class ProfileItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                8.sbW,
+                (isMobileLandscape ? 6.0 : 8.0).sbW,
                 child ??
                     Container(
-                      width: 28.w,
-                      height: 28.w,
+                      width: isMobileLandscape ? 22.0 : 28.w,
+                      height: isMobileLandscape ? 22.0 : 28.w,
                       decoration: const BoxDecoration(
                         color: Color(0xFFF8FAFC),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.arrow_forward_ios_rounded,
-                        size: 12.sp,
+                        size: isMobileLandscape ? 10.sp : 12.sp,
                         color: AppColors.textColor4,
                       ),
                     ),

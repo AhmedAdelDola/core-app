@@ -1,6 +1,7 @@
 import 'package:elhanbly/feature/home_layout/cubit/home_lay_out_cubit.dart';
 import 'package:elhanbly/feature/modules/home/cubit/home_cubit/home_cubit.dart';
 import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit/courses_section_cubit.dart';
+import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit/course_comments_cubit.dart';
 import 'package:elhanbly/feature/modules/home/home_section/lessons_section/cubit/lessons_section_cubit.dart';
 import 'package:elhanbly/feature/modules/library/cubit/library_cubit/library_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
@@ -117,6 +118,9 @@ Future init() async {
   //     () => SubjectsSectionCubit(di<Repository>()));
   di.registerFactory<CoursesSectionCubit>(
     () => CoursesSectionCubit(di<Repository>()),
+  );
+  di.registerFactoryParam<CourseCommentsCubit, dynamic, void>(
+    (sessionId, _) => CourseCommentsCubit(repo: di<Repository>(), sessionId: sessionId),
   );
   // di.registerFactory<FilesSectionCubit>(
   //     () => FilesSectionCubit(di<Repository>()));

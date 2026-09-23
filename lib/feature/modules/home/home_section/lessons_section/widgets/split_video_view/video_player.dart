@@ -3,11 +3,13 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../../../../../../../core/security/widgets/security_alert_dialogs.dart';
 import '../../../../../../../core/services/screen_security_service.dart';
 import '../../../../../../../models/Session/show_video_response.dart';
+import '../../../courses_section/view/course_view/course_view_widgets/course_comments_section/course_comments_widget.dart';
 
 class VideoPlayer extends StatefulWidget {
-  const VideoPlayer({Key? key, required this.model}) : super(key: key);
+  const VideoPlayer({Key? key, required this.model, this.sessionId}) : super(key: key);
 
   final ShowVideo? model;
+  final dynamic sessionId;
 
   @override
   State<VideoPlayer> createState() => _VideoPlayerState();
@@ -79,18 +81,63 @@ class _VideoPlayerState extends State<VideoPlayer> {
       );
     }
 
-    return SizedBox(
-      height: double.infinity,
-      width: double.infinity,
-      child: InAppWebView(
-        initialSettings: InAppWebViewSettings(
-          javaScriptEnabled: true,
-          mediaPlaybackRequiresUserGesture: false,
-          allowsInlineMediaPlayback: true,
-          useHybridComposition: true,
-        ),
-        initialUrlRequest:
-            URLRequest(url: WebUri(widget.model?.playerUrl ?? "")),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          SizedBox(
+            height: double.infinity,
+            width: double.infinity,
+            child: InAppWebView(
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                mediaPlaybackRequiresUserGesture: false,
+                allowsInlineMediaPlayback: true,
+                useHybridComposition: true,
+              ),
+              initialUrlRequest:
+                  URLRequest(url: WebUri(widget.model?.playerUrl ?? "")),
+            ),
+          ),
+          if (widget.sessionId != null)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              left: 12,
+              child: SafeArea(
+                child: Material(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      CourseCommentsWidget.showCommentsSheet(
+                        context,
+                        sessionId: widget.sessionId,
+                      );
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 18),
+                          SizedBox(width: 6),
+                          Text(
+                            'التعليقات',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
