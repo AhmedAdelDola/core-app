@@ -73,7 +73,7 @@ jobs:
       - name: Extract Package Name
         id: get_package_name
         run: |
-          PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
+          PACKAGE_NAME=$(jq -r '.androidPackageName // .packageName' clients/${{ matrix.client }}/client_config.json)
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
 
       - name: Deploy to Google Play (Internal Testing)
@@ -147,10 +147,10 @@ jobs:
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
           
           # 2. Extract the Bundle ID for the current white-label client
-          PACKAGE_NAME=$(jq -r '.packageName' clients/${{ matrix.client }}/client_config.json)
+          BUNDLE_ID=$(jq -r '.iosBundleId // .bundleId // .packageName' clients/${{ matrix.client }}/client_config.json)
           
           # 3. Extract the Profile Name from your ExportOptions.plist
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :provisioningProfiles:$PACKAGE_NAME" ios/ExportOptions.plist)
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :provisioningProfiles:$BUNDLE_ID" ios/ExportOptions.plist)
           
           # 4. Inject the profile name into the build config so the Archive step knows which one to use
           echo "PROVISIONING_PROFILE_SPECIFIER=$PROFILE_NAME" >> ios/Flutter/Release.xcconfig
