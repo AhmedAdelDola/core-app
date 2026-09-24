@@ -1,5 +1,6 @@
 {
   "appName": "A-Plus Academy",
-  "packageName": "com.sellx.aplus",
+  "androidPackageName": "com.sellx.aplus_student",
+  "iosBundleId": "com.sellx.aplus",
   "slogan": "Your learning partner"
 }

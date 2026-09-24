@@ -28,8 +28,15 @@ void main(List<String> args) async {
 
   final appName = config['appName'];
   final packageName = config['packageName'];
+  final androidPackageName = config['androidPackageName'] ?? packageName;
+  final iosBundleId = config['iosBundleId'] ?? config['bundleId'] ?? packageName;
   final slogan = config['slogan'] ?? '';
   final fallbackPrimaryColor = config['fallbackPrimaryColor'];
+
+  if (androidPackageName == null || iosBundleId == null) {
+    print('Error: Either "packageName" or ("androidPackageName" and "iosBundleId") must be defined in client_config.json');
+    exit(1);
+  }
 
   // 2. Copy files
   void copyIfExists(String src, String dest) {
@@ -73,17 +80,17 @@ void main(List<String> args) async {
   final buildGradle = File('android/app/build.gradle.kts');
   if (buildGradle.existsSync()) {
     var content = buildGradle.readAsStringSync();
-    content = content.replaceAll(RegExp(r'applicationId\s*=\s*".*"'), 'applicationId = "${packageName}"');
-    content = content.replaceAll(RegExp(r'namespace\s*=\s*".*"'), 'namespace = "${packageName}"');
+    content = content.replaceAll(RegExp(r'applicationId\s*=\s*".*"'), 'applicationId = "${androidPackageName}"');
+    content = content.replaceAll(RegExp(r'namespace\s*=\s*".*"'), 'namespace = "${androidPackageName}"');
     buildGradle.writeAsStringSync(content);
-    print('Updated applicationId and namespace in android/app/build.gradle.kts');
+    print('Updated applicationId and namespace to "${androidPackageName}" in android/app/build.gradle.kts');
   }
 
   // 4b. Update package declaration in MainActivity.kt (or .java)
   final mainActivityKt = File('android/app/src/main/kotlin/com/example/elhanbly/MainActivity.kt');
   if (mainActivityKt.existsSync()) {
     var content = mainActivityKt.readAsStringSync();
-    content = content.replaceAll(RegExp(r'^package\s+.*$', multiLine: true), 'package ${packageName}');
+    content = content.replaceAll(RegExp(r'^package\s+.*$', multiLine: true), 'package ${androidPackageName}');
     mainActivityKt.writeAsStringSync(content);
     print('Updated package declaration in MainActivity.kt');
   }
@@ -101,9 +108,9 @@ void main(List<String> args) async {
   final pbxproj = File('ios/Runner.xcodeproj/project.pbxproj');
   if (pbxproj.existsSync()) {
     var content = pbxproj.readAsStringSync();
-    content = content.replaceAll(RegExp(r'PRODUCT_BUNDLE_IDENTIFIER\s*=\s*[^;]+;'), 'PRODUCT_BUNDLE_IDENTIFIER = ${packageName};');
+    content = content.replaceAll(RegExp(r'PRODUCT_BUNDLE_IDENTIFIER\s*=\s*[^;]+;'), 'PRODUCT_BUNDLE_IDENTIFIER = ${iosBundleId};');
     pbxproj.writeAsStringSync(content);
-    print('Updated PRODUCT_BUNDLE_IDENTIFIER in ios/Runner.xcodeproj/project.pbxproj');
+    print('Updated PRODUCT_BUNDLE_IDENTIFIER to "${iosBundleId}" in ios/Runner.xcodeproj/project.pbxproj');
   }
 
   // 7. Update iOS Info.plist
