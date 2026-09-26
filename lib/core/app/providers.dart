@@ -46,8 +46,13 @@ void networkListener(BuildContext context, NetworkStates state) {
     case UnauthenticatedState _:
       NamedNavigatorImpl.push(const LoginScreen(), clean: true);
       return;
-    case AppUpdateRequiredState _:
-      SecurityAlertDialogs.showUpdateRequiredDialog(context);
+    case AppUpdateRequiredState updateState:
+      SecurityAlertDialogs.showUpdateRequiredDialog(
+        context,
+        message: updateState.message,
+        updateUrlAndroid: updateState.updateUrlAndroid,
+        updateUrlIos: updateState.updateUrlIos,
+      );
       return;
     case SocketErrorState _:
       showErrorToast('لديك مشكلة في الاتصال بالانترنت');

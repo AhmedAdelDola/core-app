@@ -22,6 +22,7 @@ import '../network/cubit/cubit.dart';
 import '../network/dio/dio_helper.dart';
 import '../network/dio/wrapper.dart';
 import '../network/repository/repository_imports.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../security/content_protection_service.dart';
 import '../security/device_attestation_service.dart';
 import 'notifications/local_notifications.dart';
@@ -34,6 +35,8 @@ Future init() async {
   if (baseUrl == null || baseUrl.isEmpty) {
     throw StateError('BASE_URL is missing from .env');
   }
+  final packageInfo = await PackageInfo.fromPlatform();
+  di.registerLazySingleton<PackageInfo>(() => packageInfo);
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   di.registerLazySingleton<FirebaseMessaging>(() => firebaseMessaging);
   final sp = await SharedPreferences.getInstance();

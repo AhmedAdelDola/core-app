@@ -1,16 +1,70 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../services/di.dart';
 import '../../theme/colors/app_colors.dart';
 import '../../theme/theme.dart';
 import '../../widgets/app_texts/app_text.dart';
 import '../../widgets/app_buttons/custom_button.dart';
 
 class SecurityAlertDialogs {
+  static bool _isUpdateDialogOpen = false;
+
+  /// Open the store link based on the platform
+  static Future<void> openStore({
+    String? customAndroidUrl,
+    String? customIosUrl,
+  }) async {
+    final packageInfo = di.isRegistered<PackageInfo>()
+        ? di<PackageInfo>()
+        : await PackageInfo.fromPlatform();
+    final packageName = packageInfo.packageName;
+
+    if (Platform.isAndroid) {
+      if (customAndroidUrl != null && customAndroidUrl.isNotEmpty) {
+        final uri = Uri.parse(customAndroidUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+      final marketUri = Uri.parse('market://details?id=$packageName');
+      if (await canLaunchUrl(marketUri)) {
+        await launchUrl(marketUri, mode: LaunchMode.externalApplication);
+      } else {
+        final webUri = Uri.parse('https://play.google.com/store/apps/details?id=$packageName');
+        if (await canLaunchUrl(webUri)) {
+          await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        }
+      }
+    } else if (Platform.isIOS) {
+      if (customIosUrl != null && customIosUrl.isNotEmpty) {
+        final uri = Uri.parse(customIosUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+      final appStoreUri = Uri.parse('https://apps.apple.com/app/id$packageName');
+      if (await canLaunchUrl(appStoreUri)) {
+        await launchUrl(appStoreUri, mode: LaunchMode.externalApplication);
+      }
+    }
+  }
+
   /// Shows a blocking dialog when the app version is outdated and an update is mandatory.
   static Future<void> showUpdateRequiredDialog(
     BuildContext context, {
+    String? message,
+    String? updateUrlAndroid,
+    String? updateUrlIos,
     VoidCallback? onUpdate,
   }) {
+    if (_isUpdateDialogOpen) return Future.value();
+    _isUpdateDialogOpen = true;
+
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -34,7 +88,7 @@ class SecurityAlertDialogs {
             align: TextAlign.center,
           ),
           content: AppText(
-            'يتطلب تشغيل المحتوى المحمي تحديث التطبيق إلى أحدث إصدار متوفر على متجر التطبيقات.',
+            message ?? 'عفواً، يجب تحديث التطبيق إلى أحدث إصدار من المتجر لمتابعة الاستخدام.',
             style: TextStyles.textViewRegular(
               fontSize: 14.sp,
               color: AppColors.textColor2,
@@ -51,7 +105,10 @@ class SecurityAlertDialogs {
                   if (onUpdate != null) {
                     onUpdate();
                   } else {
-                    Navigator.of(ctx).pop();
+                    openStore(
+                      customAndroidUrl: updateUrlAndroid,
+                      customIosUrl: updateUrlIos,
+                    );
                   }
                 },
               ),
@@ -59,7 +116,9 @@ class SecurityAlertDialogs {
           ],
         ),
       ),
-    );
+    ).then((_) {
+      _isUpdateDialogOpen = false;
+    });
   }
 
   /// Shows an alert dialog when device attestation fails or the device is untrusted.

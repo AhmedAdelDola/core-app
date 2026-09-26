@@ -29,11 +29,13 @@ import UIKit
     )
     channel.setMethodCallHandler { [weak self] call, result in
       if call.method == "enable" {
-        ScreenSecurityManager.shared.enable(window: self?.window)
+        ScreenSecurityManager.shared.enable(window: self?.window, channel: channel)
         result(nil)
       } else if call.method == "disable" {
         ScreenSecurityManager.shared.disable()
         result(nil)
+      } else if call.method == "isScreenRecording" {
+        result(ScreenSecurityManager.shared.isRecordingActive)
       } else {
         result(FlutterMethodNotImplemented)
       }
@@ -49,10 +51,18 @@ final class ScreenSecurityManager {
   private var isObserverRegistered = false
   private var isEnabled = false
   private weak var targetWindow: UIWindow?
+  private var channel: FlutterMethodChannel?
+
+  var isRecordingActive: Bool {
+    return isScreenRecording
+  }
 
   private init() {}
 
-  func enable(window: UIWindow? = nil) {
+  func enable(window: UIWindow? = nil, channel: FlutterMethodChannel? = nil) {
+    if let channel = channel {
+      self.channel = channel
+    }
     isEnabled = true
     if let window = window {
       self.targetWindow = window
@@ -194,7 +204,11 @@ final class ScreenSecurityManager {
   }
 
   @objc private func updatePrivacyOverlay() {
-    setPrivacyOverlayVisible(isEnabled && isScreenRecording)
+    let recording = isScreenRecording
+    setPrivacyOverlayVisible(isEnabled && recording)
+    DispatchQueue.main.async { [weak self] in
+      self?.channel?.invokeMethod("onScreenRecordingChanged", arguments: recording)
+    }
   }
 
   private var isScreenRecording: Bool {

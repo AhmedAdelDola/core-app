@@ -35,8 +35,14 @@ class ErrorState extends NetworkStates {
 }
 
 class AppUpdateRequiredState extends NetworkStates {
-  final String error;
+  final String message;
+  final String? updateUrlAndroid;
+  final String? updateUrlIos;
 
-  const AppUpdateRequiredState(this.error);
+  const AppUpdateRequiredState(
+    this.message, {
+    this.updateUrlAndroid,
+    this.updateUrlIos,
+  });
 }
 

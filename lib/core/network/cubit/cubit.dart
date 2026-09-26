@@ -2,7 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:package_info_plus/package_info_plus.dart';
+
 import '../../local/user_preferences/user_preferences_helper.dart';
+import '../../services/di.dart';
 import '../../util/logger.dart';
 import '../../widgets/ui_helpers/alert_message.dart';
 import '../extensions/cubit_extension.dart';
@@ -15,8 +18,11 @@ class NetworkCubit extends Cubit<NetworkStates> {
 
   Future<Map<String, dynamic>> onRequestCallback() async {
     String? token = UserPreferencesHelper().getUserTokenPreference();
+    final packageInfo = di.isRegistered<PackageInfo>() ? di<PackageInfo>() : null;
+    final version = packageInfo?.version ?? '15.0.23';
     return {
-      'Authorization': 'Bearer $token',
+      if (token != null) 'Authorization': 'Bearer $token',
+      'X-App-Version': version,
     };
   }
 
@@ -40,14 +46,25 @@ class NetworkCubit extends Cubit<NetworkStates> {
     final isProfileRelatedRequest = path.contains('/auth/profile') || path.contains('/auth/me');
 
     if (response != null) {
-      final message = response.data?['message']?.toString() ?? 'Something went wrong try again later';
+      final responseData = response.data;
+      final message = (responseData is Map && responseData.containsKey('message'))
+          ? responseData['message']?.toString() ?? 'Something went wrong try again later'
+          : (responseData?['message']?.toString() ?? 'Something went wrong try again later');
+      final code = responseData is Map ? responseData['code']?.toString() : null;
       PrintLog.e(message);
 
       final isUpdateRequired = (response.statusCode == 426) ||
+          code == 'MOBILE_APP_UPDATE_REQUIRED' ||
           message.contains('MOBILE_APP_UPDATE_REQUIRED');
 
       if (isUpdateRequired) {
-        safeEmit(AppUpdateRequiredState(message));
+        final updateUrlAndroid = responseData is Map ? responseData['update_url_android']?.toString() : null;
+        final updateUrlIos = responseData is Map ? responseData['update_url_ios']?.toString() : null;
+        safeEmit(AppUpdateRequiredState(
+          message,
+          updateUrlAndroid: updateUrlAndroid,
+          updateUrlIos: updateUrlIos,
+        ));
         return;
       }
 
