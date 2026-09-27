@@ -1,4 +1,6 @@
 import 'dart:math' as math;
+import 'package:elhanbly/feature/modules/quizes/course_exams_tab.dart';
+
 import '../../../../../../../../core/consts/images.dart';
 import '../../../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../../../core/util/responsive/responsive_helper.dart';
@@ -9,7 +11,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../cubit/courses_section_cubit.dart';
-import '../../../../../quizes/course_exams_tab.dart';
 import 'tabs/about_course_tab.dart';
 import 'tabs/lessons_tab.dart';
 
