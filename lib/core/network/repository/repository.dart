@@ -222,4 +222,17 @@ abstract class Repository {
     required dynamic courseId,
     required dynamic commentId,
   });
+
+  /// ============================== Course Exams ==================================
+  Future<Either<dynamic, CourseExamsResponse>> getCourseExams(dynamic courseId);
+  Future<Either<dynamic, SingleExamResponse>> getExamDetails(dynamic examId);
+  Future<Either<dynamic, ExamAttemptResponse>> startExamAttempt(dynamic examId);
+  Future<Either<dynamic, ExamAttemptResponse>> getExamAttempt(dynamic attemptId);
+  Future<Either<dynamic, ExamAttemptResponse>> answerExamQuestion({
+    required dynamic attemptId,
+    required int questionId,
+    required List<int> optionIds,
+  });
+  Future<Either<dynamic, ExamAttemptResponse>> submitExamAttempt(dynamic attemptId);
+  Future<Either<dynamic, ExamResultResponse>> getExamResult(dynamic attemptId);
 }

@@ -51,7 +51,7 @@ class EndPoints {
   // static String getAttachment(int id) =>
   //     'attachment/show_attachment_profile/$id';
 
-  /// ============================== Quizes ==================================
+  /// ============================== Quizes & Exams ==================================
   static const String getAllSubjects = 'all-subjects';
   static const String getAllExams = 'exams/list';
   static String getExamQuestion(String id) => 'exams/exam_asks/$id';
@@ -64,6 +64,15 @@ class EndPoints {
   static String getCourseData(String id) => 'courses/$id';
   static String getCourseRateReview(int id) => 'course/$id/get_course_review';
   // static String getLessonQuestion(String id) => 'lessons/questions/$id';
+
+  /// Modern Student Course Exams
+  static String courseExams(dynamic courseId) => 'courses/$courseId/exams';
+  static String examDetails(dynamic examId) => 'exams/$examId';
+  static String startExamAttempt(dynamic examId) => 'exams/$examId/attempts/start';
+  static String getExamAttempt(dynamic attemptId) => 'exam-attempts/$attemptId';
+  static String answerExamQuestion(dynamic attemptId) => 'exam-attempts/$attemptId/answer';
+  static String submitExamAttempt(dynamic attemptId) => 'exam-attempts/$attemptId/submit';
+  static String getExamResult(dynamic attemptId) => 'exam-attempts/$attemptId/result';
 
   /// ============================== Wallet & Purchases ==================================
   static const String getWallet = 'wallet';

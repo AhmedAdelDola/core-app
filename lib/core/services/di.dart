@@ -22,6 +22,8 @@ import '../network/cubit/cubit.dart';
 import '../network/dio/dio_helper.dart';
 import '../network/dio/wrapper.dart';
 import '../network/repository/repository_imports.dart';
+import 'package:elhanbly/feature/modules/quizes/cubits/course_exams_cubit.dart';
+import 'package:elhanbly/feature/modules/quizes/cubits/exam_attempt_cubit.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../security/content_protection_service.dart';
 import '../security/device_attestation_service.dart';
@@ -131,21 +133,10 @@ Future init() async {
     () => LessonsSectionCubit(di<Repository>()),
   );
 
-  // /// ==============================  Quizes  ==========================================
-
-  // di.registerFactory<CreateQuizeCubit>(
-  //     () => CreateQuizeCubit(di<Repository>()));
-  // di.registerFactory<QuizeCubit>(() => QuizeCubit(di<Repository>()));
-  // di.registerFactory<SubmitExamQuestionCubit>(
-  //     () => SubmitExamQuestionCubit(repository: di<Repository>()));
-
-  // di.registerFactory<SubmitQuestionCubit>(
-  //     () => SubmitQuestionCubit(repository: di<Repository>()));
-  // di.registerFactory<ExamCubit>(() => ExamCubit(di<Repository>()));
+  /// ==============================  Quizes & Exams  ==========================================
+  di.registerFactory<CourseExamsCubit>(() => CourseExamsCubit(di<Repository>()));
+  di.registerFactory<ExamAttemptCubit>(() => ExamAttemptCubit(di<Repository>()));
   di.registerFactory<LibraryCubit>(() => LibraryCubit(di<Repository>()));
-  // // di.registerFactory<GetAllSubjectsChaptersCubit>(() => GetAllSubjectsChaptersCubit(di<Repository>()));
-  // // di.registerFactory<GetChapterLessonsCubit>(() => GetChapterLessonsCubit(di<Repository>()));
-  // // di.registerFactory<GetLessonQuestionCubit>(() => GetLessonQuestionCubit(di<Repository>()));
 }
 
 void injectFCMToken(String? fcmToken) {

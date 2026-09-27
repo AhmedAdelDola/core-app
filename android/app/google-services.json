@@ -1,40 +1,21 @@
 {
   "project_info": {
-    "project_number": "621167018254",
-    "project_id": "pulse-academy-ceaa0",
-    "storage_bucket": "pulse-academy-ceaa0.firebasestorage.app"
+    "project_number": "68768853136",
+    "project_id": "fir-5d455",
+    "storage_bucket": "fir-5d455.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:621167018254:android:9798b036c306d2e6b9175f",
+        "mobilesdk_app_id": "1:68768853136:android:372a07d42459d6352bbc15",
         "android_client_info": {
-          "package_name": "com.Pulse.eduApp"
+          "package_name": "demo.aplus.com"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD_TuRwcpPGBcAq14FbX9MmMSNr8_EE5Lo"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:621167018254:android:3528b11a6b80de19b9175f",
-        "android_client_info": {
-          "package_name": "com.aplus.pluseacademy"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyD_TuRwcpPGBcAq14FbX9MmMSNr8_EE5Lo"
+          "current_key": "AIzaSyC9kyERKfAGc6lELi8SRp3d7lgVMUXFGSo"
         }
       ],
       "services": {

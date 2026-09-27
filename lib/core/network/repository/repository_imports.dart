@@ -20,6 +20,10 @@ import '../../../models/security/attestation_challenge_response.dart';
 import '../../../models/security/content_challenge_response.dart';
 import '../../../models/security/content_access_response.dart';
 
+import '../../../models/exams/course_exams_response.dart';
+import '../../../models/exams/exam_attempt_response.dart';
+import '../../../models/exams/exam_result_response.dart';
+import '../../../models/exams/single_exam_response.dart';
 import '../../../models/user_response/login_response.dart';
 import '../../../models/user_response/user_data.dart';
 import '../dio/dio_helper.dart';

@@ -290,6 +290,53 @@ class FakeRepository implements Repository {
   }) =>
       deleteSessionComment(sessionId: courseId, commentId: commentId);
 
+  RepositoryStub<CourseExamsResponse>? getCourseExamsStub;
+  RepositoryStub<SingleExamResponse>? getExamDetailsStub;
+  RepositoryStub<ExamAttemptResponse>? startExamAttemptStub;
+  RepositoryStub<ExamAttemptResponse>? getExamAttemptStub;
+  RepositoryStub<ExamAttemptResponse>? answerExamQuestionStub;
+  RepositoryStub<ExamAttemptResponse>? submitExamAttemptStub;
+  RepositoryStub<ExamResultResponse>? getExamResultStub;
+
+  @override
+  Future<Either<dynamic, CourseExamsResponse>> getCourseExams(dynamic courseId) {
+    return _call(getCourseExamsStub, 'getCourseExams');
+  }
+
+  @override
+  Future<Either<dynamic, SingleExamResponse>> getExamDetails(dynamic examId) {
+    return _call(getExamDetailsStub, 'getExamDetails');
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> startExamAttempt(dynamic examId) {
+    return _call(startExamAttemptStub, 'startExamAttempt');
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> getExamAttempt(dynamic attemptId) {
+    return _call(getExamAttemptStub, 'getExamAttempt');
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> answerExamQuestion({
+    required dynamic attemptId,
+    required int questionId,
+    required List<int> optionIds,
+  }) {
+    return _call(answerExamQuestionStub, 'answerExamQuestion');
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> submitExamAttempt(dynamic attemptId) {
+    return _call(submitExamAttemptStub, 'submitExamAttempt');
+  }
+
+  @override
+  Future<Either<dynamic, ExamResultResponse>> getExamResult(dynamic attemptId) {
+    return _call(getExamResultStub, 'getExamResult');
+  }
+
   Future<Either<dynamic, T>> _call<T>(
     RepositoryStub<T>? stub,
     String methodName,

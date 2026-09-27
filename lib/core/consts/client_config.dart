@@ -1,5 +1,5 @@
 class ClientConfig {
-  static const String appName = 'A-Plus Academy';
+  static const String appName = 'Demo';
   static const String slogan = 'Your learning partner';
   static const String? fallbackPrimaryColor = null;
 }

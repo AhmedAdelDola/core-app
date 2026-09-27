@@ -1102,4 +1102,85 @@ class RepoImpl extends Repository {
     required dynamic commentId,
   }) =>
       deleteSessionComment(sessionId: courseId, commentId: commentId);
+
+  /// ============================== Course Exams ==================================
+  @override
+  Future<Either<dynamic, CourseExamsResponse>> getCourseExams(dynamic courseId) {
+    return responseHandling<CourseExamsResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.courseExams(courseId));
+        return CourseExamsResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, SingleExamResponse>> getExamDetails(dynamic examId) {
+    return responseHandling<SingleExamResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.examDetails(examId));
+        return SingleExamResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> startExamAttempt(dynamic examId) {
+    return responseHandling<ExamAttemptResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.post(EndPoints.startExamAttempt(examId));
+        return ExamAttemptResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> getExamAttempt(dynamic attemptId) {
+    return responseHandling<ExamAttemptResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.getExamAttempt(attemptId));
+        return ExamAttemptResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> answerExamQuestion({
+    required dynamic attemptId,
+    required int questionId,
+    required List<int> optionIds,
+  }) {
+    return responseHandling<ExamAttemptResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          EndPoints.answerExamQuestion(attemptId),
+          data: {
+            'question_id': questionId,
+            'option_ids': optionIds,
+          },
+        );
+        return ExamAttemptResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ExamAttemptResponse>> submitExamAttempt(dynamic attemptId) {
+    return responseHandling<ExamAttemptResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.post(EndPoints.submitExamAttempt(attemptId));
+        return ExamAttemptResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, ExamResultResponse>> getExamResult(dynamic attemptId) {
+    return responseHandling<ExamResultResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.getExamResult(attemptId));
+        return ExamResultResponse.fromJson(response.data as Map<String, dynamic>?);
+      },
+    );
+  }
 }

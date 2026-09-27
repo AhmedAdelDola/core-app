@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../cubit/courses_section_cubit.dart';
+import '../../../../../quizes/course_exams_tab.dart';
 import 'tabs/about_course_tab.dart';
 import 'tabs/lessons_tab.dart';
 
@@ -32,15 +33,16 @@ class _SubscribeViewState extends State<SubscribeView>
   void initState() {
     final int initIdx = (widget.initialTabIndex != null &&
             widget.initialTabIndex! >= 0 &&
-            widget.initialTabIndex! < 2)
+            widget.initialTabIndex! < 3)
         ? widget.initialTabIndex!
         : 0;
-    _controller = TabController(length: 2, vsync: this, initialIndex: initIdx);
+    _controller = TabController(length: 3, vsync: this, initialIndex: initIdx);
     super.initState();
   }
 
   final List<String> _tabsTitle = [
     'الابواب',
+    'الامتحانات',
     'عن الكورس',
   ];
 
@@ -145,6 +147,7 @@ class _SubscribeViewState extends State<SubscribeView>
                   controller: _controller,
                   children: [
                     const LessonsTab(),
+                    CourseExamsTab(courseId: model?.course?.id),
                     AboutCourseTab(
                       Description: model?.course?.description ?? '',
                     ),
