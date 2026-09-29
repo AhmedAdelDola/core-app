@@ -1,208 +1,132 @@
 class GetNotificationsResponse {
+  final List<AppNotification> notifications;
+  final int unreadCount;
   final int? status;
   final String? message;
-  final Data? data;
 
   GetNotificationsResponse({
+    this.notifications = const [],
+    this.unreadCount = 0,
     this.status,
     this.message,
-    this.data,
   });
 
-  factory GetNotificationsResponse.fromJson(Map<String, dynamic> json) =>
-      GetNotificationsResponse(
-        status: json['status'],
-        message: json['message'],
-        data: json['data'] == null ? null : Data.fromJson(json['data']),
-      );
+  factory GetNotificationsResponse.fromJson(Map<String, dynamic> json) {
+    List<AppNotification> list = [];
+
+    if (json['notifications'] != null && json['notifications'] is List) {
+      list = (json['notifications'] as List)
+          .whereType<Map<String, dynamic>>()
+          .map((x) => AppNotification.fromJson(x))
+          .toList();
+    } else if (json['data'] != null) {
+      if (json['data'] is List) {
+        list = (json['data'] as List)
+            .whereType<Map<String, dynamic>>()
+            .map((x) => AppNotification.fromJson(x))
+            .toList();
+      } else if (json['data'] is Map<String, dynamic>) {
+        final dataMap = json['data'] as Map<String, dynamic>;
+        if (dataMap['data'] is List) {
+          list = (dataMap['data'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((x) => AppNotification.fromJson(x))
+              .toList();
+        }
+      }
+    }
+
+    int unread = 0;
+    if (json['unread_count'] != null) {
+      unread = json['unread_count'] is int
+          ? json['unread_count'] as int
+          : int.tryParse(json['unread_count'].toString()) ?? 0;
+    } else {
+      unread = list.where((n) => !n.isRead).length;
+    }
+
+    return GetNotificationsResponse(
+      notifications: list,
+      unreadCount: unread,
+      status: json['status'] is int ? json['status'] as int : null,
+      message: json['message']?.toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-        'status': status,
-        'message': message,
-        'data': data?.toJson(),
-      };
-}
-
-class Data {
-  final List<AppNotification>? data;
-  final Links? links;
-  final Meta? meta;
-
-  Data({
-    this.data,
-    this.links,
-    this.meta,
-  });
-
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-        data: json['data'] == null
-            ? []
-            : List<AppNotification>.from(
-                json['data']!.map((x) => AppNotification.fromJson(x))),
-        links: json['links'] == null ? null : Links.fromJson(json['links']),
-        meta: json['meta'] == null ? null : Meta.fromJson(json['meta']),
-      );
-
-  Map<String, dynamic> toJson() => {
-        'data': data == null
-            ? []
-            : List<dynamic>.from(data!.map((x) => x.toJson())),
-        'links': links?.toJson(),
-        'meta': meta?.toJson(),
+        'notifications': notifications.map((x) => x.toJson()).toList(),
+        'unread_count': unreadCount,
+        if (status != null) 'status': status,
+        if (message != null) 'message': message,
       };
 }
 
 class AppNotification {
   final dynamic id;
+  final String? type;
   final String? title;
+  final String? body;
   final String? message;
-  final int? isRead;
-  final int? isFree;
-  final dynamic courseId;
-  final dynamic modelId;
-  final String? model;
-  final String? image;
+  final Map<String, dynamic>? data;
+  final DateTime? sentAt;
+  final DateTime? readAt;
   final DateTime? createdAt;
+  final bool isRead;
+  final String? image;
 
   AppNotification({
     this.id,
+    this.type,
     this.title,
+    this.body,
     this.message,
-    this.isRead,
-    this.isFree,
-    this.courseId,
-    this.modelId,
-    this.model,
-    this.image,
+    this.data,
+    this.sentAt,
+    this.readAt,
     this.createdAt,
+    this.isRead = false,
+    this.image,
   });
 
-  factory AppNotification.fromJson(Map<String, dynamic> json) =>
-      AppNotification(
-        id: json['id'],
-        title: json['title'],
-        message: json['message'],
-        isRead: json['is_read'],
-        isFree: json['is_free'],
-        courseId: json['course_id'],
-        modelId: json['model_id'],
-        model: json['model'],
-        image: json['image'],
-        createdAt: json['created_at'] == null
-            ? null
-            : DateTime.parse(json['created_at']),
-      );
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    final bodyText = json['body']?.toString() ?? json['message']?.toString() ?? '';
+    final rawIsRead = json['is_read'];
+    final bool readStatus = rawIsRead == true ||
+        rawIsRead == 1 ||
+        rawIsRead == '1' ||
+        json['read_at'] != null;
+
+    DateTime? parseDate(dynamic val) {
+      if (val == null) return null;
+      return DateTime.tryParse(val.toString());
+    }
+
+    return AppNotification(
+      id: json['id'],
+      type: json['type']?.toString(),
+      title: json['title']?.toString(),
+      body: bodyText,
+      message: bodyText,
+      data: json['data'] is Map<String, dynamic> ? json['data'] as Map<String, dynamic> : null,
+      sentAt: parseDate(json['sent_at']),
+      readAt: parseDate(json['read_at']),
+      createdAt: parseDate(json['created_at']) ?? parseDate(json['sent_at']),
+      isRead: readStatus,
+      image: json['image']?.toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'type': type,
         'title': title,
+        'body': body,
         'message': message,
-        'is_read': isRead,
-        'is_free': isFree,
-        'course_id': courseId,
-        'model_id': modelId,
-        'model': model,
-        'image': image,
+        'data': data,
+        'sent_at': sentAt?.toIso8601String(),
+        'read_at': readAt?.toIso8601String(),
         'created_at': createdAt?.toIso8601String(),
-      };
-}
-
-class Links {
-  final String? first;
-  final String? last;
-  final dynamic prev;
-  final String? next;
-
-  Links({
-    this.first,
-    this.last,
-    this.prev,
-    this.next,
-  });
-
-  factory Links.fromJson(Map<String, dynamic> json) => Links(
-        first: json['first'],
-        last: json['last'],
-        prev: json['prev'],
-        next: json['next'],
-      );
-
-  Map<String, dynamic> toJson() => {
-        'first': first,
-        'last': last,
-        'prev': prev,
-        'next': next,
-      };
-}
-
-class Meta {
-  final int? currentPage;
-  final int? from;
-  final int? lastPage;
-  final List<Link>? links;
-  final String? path;
-  final int? perPage;
-  final int? to;
-  final int? total;
-
-  Meta({
-    this.currentPage,
-    this.from,
-    this.lastPage,
-    this.links,
-    this.path,
-    this.perPage,
-    this.to,
-    this.total,
-  });
-
-  factory Meta.fromJson(Map<String, dynamic> json) => Meta(
-        currentPage: json['current_page'],
-        from: json['from'],
-        lastPage: json['last_page'],
-        links: json['links'] == null
-            ? []
-            : List<Link>.from(json['links']!.map((x) => Link.fromJson(x))),
-        path: json['path'],
-        perPage: json['per_page'],
-        to: json['to'],
-        total: json['total'],
-      );
-
-  Map<String, dynamic> toJson() => {
-        'current_page': currentPage,
-        'from': from,
-        'last_page': lastPage,
-        'links': links == null
-            ? []
-            : List<dynamic>.from(links!.map((x) => x.toJson())),
-        'path': path,
-        'per_page': perPage,
-        'to': to,
-        'total': total,
-      };
-}
-
-class Link {
-  final String? url;
-  final String? label;
-  final bool? active;
-
-  Link({
-    this.url,
-    this.label,
-    this.active,
-  });
-
-  factory Link.fromJson(Map<String, dynamic> json) => Link(
-        url: json['url'],
-        label: json['label'],
-        active: json['active'],
-      );
-
-  Map<String, dynamic> toJson() => {
-        'url': url,
-        'label': label,
-        'active': active,
+        'is_read': isRead,
+        'image': image,
       };
 }

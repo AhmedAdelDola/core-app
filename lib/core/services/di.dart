@@ -4,6 +4,7 @@ import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit
 import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit/course_comments_cubit.dart';
 import 'package:elhanbly/feature/modules/home/home_section/lessons_section/cubit/lessons_section_cubit.dart';
 import 'package:elhanbly/feature/modules/library/cubit/library_cubit/library_cubit.dart';
+import 'package:elhanbly/feature/modules/notification_center/cubit/get_notifications_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/cubit/wallet_cubit/wallet_cubit.dart';
 import 'package:elhanbly/feature/modules/profile/profile_imports.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -112,8 +113,9 @@ Future init() async {
   );
   // di.registerFactory<GetFavCoursesCubit>(
   //     () => GetFavCoursesCubit(di<Repository>()));
-  // di.registerLazySingleton<GetNotificationsCubit>(
-  //     () => GetNotificationsCubit(di<Repository>()));
+  di.registerFactory<GetNotificationsCubit>(
+    () => GetNotificationsCubit(di<Repository>()),
+  );
   di.registerLazySingleton<WalletCubit>(() => WalletCubit(di<Repository>()));
 
   // /// ==============================  Home  ==========================================

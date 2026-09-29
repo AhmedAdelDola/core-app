@@ -28,7 +28,12 @@ class RecommendedFiles extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
         final cubit = HomeCubit.of(context);
-        final files = cubit.home?.featuredFiles;
+        final rawFiles = cubit.home?.featuredFiles;
+        final files = rawFiles
+            ?.where((f) =>
+                f.type?.toLowerCase() == 'pdf' ||
+                f.kind?.toLowerCase() == 'pdf')
+            .toList();
 
         if (files == null || files.isEmpty) {
           return const NoFilesAdded();

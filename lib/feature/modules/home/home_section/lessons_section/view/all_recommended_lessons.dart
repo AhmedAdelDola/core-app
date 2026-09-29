@@ -24,7 +24,12 @@ class AllRecommendedLessonsScreen extends StatelessWidget {
       body: BlocBuilder<HomeCubit, HomeStates>(
         builder: (context, state) {
           final cubit = HomeCubit.of(context);
-          final sessions = cubit.home?.suggestedSessions;
+          final rawSessions = cubit.home?.suggestedSessions;
+          final sessions = rawSessions
+              ?.where((s) =>
+                  s.type?.toLowerCase() != 'pdf' &&
+                  s.deliveryType?.toLowerCase() != 'pdf')
+              .toList();
 
           if (sessions == null || sessions.isEmpty) {
             return Center(

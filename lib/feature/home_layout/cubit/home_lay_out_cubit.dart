@@ -19,9 +19,8 @@ class BottomBarCubit extends Cubit<BottomBarState> {
 
   List<Widget> screensList = [
     const HomeScreen(),
-    // const QuizesScreen(),
     const LibraryScreen(),
-    // const NotificationsScreen(),
+    const NotificationsScreen(),
     const ProfileScreen(),
   ];
   int currentIndex = 0;

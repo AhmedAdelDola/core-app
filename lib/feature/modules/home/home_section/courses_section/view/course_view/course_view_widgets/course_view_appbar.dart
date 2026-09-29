@@ -18,57 +18,28 @@ Widget get customAppBar {
             left: isMobileLandscape ? 10.0 : 16.0,
             right: isMobileLandscape ? 10.0 : 16.0,
           ),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.kBlack.withOpacity(0.1),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.kPrimary.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.kWhite),
-              onPressed: () => NamedNavigatorImpl.pop(),
-            ),
-          ),
-          const Spacer(),
-          Row(
+          child: Row(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.kPrimary.withOpacity(0.5),
+                  color: Colors.black.withOpacity(0.4),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.favorite_border,
-                      color: AppColors.kWhite),
+                  icon: const Icon(Icons.arrow_back, color: AppColors.kWhite),
+                  iconSize: isMobileLandscape ? 18.0 : 22.0,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(
+                    minWidth: isMobileLandscape ? 32.0 : 38.0,
+                    minHeight: isMobileLandscape ? 32.0 : 38.0,
+                  ),
                   onPressed: () => NamedNavigatorImpl.pop(),
                 ),
               ),
-              // Container(
-              //   decoration: BoxDecoration(
-              //     color: AppColors.kPrimary.withOpacity(0.5),
-              //     shape: BoxShape.circle,
-              //   ),
-              //   child: IconButton(
-              //     icon: const Icon(Icons.share, color: AppColors.kWhite),
-              //     onPressed: () => NamedNavigatorImpl.pop(),
-              //   ),
-              // ),
+              const Spacer(),
             ],
           ),
-        
-      ]))
+        ),
       );
     },
   );

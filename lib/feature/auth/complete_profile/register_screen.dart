@@ -37,8 +37,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
             showErrorToast((state as dynamic).message);
           }
 
-          if (state is RegisterSuccessState) {
-            showErrorToast('تم التسجيل بنجاح');
+          if (state is RegisterSuccessWithTokenState) {
+            showSuccessToast('تم التسجيل بنجاح');
+            NamedNavigatorImpl.push(
+              const HomeLayout(),
+              clean: true,
+            );
+          } else if (state is RegisterSuccessState) {
+            showSuccessToast('تم التسجيل بنجاح');
             NamedNavigatorImpl.pop();
           }
         },

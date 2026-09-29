@@ -104,7 +104,7 @@ class LessonCard extends StatelessWidget {
             if (model?.isPublished != false) {
               switch (type) {
                 case 'pdf':
-                  NamedNavigatorImpl.push(LessonDetailsScreen(
+                  NamedNavigatorImpl.push(SessionDetilesScreen(
                     id: model?.id ?? 0,
                     title: model?.title ?? '',
                     subTitle: typeLabel,

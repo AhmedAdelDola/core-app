@@ -62,7 +62,13 @@ class MasterButton extends StatelessWidget {
           clipBehavior: Clip.antiAliasWithSaveLayer,
           style: ElevatedButton.styleFrom(
             disabledBackgroundColor: AppColors.kPrimary,
-            padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+            padding: padding ??
+                (height != null
+                    ? EdgeInsets.symmetric(horizontal: horizontalPadding ?? 12.w, vertical: verticalPadding ?? 0)
+                    : EdgeInsets.symmetric(
+                        horizontal: horizontalPadding ?? 16.w,
+                        vertical: verticalPadding ?? 14.h,
+                      )),
             foregroundColor: AppColors.kWhite,
             backgroundColor: buttonColor ?? AppColors.kPrimary,
             side: borderColor != null ? BorderSide(color: borderColor ?? AppColors.kPrimary) : null,

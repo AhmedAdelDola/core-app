@@ -26,7 +26,7 @@ class NotSubscribeView extends StatelessWidget {
           const CourseHeader(),
           10.sbH,
           const CourseLessonsSection(),
-          40.sbH,
+          SizedBox(height: AppResponsive.isMobileLandscape(context) ? 90.0 : 60.h),
         ],
       ),
     );

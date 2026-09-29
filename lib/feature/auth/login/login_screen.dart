@@ -59,53 +59,56 @@ class _LoginScreenState extends State<LoginScreen> {
           final cubit = LoginCubit.of(context);
           final bothEnabled = cubit.isPasswordEnabled && cubit.isOtpEnabled;
 
-          return AuthBg(
-            child: Scaffold(
-              backgroundColor: AppColors.kPrimary,
-              body: Form(
-                key: formKey,
+          return Scaffold(
+            backgroundColor: AppColors.kPrimary,
+            body: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet
+                      ? ResponsiveBreakpoints.maxFormWidth
+                      : double.infinity,
+                ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: isTablet ? 20.h : 40.h),
+                    SizedBox(height: isTablet ? 20.h : 36.h),
                     // Responsive logo
                     loginLogo,
-
+                    16.sbH,
                     Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: isTablet
-                                ? ResponsiveBreakpoints.maxFormWidth
-                                : double.infinity,
-                          ),
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: AppColors.kWhite,
-                              borderRadius: isTablet
-                                  ? BorderRadius.circular(24.r)
-                                  : BorderRadius.vertical(
-                                      top: Radius.circular(24.r),
-                                    ),
-                            ),
-                            child: SingleChildScrollView(
-                              padding: EdgeInsets.all(isTablet ? 24 : 15),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                              24.sbH,
-                              // Responsive header
-                              AppText(
-                                isPhoneChecked && cubit.currentAuthMode == LoginAuthMode.otp
-                                    ? 'رمز التحقق'
-                                    : 'تسجيل الدخول',
-                                style: TextStyle(
-                                  fontSize: 24.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.kPrimary,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppColors.kWhite,
+                          borderRadius: isTablet
+                              ? BorderRadius.circular(24.r)
+                              : BorderRadius.vertical(
+                                  top: Radius.circular(24.r),
                                 ),
-                                align: TextAlign.center,
-                              ),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 24.h,
+                          ),
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                12.sbH,
+                                // Responsive header
+                                AppText(
+                                  isPhoneChecked && cubit.currentAuthMode == LoginAuthMode.otp
+                                      ? 'رمز التحقق'
+                                      : 'تسجيل الدخول',
+                                  style: TextStyle(
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.kPrimary,
+                                  ),
+                                  align: TextAlign.start,
+                                ),
                               if (kDebugMode) ...[
                                 Center(
                                   child: InkWell(
@@ -402,18 +405,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                         size: 13.sp,
                                         color: AppColors.textColor2,
                                       ),
-                                    ],
+                                    ]),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                    if (isTablet) 24.sbH,
+                  ],
                 ),
               ),
             ),

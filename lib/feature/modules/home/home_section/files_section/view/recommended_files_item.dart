@@ -8,6 +8,7 @@ import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/widgets/app_texts/app_text.dart';
 import '../../../../../../core/widgets/ui_helpers/extensions.dart';
 import '../../../../../../models/home_entities/home/get_home.dart';
+import '../../../../library/widgets/files_tap/pdf_viewer.dart';
 import '../../lessons_section/widgets/session_screen.dart';
 
 class RecommendedFilesItem extends StatelessWidget {
@@ -19,17 +20,13 @@ class RecommendedFilesItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        switch (model?.type){
-        case 'video'  : {
-          NamedNavigatorImpl.push(SessionDetilesScreen(id: model?.session?.id ?? 0, title: model?.session?.title ?? '', subTitle: model?.course?.title ?? ''));}
-          break;
-        case 'pdf' : {
-          // NamedNavigatorImpl.push(LessonDetailsScreen(id: model?.session?.id ?? 0, title: model?.session?.title ?? '', subTitle: model?.course?.title ?? ''));
-          }
-        break;
-        }
-
-        
+        NamedNavigatorImpl.push(
+          SessionDetilesScreen(
+            id: model?.session?.id ?? int.tryParse(model?.id ?? '') ?? 0,
+            title: model?.session?.title ?? model?.name ?? '',
+            subTitle: model?.course?.title ?? '',
+          ),
+        );
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),

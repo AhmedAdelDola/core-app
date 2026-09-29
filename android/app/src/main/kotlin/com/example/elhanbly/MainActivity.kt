@@ -4,7 +4,6 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.AudioRecordingConfiguration
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -26,7 +25,6 @@ class MainActivity : FlutterActivity() {
     private var screenSecurityMethodChannel: MethodChannel? = null
     private var screenRecordingCallback: Consumer<Int>? = null
     private var displayListener: DisplayManager.DisplayListener? = null
-    private var audioRecordingCallback: AudioManager.AudioRecordingCallback? = null
     private var isRecordingDetected: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -178,53 +176,26 @@ class MainActivity : FlutterActivity() {
             displayListener = listener
             displayManager.registerDisplayListener(listener, Handler(Looper.getMainLooper()))
         }
+    }
 
-        // 3. AudioManager recording callback to detect active audio recording sessions (Android 7.0+ / API 24+)
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        if (audioManager != null) {
-            val audioCallback = object : AudioManager.AudioRecordingCallback() {
-                override fun onRecordingConfigChanged(configs: List<AudioRecordingConfiguration>?) {
-                    super.onRecordingConfigChanged(configs)
-                    if (!configs.isNullOrEmpty()) {
-                        Log.d("MainActivity", "Active audio recording detected (${configs.size} configs)")
-                        updateRecordingState(true)
-                    } else {
-                        checkAndNotifyRecording()
-                    }
-                }
-            }
-            audioRecordingCallback = audioCallback
-            try {
-                audioManager.registerAudioRecordingCallback(audioCallback, Handler(Looper.getMainLooper()))
-            } catch (e: Exception) {
-                Log.w("MainActivity", "Failed to register audio recording callback: ${e.message}")
-            }
-        }
+    private fun isDisplayRecordingOrMirroring(display: Display): Boolean {
+        if (display.displayId == Display.DEFAULT_DISPLAY) return false
+        val flags = display.flags
+        val isPresentation = (flags and Display.FLAG_PRESENTATION) != 0
+        val isNonPrivate = (flags and Display.FLAG_PRIVATE) == 0
+        return isPresentation || isNonPrivate
     }
 
     private fun checkIsScreenRecording(): Boolean {
         if (isRecordingDetected) return true
 
-        // 1. Check DisplayManager for virtual or presentation displays
+        // Check DisplayManager for external, presentation, or non-private virtual displays (Cast / Screen Mirroring)
         val displayManager = getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
         if (displayManager != null) {
             for (display in displayManager.displays) {
-                if (display.displayId != Display.DEFAULT_DISPLAY) {
+                if (isDisplayRecordingOrMirroring(display)) {
                     return true
                 }
-            }
-        }
-
-        // 2. Check active audio recording configurations (screen recorder recording mic/internal audio)
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        if (audioManager != null) {
-            try {
-                val configs = audioManager.activeRecordingConfigurations
-                if (!configs.isNullOrEmpty()) {
-                    return true
-                }
-            } catch (e: Exception) {
-                Log.w("MainActivity", "Error checking activeRecordingConfigurations: ${e.message}")
             }
         }
 
@@ -289,12 +260,6 @@ class MainActivity : FlutterActivity() {
         displayListener?.let {
             val displayManager = getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
             displayManager?.unregisterDisplayListener(it)
-        }
-        audioRecordingCallback?.let {
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-            try {
-                audioManager?.unregisterAudioRecordingCallback(it)
-            } catch (_: Exception) {}
         }
         super.onDestroy()
     }

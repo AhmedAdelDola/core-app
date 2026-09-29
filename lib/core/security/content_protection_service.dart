@@ -200,6 +200,13 @@ class ContentProtectionService {
       (id) => id,
     );
 
+    if (deviceId.isEmpty) {
+      throw ContentProtectionException(
+        'ENROLLMENT_FAILED',
+        'Device enrollment returned an empty device ID.',
+      );
+    }
+
     cacheHelper.put(CachingKey.securityDeviceId, deviceId);
     cacheHelper.put(
       CachingKey.lastAttestationTime,

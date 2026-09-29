@@ -31,6 +31,10 @@ class EndPoints {
   /// ============================== Notifications ==================================
 
   static const String getNotifications = 'notifications';
+  static const String readAllNotifications = 'notifications/read-all';
+  static String readNotification(dynamic id) => 'notifications/$id/read';
+  static const String registerDevice = 'devices/register';
+  static const String unregisterDevice = 'devices/unregister';
 
   /// ============================== Home ==================================
 
@@ -93,8 +97,8 @@ class EndPoints {
   static const String getSheetInfo = 'track_student/get_sheet_info';
 
   /// ============================== session ==================================
-  static String ShowVideo(String id) => 'sessions/$id/player-link';
-  static String getSessionInfo(String id) => 'sessions/$id';
+  static String ShowVideo(String id) => '$_server/api/mobile/v2/sessions/$id/player-link';
+  static String getSessionInfo(String id) => '$_server/api/mobile/v2/sessions/$id';
 
   /// ============================== Device check ==================================
   static String getNonce = 'device/attestation/challenge';

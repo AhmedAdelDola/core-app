@@ -33,7 +33,12 @@ class RecommendedLessonsSection extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeStates>(
       builder: (context, state) {
         final cubit = HomeCubit.of(context);
-        final model = cubit.home?.suggestedSessions;
+        final rawModel = cubit.home?.suggestedSessions;
+        final model = rawModel
+            ?.where((s) =>
+                s.type?.toLowerCase() != 'pdf' &&
+                s.deliveryType?.toLowerCase() != 'pdf')
+            .toList();
         final isEmpty = model == null || model.isEmpty;
 
         return Column(

@@ -5,7 +5,7 @@ abstract class Repository {
   Future<Either<dynamic, LoginResponse>> login({required String phone, String? password, String? otp});
   Future<Either<dynamic, bool>> requestOtp({required String phone});
   Future<Either<dynamic, List<RegisterStage>>> fetchRegistrationStages();
-  Future<Either<dynamic, bool>> registerStudent({
+  Future<Either<dynamic, LoginResponse>> registerStudent({
     required String name,
     required String phone,
     String? email,
@@ -47,8 +47,16 @@ abstract class Repository {
   // Future<Either<dynamic, FavouriteCourseResponse>> getFavouriteCourses();
   // Future<Either<dynamic, Unit>> addFavouriteCourses(String id);
 
-  // /// ================== Notifications ==================
-  // Future<Either<dynamic, GetNotificationsResponse>> getNotifications();
+  /// ================== Notifications ==================
+  Future<Either<dynamic, GetNotificationsResponse>> getNotifications({int limit = 50});
+  Future<Either<dynamic, bool>> readNotification(dynamic id);
+  Future<Either<dynamic, bool>> readAllNotifications();
+  Future<Either<dynamic, bool>> registerDeviceToken({
+    required String deviceToken,
+    required String platform,
+    String? appLanguage,
+  });
+  Future<Either<dynamic, bool>> unregisterDeviceToken({required String deviceToken});
 
   // /// ================== Home ==================
   // // Future<Either<dynamic, GetBannerResponse>> getBannerData();

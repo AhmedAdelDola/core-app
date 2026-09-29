@@ -19,6 +19,8 @@ import 'package:elhanbly/models/profile/wallet/wallet_history.dart'
     show WalletResponse;
 import 'package:elhanbly/models/profile/wallet/store_products.dart'
     show StoreProductsResponse;
+import 'package:elhanbly/models/profile/get_notifications_response.dart'
+    show GetNotificationsResponse, AppNotification;
 import 'package:elhanbly/models/general/code_availability_response.dart'
     show CodeAvailabilityResponse;
 import 'package:elhanbly/models/user_response/login_response.dart'
@@ -28,13 +30,22 @@ import 'package:elhanbly/models/user_response/user_data.dart'
 import 'package:elhanbly/models/guest/guest_courses_response.dart'
     show GuestCoursesResponse;
 import 'package:elhanbly/models/home_entities/courses/course_comments_model.dart';
+import 'package:elhanbly/models/exams/course_exams_response.dart';
+import 'package:elhanbly/models/exams/single_exam_response.dart';
+import 'package:elhanbly/models/exams/exam_attempt_response.dart';
+import 'package:elhanbly/models/exams/exam_result_response.dart';
 
 typedef RepositoryStub<T> = Future<Either<dynamic, T>> Function();
 
 class FakeRepository implements Repository {
   RepositoryStub<LoginResponse>? loginStub;
   RepositoryStub<List<RegisterStage>>? fetchRegistrationStagesStub;
-  RepositoryStub<bool>? registerStudentStub;
+  RepositoryStub<LoginResponse>? registerStudentStub;
+  RepositoryStub<GetNotificationsResponse>? getNotificationsStub;
+  RepositoryStub<bool>? readNotificationStub;
+  RepositoryStub<bool>? readAllNotificationsStub;
+  RepositoryStub<bool>? registerDeviceTokenStub;
+  RepositoryStub<bool>? unregisterDeviceTokenStub;
   RepositoryStub<HomeResponse>? getHomeStub;
   RepositoryStub<GuestCoursesResponse>? getGuestCoursesStub;
   RepositoryStub<GetCourseDataResponse>? getCourseDataStub;
@@ -87,7 +98,7 @@ class FakeRepository implements Repository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
-  Future<Either<dynamic, bool>> registerStudent({
+  Future<Either<dynamic, LoginResponse>> registerStudent({
     required String name,
     required String phone,
     String? email,
@@ -102,6 +113,35 @@ class FakeRepository implements Repository {
       levelId: levelId,
     );
     return _call(registerStudentStub, 'registerStudent');
+  }
+
+  @override
+  Future<Either<dynamic, GetNotificationsResponse>> getNotifications({int limit = 50}) {
+    return _call(getNotificationsStub, 'getNotifications');
+  }
+
+  @override
+  Future<Either<dynamic, bool>> readNotification(dynamic id) {
+    return _call(readNotificationStub, 'readNotification');
+  }
+
+  @override
+  Future<Either<dynamic, bool>> readAllNotifications() {
+    return _call(readAllNotificationsStub, 'readAllNotifications');
+  }
+
+  @override
+  Future<Either<dynamic, bool>> registerDeviceToken({
+    required String deviceToken,
+    required String platform,
+    String? appLanguage,
+  }) {
+    return _call(registerDeviceTokenStub, 'registerDeviceToken');
+  }
+
+  @override
+  Future<Either<dynamic, bool>> unregisterDeviceToken({required String deviceToken}) {
+    return _call(unregisterDeviceTokenStub, 'unregisterDeviceToken');
   }
 
   @override

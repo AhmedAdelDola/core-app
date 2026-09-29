@@ -18,6 +18,11 @@ class RegisterSubmittingState extends RegisterState {}
 
 class RegisterSuccessState extends RegisterState {}
 
+class RegisterSuccessWithTokenState extends RegisterState {
+  final LoginResponse response;
+  RegisterSuccessWithTokenState(this.response);
+}
+
 class RegisterErrorState extends RegisterState {
   final String message;
 

@@ -50,14 +50,21 @@ class AppLauncher {
     }
   }
 
-  static void launchWhatsApp({required String number}) async {
-    /// TODO: add number in every where
-    var whatsAppUrl = 'https://wa.me/$number';
+  static void launchWhatsApp({required String number, String? message}) async {
+    String cleanNumber = number.replaceAll('+', '').replaceAll(' ', '').trim();
+    String whatsAppUrl = 'https://wa.me/$cleanNumber';
+    if (message != null && message.isNotEmpty) {
+      whatsAppUrl += '?text=${Uri.encodeComponent(message)}';
+    }
     final Uri url = Uri.parse(whatsAppUrl);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      throw 'حدث خطأ ما';
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        showErrorToast('تعذر فتح تطبيق واتساب');
+      }
+    } catch (_) {
+      showErrorToast('تعذر فتح تطبيق واتساب');
     }
   }
 

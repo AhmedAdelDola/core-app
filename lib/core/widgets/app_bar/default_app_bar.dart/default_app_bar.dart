@@ -32,9 +32,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
           centerTitle: false,
           toolbarHeight: appBarHeight,
           title: setAppBarTitle(cubit.currentIndex),
-          leading: (
-                  cubit.currentIndex != 3 &&
-                  cubit.currentIndex != 1)
+          leading: cubit.currentIndex == 0
               ? const AppBarImageWidget()
               : null,
           actions: action,
@@ -63,14 +61,12 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 Widget setAppBarTitle(int i) {
-  if (i == 6) {
-    return appBarTrainingView;
-  } else if (i == 1) {
+  if (i == 1) {
     return appBarLibraryView;
-  } else if (i == 5) {
-    return appBarNotifcationView;
   } else if (i == 2) {
-    return appBarBodyView;
+    return appBarNotifcationView;
+  } else if (i == 6) {
+    return appBarTrainingView;
   }
   return appBarBodyView;
 }

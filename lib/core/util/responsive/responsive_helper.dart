@@ -134,6 +134,7 @@ class AdaptiveContainer extends StatelessWidget {
 
     return Align(
       alignment: alignment,
+      heightFactor: 1.0,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: content,

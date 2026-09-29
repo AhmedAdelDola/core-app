@@ -32,10 +32,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
           (isTablet || isLandscape) ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.spaceBetween,
       children: [
         bottomNavigationItem(0, 'الرئيسية', AppImages.homeNav, isMobileLandscape),
-        // bottomNavigationItem(1, 'التدريبات', AppImages.fileNav, isMobileLandscape),
         bottomNavigationItem(1, 'المكتبة', AppImages.libraryNav, isMobileLandscape),
-        // bottomNavigationItem(3, 'الإشعارات', AppImages.notificationNav, isMobileLandscape),
-        bottomNavigationItem(2, 'المزيد', AppImages.moreNav, isMobileLandscape),
+        bottomNavigationItem(2, 'الإشعارات', AppImages.notificationNav, isMobileLandscape),
+        bottomNavigationItem(3, 'المزيد', AppImages.moreNav, isMobileLandscape),
       ],
     );
 

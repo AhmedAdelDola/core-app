@@ -50,14 +50,14 @@ class RepoImpl extends Repository {
   }
 
   @override
-  Future<Either<dynamic, bool>> registerStudent({
+  Future<Either<dynamic, LoginResponse>> registerStudent({
     required String name,
     required String phone,
     String? email,
     String? password,
     required int levelId,
   }) async {
-    return responseHandling<bool>(
+    return responseHandling<LoginResponse>(
       onSuccess: () async {
         final Map<String, dynamic> data = {
           'name': name,
@@ -70,8 +70,8 @@ class RepoImpl extends Repository {
         if (email != null && email.isNotEmpty) {
           data['email'] = email;
         }
-        await dioHelper.post(EndPoints.registerStudent, data: data);
-        return true;
+        final response = await dioHelper.post(EndPoints.registerStudent, data: data);
+        return LoginResponse.fromJson(response.data);
       },
     );
   }
@@ -213,7 +213,76 @@ class RepoImpl extends Repository {
   //   );
   // }
 
-  // /// ============================== Wallet ==================================
+  /// ============================== Notifications ==================================
+
+  @override
+  Future<Either<dynamic, GetNotificationsResponse>> getNotifications({int limit = 50}) {
+    return responseHandling<GetNotificationsResponse>(
+      onSuccess: () async {
+        final res = await dioHelper.get(
+          EndPoints.getNotifications,
+          queryParams: {'limit': limit},
+        );
+        return GetNotificationsResponse.fromJson(res.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, bool>> readNotification(dynamic id) {
+    return responseHandling<bool>(
+      onSuccess: () async {
+        await dioHelper.post(EndPoints.readNotification(id));
+        return true;
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, bool>> readAllNotifications() {
+    return responseHandling<bool>(
+      onSuccess: () async {
+        await dioHelper.post(EndPoints.readAllNotifications);
+        return true;
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, bool>> registerDeviceToken({
+    required String deviceToken,
+    required String platform,
+    String? appLanguage,
+  }) {
+    return responseHandling<bool>(
+      onSuccess: () async {
+        final data = <String, dynamic>{
+          'device_token': deviceToken,
+          'platform': platform,
+        };
+        if (appLanguage != null) {
+          data['app_language'] = appLanguage;
+        }
+        await dioHelper.post(EndPoints.registerDevice, data: data);
+        return true;
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, bool>> unregisterDeviceToken({required String deviceToken}) {
+    return responseHandling<bool>(
+      onSuccess: () async {
+        await dioHelper.post(
+          EndPoints.unregisterDevice,
+          data: {'device_token': deviceToken},
+        );
+        return true;
+      },
+    );
+  }
+
+  /// ============================== Wallet ==================================
 
   @override
   Future<Either<dynamic, GeneralResponse>> chargeWallet({
@@ -924,8 +993,10 @@ class RepoImpl extends Repository {
             'app_version': appVersion,
           },
         );
-        final raw = response.data['data'] is Map ? response.data['data'] : response.data;
-        final deviceId = raw['device_id']?.toString() ?? '';
+        final raw = response.data is Map ? response.data : {};
+        final dataMap = raw['data'] is Map ? raw['data'] : raw;
+        final deviceMap = dataMap['device'] is Map ? dataMap['device'] : dataMap;
+        final deviceId = deviceMap['device_id']?.toString() ?? dataMap['device_id']?.toString() ?? '';
         return deviceId;
       },
     );

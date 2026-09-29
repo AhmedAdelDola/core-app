@@ -10,6 +10,7 @@ import 'package:elhanbly/models/home_entities/courses/course_comments_model.dart
 import 'package:elhanbly/models/home_entities/home/get_home.dart';
 import 'package:elhanbly/models/profile/wallet/wallet_history.dart';
 import 'package:elhanbly/models/profile/wallet/store_products.dart';
+import 'package:elhanbly/models/profile/get_notifications_response.dart';
 import 'package:elhanbly/models/general/code_availability_response.dart';
 import '../../../models/general/general_response.dart';
 import '../../../models/general/register_stage_model.dart';

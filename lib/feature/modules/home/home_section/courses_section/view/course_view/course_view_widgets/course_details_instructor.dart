@@ -12,14 +12,11 @@ import '../../../../../../../../core/widgets/ui_helpers/extensions.dart';
 
 class CourseInstructor extends StatelessWidget {
   final String avatar, name;
-  final String? whatsapp, telegram;
 
   const CourseInstructor({
     super.key,
     required this.avatar,
     required this.name,
-    this.whatsapp,
-    this.telegram,
   });
 
   @override
@@ -27,52 +24,51 @@ class CourseInstructor extends StatelessWidget {
     return Column(
       children: [
         const Divider(),
-        Row(
-          children: [
-            CircleAvatar(radius: 22, child: avatar == '' ? Image.asset(AppImages.logoPng):CachedNetworkImage(imageUrl:avatar)),
-            10.sbW,
-            AppText(name, color: AppColors.textColor, size: 18.sp, weight: w800),
-            const Spacer(),
-            if (whatsapp != null && whatsapp!.isNotEmpty)
-              MasterButton(
-                width: 50.w,
-                height: 50.h,
-                padding: EdgeInsets.zero,
-                buttonRadius: 50.r,
-                onPressed: () => AppLauncher.launchWhatsApp(number: whatsapp ?? ''),
-                borderColor: AppColors.kDarkModeGreen,
-                buttonColor: AppColors.kWhite,
-                child: SvgPicture.asset(
-                  AppImages.whatsappSvg,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.kDarkModeGreen,
-                    BlendMode.srcIn,
-                  ),
-                  width: 20,
-                  height: 20,
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 4.h),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.kPrimary.withOpacity(0.1),
+                child: avatar.isEmpty
+                    ? Image.asset(AppImages.logoPng)
+                    : ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: avatar,
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => Image.asset(AppImages.logoPng),
+                        ),
+                      ),
+              ),
+              12.sbW,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      name,
+                      color: AppColors.textColor,
+                      size: 16.sp,
+                      weight: w800,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    2.sbH,
+                    AppText(
+                      'المحاضر',
+                      color: AppColors.textColor4,
+                      size: 12.sp,
+                      weight: w400,
+                    ),
+                  ],
                 ),
               ),
-            10.sbW,
-            if (telegram != null && telegram!.isNotEmpty)
-              MasterButton(
-                width: 50.w,
-                height: 50.h,
-                padding: EdgeInsets.zero,
-                buttonRadius: 50.r,
-                onPressed: () => AppLauncher.launchTelegram(number: telegram ?? ''),
-                borderColor: AppColors.textColor4,
-                buttonColor: AppColors.kWhite,
-                child: const RotationTransition(
-                  turns: AlwaysStoppedAnimation(180 / 500),
-                  filterQuality: FilterQuality.high,
-                  child: Icon(
-                    Icons.send,
-                    color: AppColors.textColor4,
-                    size: 20,
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
         const Divider(),
       ],

@@ -362,6 +362,38 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
       );
     }
 
+    final bool isPdfSession = session?.type == 'pdf' || model?.delivery?.type == 'pdf';
+
+    if (isPdfSession) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => _openPdf(context, model, cubit),
+          icon: Icon(
+            Icons.picture_as_pdf_rounded,
+            size: isTablet ? 22.sp : 20.sp,
+            color: AppColors.kWhite,
+          ),
+          label: AppText(
+            'عرض ملف الـ PDF',
+            size: isTablet ? 14.5.sp : 13.5.sp,
+            weight: FontWeight.w700,
+            color: AppColors.kWhite,
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE53935),
+            elevation: 0,
+            padding: EdgeInsets.symmetric(
+              vertical: isMobileLandscape ? 8.h : 11.h,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Row(
       children: [
         if (hasPdf) ...[
@@ -433,6 +465,8 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
     required bool isTablet,
     required bool isMobileLandscape,
   }) {
+    final bool isPdfSession = session?.type == 'pdf' || model?.delivery?.type == 'pdf';
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isTablet ? 18.w : 14.w),
@@ -457,23 +491,27 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
-                  color: AppColors.kPrimary.withValues(alpha: 0.1),
+                  color: isPdfSession
+                      ? const Color(0xFFFDE8E8)
+                      : AppColors.kPrimary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.play_circle_outline_rounded,
+                      isPdfSession
+                          ? Icons.picture_as_pdf_rounded
+                          : Icons.play_circle_outline_rounded,
                       size: isTablet ? 14.sp : 12.sp,
-                      color: AppColors.kPrimary,
+                      color: isPdfSession ? const Color(0xFFE53935) : AppColors.kPrimary,
                     ),
                     4.sbW,
                     AppText(
                       displayType,
                       size: isTablet ? 11.5.sp : 10.5.sp,
                       weight: FontWeight.w600,
-                      color: AppColors.kPrimary,
+                      color: isPdfSession ? const Color(0xFFE53935) : AppColors.kPrimary,
                     ),
                   ],
                 ),
@@ -495,7 +533,9 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
                     ),
                     4.sbW,
                     AppText(
-                      canAccess ? 'متاحة للمشاهدة' : 'غير مشترك',
+                      canAccess
+                          ? (isPdfSession ? 'متاح للعرض' : 'متاحة للمشاهدة')
+                          : 'غير مشترك',
                       size: isTablet ? 11.sp : 10.sp,
                       weight: FontWeight.w700,
                       color: canAccess ? const Color(0xFF15803D) : const Color(0xFFC2410C),
@@ -552,28 +592,40 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
                 ),
                 8.sbW,
               ],
-              if (session?.watchedAfterPercent != null) ...[
+              if (isPdfSession) ...[
                 Expanded(
                   child: _buildInfoTile(
-                    icon: Icons.trending_up_rounded,
-                    label: 'نسبة الإنجاز',
-                    value: '${session!.watchedAfterPercent}%',
-                    color: AppColors.kPrimary,
+                    icon: Icons.picture_as_pdf_outlined,
+                    label: 'نوع الحصة',
+                    value: 'ملف PDF',
+                    color: const Color(0xFFE53935),
                     isTablet: isTablet,
                   ),
                 ),
-                8.sbW,
-              ],
-              if (model?.remainingViews != null) ...[
-                Expanded(
-                  child: _buildInfoTile(
-                    icon: Icons.visibility_outlined,
-                    label: 'المشاهدات المتبقية',
-                    value: '${model!.remainingViews}',
-                    color: const Color(0xFF0284C7),
-                    isTablet: isTablet,
+              ] else ...[
+                if (session?.watchedAfterPercent != null) ...[
+                  Expanded(
+                    child: _buildInfoTile(
+                      icon: Icons.trending_up_rounded,
+                      label: 'نسبة الإنجاز',
+                      value: '${session!.watchedAfterPercent}%',
+                      color: AppColors.kPrimary,
+                      isTablet: isTablet,
+                    ),
                   ),
-                ),
+                  8.sbW,
+                ],
+                if (model?.remainingViews != null) ...[
+                  Expanded(
+                    child: _buildInfoTile(
+                      icon: Icons.visibility_outlined,
+                      label: 'المشاهدات المتبقية',
+                      value: '${model!.remainingViews}',
+                      color: const Color(0xFF0284C7),
+                      isTablet: isTablet,
+                    ),
+                  ),
+                ],
               ],
             ],
           ),
@@ -811,6 +863,11 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
 
   Future<void> _openPdf(BuildContext context, dynamic model, LessonsSectionCubit cubit) async {
     String? finalPdfUrl = model?.session?.pdf?.url;
+    if (finalPdfUrl == null || finalPdfUrl.isEmpty) {
+      if (model?.delivery?.payload is Map && model?.delivery?.payload?['url'] != null) {
+        finalPdfUrl = model?.delivery?.payload?['url']?.toString();
+      }
+    }
     if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
       try {
         final contentProtection = di<ContentProtectionService>();
@@ -835,9 +892,14 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
         }
       }
     }
+    if (!context.mounted) return;
+    if (finalPdfUrl == null || finalPdfUrl.isEmpty) {
+      showErrorToast('لم يتم العثور على رابط ملف الـ PDF');
+      return;
+    }
     NamedNavigatorImpl.push(PdfViewers(
       pdfurl: finalPdfUrl,
-      name: model?.session?.pdf?.name,
+      name: model?.session?.pdf?.name ?? model?.session?.title ?? 'ملف الحصة',
     ));
   }
 

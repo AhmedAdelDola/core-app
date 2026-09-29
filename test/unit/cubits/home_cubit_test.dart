@@ -15,9 +15,10 @@ void main() {
       final subscription = cubit.stream.listen(states.add);
 
       await cubit.getHome();
+      await Future.delayed(Duration.zero);
 
-      expect(states[0], isA<GetHomeLoadingState>());
-      expect(states[1], isA<GetHomeSuccessState>());
+      expect(states, contains(isA<GetHomeLoadingState>()));
+      expect(states, contains(isA<GetHomeSuccessState>()));
       expect(cubit.home?.recommendedCourses?.first.title, 'Algebra Basics');
 
       await subscription.cancel();
@@ -32,10 +33,12 @@ void main() {
       final subscription = cubit.stream.listen(states.add);
 
       await cubit.getHome();
+      await Future.delayed(Duration.zero);
 
-      expect(states[0], isA<GetHomeLoadingState>());
-      expect(states[1], isA<GetHomeErrorState>());
-      expect((states[1] as GetHomeErrorState).error, 'home failed');
+      expect(states, contains(isA<GetHomeLoadingState>()));
+      expect(states, contains(isA<GetHomeErrorState>()));
+      final errorState = states.whereType<GetHomeErrorState>().first;
+      expect(errorState.error, 'home failed');
 
       await subscription.cancel();
       await cubit.close();

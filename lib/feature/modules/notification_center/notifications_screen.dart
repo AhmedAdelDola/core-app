@@ -1,84 +1,134 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// import '../../../core/services/di.dart';
-// import '../../../core/widgets/loader/app_loader.dart';
-// import '../../../core/widgets/loader/shimmer_list_item.dart';
-// // import '../../../models/profile/get_notifications_response.dart';
-// import 'cubit/get_notifications_cubit.dart';
-// import 'widgets/no_results_widget.dart';
-// import 'widgets/notification_card.dart';
+import '../../../core/services/di.dart';
+import '../../../core/theme/colors/app_colors.dart';
+import '../../../core/theme/theme.dart';
+import '../../../core/util/responsive/responsive_helper.dart';
+import '../../../core/widgets/app_texts/app_text.dart';
+import '../../../core/widgets/loader/shimmer_list_item.dart';
+import '../../../core/widgets/ui_helpers/extensions.dart';
+import '../../../models/profile/get_notifications_response.dart';
+import 'cubit/get_notifications_cubit.dart';
+import 'widgets/no_results_widget.dart';
+import 'widgets/notification_card.dart';
 
-// class NotificationsScreen extends StatefulWidget {
-//   const NotificationsScreen({super.key});
+class NotificationsScreen extends StatefulWidget {
+  const NotificationsScreen({super.key});
 
-//   @override
-//   State<NotificationsScreen> createState() => _NotificationsScreenState();
-// }
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
 
-// class _NotificationsScreenState extends State<NotificationsScreen> {
-//   late final ScrollController _scrollController;
-//   final RefreshController _refreshController =
-//       RefreshController(initialRefresh: false);
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = AppResponsive.isTablet(context);
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _scrollController = ScrollController();
-//     _scrollController.addListener(() {
-//       if (_scrollController.position.pixels ==
-//           _scrollController.position.maxScrollExtent) {
-//         context.read<GetNotificationsCubit>().getNotifications();
-//       }
-//     });
-//   }
+    return BlocProvider(
+      create: (context) => di<GetNotificationsCubit>()..getNotifications(),
+      child: BlocBuilder<GetNotificationsCubit, GetNotificationsState>(
+        builder: (context, state) {
+          final cubit = context.read<GetNotificationsCubit>();
+          final List<AppNotification> notifications = cubit.notificationList;
+          final int unreadCount = cubit.unreadCount;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: EdgeInsets.only(top: 20.sp, bottom: 20.sp),
-//       child: BlocProvider(
-//         create: (context) {
-//           final cubit = di<GetNotificationsCubit>();
-//           cubit.getNotifications(); // Call getNotifications here
-//           return cubit;
-//         },
-//         child: BlocBuilder<GetNotificationsCubit, GetNotificationsState>(
-//           builder: (context, state) {
-//             final cubit = context.read<GetNotificationsCubit>();
+          return AdaptiveContainer(
+            maxWidth: 700,
+            child: Column(
+              children: [
+                if (notifications.isNotEmpty && unreadCount > 0) ...[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AppText(
+                          'لديك $unreadCount إشعار غير مقروء',
+                          style: TextStyles.textViewMedium(
+                            fontSize: 13.sp,
+                            color: AppColors.textColor2,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => cubit.markAllAsRead(),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                            child: AppText(
+                              'تحديد الكل كمقروء',
+                              style: TextStyles.textViewBold(
+                                size: 12.sp,
+                                color: AppColors.kPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                Expanded(
+                  child: _buildBody(state, cubit, notifications),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 
-//             if (state is GetNotificationsLoadingState) {
-//               return const ShimmerVerticalListWidget();
-//             }
-//             if (state is GetNotificationsErrorState) {
-//               return const NoResultsWidget();
-//             }
+  Widget _buildBody(
+    GetNotificationsState state,
+    GetNotificationsCubit cubit,
+    List<AppNotification> notifications,
+  ) {
+    if (state is GetNotificationsLoadingState && notifications.isEmpty) {
+      return const ShimmerVerticalListWidget(count: 6);
+    }
 
-//             final List<AppNotification> notifications = cubit.notificationList;
+    if (state is GetNotificationsErrorState && notifications.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () => cubit.getNotifications(),
+        color: AppColors.kPrimary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: 400.h,
+            child: const NoResultsWidget(),
+          ),
+        ),
+      );
+    }
 
-//             return SmartRefresher(
-//               controller: _refreshController,
-//               onRefresh: () async {
-//                 await cubit.getNotifications();
-//                 _refreshController.refreshCompleted();
-//               },
-//               child: notifications.isEmpty
-//                   ? const Center(child: NoResultsWidget())
-//                   : ListView.separated(
-//                       separatorBuilder: (_, i) => const Divider(),
-//                       physics: const BouncingScrollPhysics(),
-//                       controller: _scrollController,
-//                       itemCount: notifications.length,
-//                       itemBuilder: (c, i) {
-//                         return NotificationCard(notifications[i]);
-//                       },
-//                     ),
-//             );
-//           },
-//         ),
-//       ),
-//     );
-//   }
-// }
+    if (notifications.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () => cubit.getNotifications(),
+        color: AppColors.kPrimary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: 400.h,
+            child: const NoResultsWidget(),
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => cubit.getNotifications(),
+      color: AppColors.kPrimary,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 8.h),
+        itemCount: notifications.length,
+        itemBuilder: (context, index) {
+          return NotificationCard(notifications[index]);
+        },
+      ),
+    );
+  }
+}

@@ -10,18 +10,21 @@ class CourseImageWithData extends StatelessWidget {
   final bool isFree;
   final String? imageUrl;
   final String? price;
+  final String? priceBeforeDiscount;
 
   const CourseImageWithData({
     super.key,
     required this.isFree,
     this.imageUrl,
     this.price,
+    this.priceBeforeDiscount,
   });
 
   @override
   Widget build(BuildContext context) {
     final hasValidImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
     final priceNum = double.tryParse(price ?? '0') ?? 0.0;
+    final oldPriceNum = double.tryParse(priceBeforeDiscount ?? '0') ?? 0.0;
     final isActuallyFree = isFree || priceNum == 0.0;
     final bool isMobileLandscape = AppResponsive.isMobileLandscape(context);
     final double imageHeight = isMobileLandscape ? 160.0 : 270.h;
@@ -74,12 +77,12 @@ class CourseImageWithData extends StatelessWidget {
             ),
           ),
         ),
-        // Price badge in bottom left (or right)
+        // Price badge in bottom right
         Positioned(
-          bottom: isMobileLandscape ? 14.0 : 35.h,
+          bottom: isMobileLandscape ? 38.0 : 35.h,
           right: isMobileLandscape ? 12.0 : 20.w,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
               color: isActuallyFree ? AppColors.kGreen : AppColors.kPrimary,
               borderRadius: BorderRadius.circular(12.r),
@@ -91,13 +94,31 @@ class CourseImageWithData extends StatelessWidget {
                 ),
               ],
             ),
-            child: Text(
-              isActuallyFree ? 'مجاني' : '$priceNum ج.م',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isActuallyFree ? 'مجاني' : '$priceNum ج.م',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (!isActuallyFree && oldPriceNum > priceNum) ...[
+                  SizedBox(width: 8.w),
+                  Text(
+                    '$oldPriceNum ج.م',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.75),
+                      fontSize: 11.5.sp,
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),

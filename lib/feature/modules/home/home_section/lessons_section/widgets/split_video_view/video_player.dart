@@ -18,6 +18,8 @@ class VideoPlayer extends StatefulWidget {
 class _VideoPlayerState extends State<VideoPlayer> {
   bool _isChecking = true;
   bool _isBlocked = false;
+  bool _isLoading = true;
+  InAppWebViewController? _webViewController;
 
   @override
   void initState() {
@@ -72,13 +74,71 @@ class _VideoPlayerState extends State<VideoPlayer> {
     super.dispose();
   }
 
+  static String? extractYoutubeVideoId(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    final url = raw.trim();
+
+    if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(url)) {
+      return url;
+    }
+
+    final match = RegExp(
+      r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/|live\/)|youtu\.be\/)([^"&?\/ ]{11})',
+      caseSensitive: false,
+    ).firstMatch(url);
+
+    if (match != null && match.groupCount >= 1) {
+      return match.group(1);
+    }
+    return null;
+  }
+
+
+  static String buildYoutubeHtml(String videoId) {
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background-color: #000000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .video-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    iframe { width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <div class="video-wrapper">
+    <iframe
+      src="https://www.youtube.com/embed/$videoId?autoplay=1&playsinline=1&enablejsapi=1&rel=0&modestbranding=1"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen>
+    </iframe>
+  </div>
+</body>
+</html>
+''';
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    if (_isBlocked || _isChecking) {
+    if (_isBlocked) {
       return const ColoredBox(
         color: Colors.black,
         child: SizedBox.expand(),
       );
+    }
+
+    final rawUrl = widget.model?.playerUrl?.trim() ?? '';
+    final youtubeId = extractYoutubeVideoId(rawUrl);
+
+    String normalizedUrl = rawUrl;
+    if (normalizedUrl.isNotEmpty &&
+        !normalizedUrl.startsWith('http://') &&
+        !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = 'https://$normalizedUrl';
     }
 
     return Scaffold(
@@ -88,15 +148,100 @@ class _VideoPlayerState extends State<VideoPlayer> {
           SizedBox(
             height: double.infinity,
             width: double.infinity,
-            child: InAppWebView(
-              initialSettings: InAppWebViewSettings(
-                javaScriptEnabled: true,
-                mediaPlaybackRequiresUserGesture: false,
-                allowsInlineMediaPlayback: true,
-                useHybridComposition: true,
+            child: normalizedUrl.isNotEmpty || youtubeId != null
+                ? InAppWebView(
+                    initialSettings: InAppWebViewSettings(
+                      javaScriptEnabled: true,
+                      mediaPlaybackRequiresUserGesture: false,
+                      allowsInlineMediaPlayback: true,
+                      useHybridComposition: true,
+                      allowsPictureInPictureMediaPlayback: true,
+                      transparentBackground: true,
+                      domStorageEnabled: true,
+                      databaseEnabled: true,
+                      allowFileAccess: true,
+                      allowContentAccess: true,
+                      mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+                      useWideViewPort: true,
+                      loadWithOverviewMode: true,
+                      userAgent:
+                          'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36',
+                    ),
+                    initialData: youtubeId != null
+                        ? InAppWebViewInitialData(
+                            data: buildYoutubeHtml(youtubeId),
+                            baseUrl: WebUri('https://www.youtube.com'),
+                            encoding: 'utf-8',
+                            mimeType: 'text/html',
+                          )
+                        : null,
+                    initialUrlRequest: youtubeId == null
+                        ? URLRequest(url: WebUri(normalizedUrl))
+                        : null,
+                    onWebViewCreated: (controller) {
+                      _webViewController = controller;
+                    },
+                    onLoadStop: (controller, url) {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    },
+                    onReceivedError: (controller, request, error) {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    },
+                    onReceivedHttpError: (controller, request, errorResponse) {
+                      if (mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    },
+                  )
+                : const Center(
+                    child: Text(
+                      'رابط الفيديو غير متاح',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
+          ),
+          if (_isLoading || _isChecking)
+            const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.5,
               ),
-              initialUrlRequest:
-                  URLRequest(url: WebUri(widget.model?.playerUrl ?? "")),
+            ),
+          // Back / Close button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 12,
+            child: SafeArea(
+              child: Material(
+                color: Colors.black54,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           if (widget.sessionId != null)

@@ -98,6 +98,14 @@ class Course {
   String? title;
   String? description;
   String? price;
+  String? priceBeforeDiscount;
+  String? defaultSessionPrice;
+  String? subscriptionType;
+  String? whatsapp;
+  String? whatsappButtonText;
+  int? maxViews;
+  int? completionPercentage;
+  int? completionSeconds;
   bool? hasActiveSubscription;
   bool? hasSessionSubscription;
   Stage? stage;
@@ -105,6 +113,7 @@ class Course {
   Teacher? teacher;
   String? imageUrl;
   String? promoUrl;
+  List<String>? sliders;
   List<Chapter>? chapters;
 
   Course({
@@ -112,6 +121,14 @@ class Course {
     this.title,
     this.description,
     this.price,
+    this.priceBeforeDiscount,
+    this.defaultSessionPrice,
+    this.subscriptionType,
+    this.whatsapp,
+    this.whatsappButtonText,
+    this.maxViews,
+    this.completionPercentage,
+    this.completionSeconds,
     this.hasActiveSubscription,
     this.hasSessionSubscription,
     this.stage,
@@ -119,6 +136,7 @@ class Course {
     this.teacher,
     this.imageUrl,
     this.promoUrl,
+    this.sliders,
     this.chapters,
   });
 
@@ -128,7 +146,31 @@ class Course {
       id: (json['id'] as num?)?.toInt(),
       title: json['title'] as String?,
       description: json['description'] as String?,
-      price: json['price'] as String?,
+      price: json['price']?.toString(),
+      priceBeforeDiscount: json['price_before_discount']?.toString() ??
+          json['old_price']?.toString() ??
+          json['original_price']?.toString() ??
+          json['compare_at_price']?.toString(),
+      defaultSessionPrice: json['default_session_price']?.toString() ??
+          json['single_session_price']?.toString(),
+      subscriptionType: json['subscription_type']?.toString() ??
+          json['payment_mode']?.toString(),
+      whatsapp: json['whatsapp']?.toString() ??
+          json['contact_whatsapp']?.toString() ??
+          json['whatsapp_number']?.toString(),
+      whatsappButtonText: json['whatsapp_button_text']?.toString() ??
+          json['contact_button_text']?.toString() ??
+          json['whatsapp_text']?.toString(),
+      maxViews: (json['max_views'] ??
+              json['max_completed_views'] ??
+              json['max_watch_count'] as num?)
+          ?.toInt(),
+      completionPercentage: (json['completion_percentage'] ??
+              json['min_watch_percent'] as num?)
+          ?.toInt(),
+      completionSeconds: (json['completion_seconds'] ??
+              json['min_watch_seconds'] as num?)
+          ?.toInt(),
       hasActiveSubscription: json['has_active_subscription'] as bool?,
       hasSessionSubscription: json['has_session_subscription'] as bool?,
       stage: json['stage'] == null
@@ -142,6 +184,9 @@ class Course {
           : Teacher.fromJson(json['teacher'] as Map<String, dynamic>),
       imageUrl: json['image_url'] as String?,
       promoUrl: json['promo_url'] as String?,
+      sliders: (json['sliders'] as List?)?.map((e) => e.toString()).toList() ??
+          (json['images'] as List?)?.map((e) => e.toString()).toList() ??
+          (json['banners'] as List?)?.map((e) => e.toString()).toList(),
       chapters: (json['chapters'] as List?)
           ?.map((e) => Chapter.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -153,6 +198,14 @@ class Course {
         'title': title,
         'description': description,
         'price': price,
+        'price_before_discount': priceBeforeDiscount,
+        'default_session_price': defaultSessionPrice,
+        'subscription_type': subscriptionType,
+        'whatsapp': whatsapp,
+        'whatsapp_button_text': whatsappButtonText,
+        'max_views': maxViews,
+        'completion_percentage': completionPercentage,
+        'completion_seconds': completionSeconds,
         'has_active_subscription': hasActiveSubscription,
         'has_session_subscription': hasSessionSubscription,
         'stage': stage?.toJson(),
@@ -160,6 +213,7 @@ class Course {
         'teacher': teacher?.toJson(),
         'image_url': imageUrl,
         'promo_url': promoUrl,
+        'sliders': sliders,
         'chapters': chapters?.map((e) => e.toJson()).toList(),
       };
 }
@@ -202,8 +256,9 @@ class Teacher {
   int? id;
   String? name;
   String? imageUrl;
+  String? whatsapp;
 
-  Teacher({this.id, this.name, this.imageUrl});
+  Teacher({this.id, this.name, this.imageUrl, this.whatsapp});
 
   factory Teacher.fromJson(Map<String, dynamic>? json) {
     if (json == null) return Teacher();
@@ -211,10 +266,16 @@ class Teacher {
       id: (json['id'] as num?)?.toInt(),
       name: json['name'] as String?,
       imageUrl: json['image_url'] as String?,
+      whatsapp: json['whatsapp']?.toString(),
     );
   }
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'image_url': imageUrl};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'image_url': imageUrl,
+        'whatsapp': whatsapp,
+      };
 }
 
 class Chapter {

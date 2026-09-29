@@ -19,9 +19,9 @@ class AuthBg extends StatelessWidget {
 Widget get loginLogo {
   final SettingsResponse? settings = UserPreferencesHelper().getAppSettings();
   return Padding(
-    padding: EdgeInsets.symmetric(vertical: 20.sp),
+    padding: EdgeInsets.symmetric(vertical: 8.sp),
     child: SizedBox(
-      height: 180.sp,
+      height: 130.sp,
       child: Hero(
         tag: 'logo',
         child: CachedNetworkImage(

@@ -1,10 +1,16 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:elhanbly/feature/auth/common/country_picker_cubit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/local/cache_helper.dart';
+import '../../../../core/local/enum_init.dart';
 import '../../../../core/network/repository/repository_imports.dart';
+import '../../../../core/security/content_protection_service.dart';
+import '../../../../core/services/di.dart';
 import '../../../../models/general/register_stage_model.dart';
+import '../../../../models/user_response/login_response.dart';
 
 part 'register_state.dart';
 
@@ -18,8 +24,6 @@ class RegisterCubit extends Cubit<RegisterState> {
   List<RegisterStage> stages = [];
   RegisterStage? selectedStage;
   RegisterLevel? selectedLevel;
-
-
 
   bool get isSingleStage => stages.length == 1;
   bool get hasStage => stages.isNotEmpty;
@@ -76,7 +80,7 @@ class RegisterCubit extends Cubit<RegisterState> {
     }
 
     emit(RegisterSubmittingState());
-    final Either<dynamic, bool> result = await repository.registerStudent(
+    final Either<dynamic, LoginResponse> result = await repository.registerStudent(
       name: name,
       phone: phone,
       email: email,
@@ -86,9 +90,29 @@ class RegisterCubit extends Cubit<RegisterState> {
 
     result.fold(
       (error) => emit(RegisterErrorState(error.toString())),
-      (_) => emit(RegisterSuccessState()),
+      (response) {
+        if (response.token != null && response.token!.isNotEmpty) {
+          try {
+            di<CacheHelper>().put(CachingKey.isLogged, true);
+            di<CacheHelper>().put(CachingKey.userData, response.toJson());
+            _prefetchSecurityConfig();
+          } catch (_) {}
+          emit(RegisterSuccessWithTokenState(response));
+        } else {
+          emit(RegisterSuccessState());
+        }
+      },
     );
   }
-  
-  
+
+  Future<void> _prefetchSecurityConfig() async {
+    try {
+      if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+        final cfg = await di<ContentProtectionService>().getSecurityConfig();
+        if (cfg.isEnforced || cfg.isMonitor) {
+          await di<ContentProtectionService>().enrollDevice();
+        }
+      }
+    } catch (_) {}
+  }
 }

@@ -9,6 +9,7 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../../core/network/repository/repository_imports.dart';
 import '../../../core/navigator/named_navigator_impl.dart';
+import '../../home_layout/home_layout.dart';
 import '../../../core/services/di.dart';
 import '../../../core/theme/colors/app_colors.dart';
 import '../../../core/theme/theme.dart';
