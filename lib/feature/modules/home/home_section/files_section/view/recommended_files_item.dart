@@ -18,6 +18,11 @@ class RecommendedFilesItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isVideo = model?.kind?.toLowerCase() == 'media' ||
+        model?.type?.toLowerCase() == 'video' ||
+        model?.type?.toLowerCase() == 'media' ||
+        (model?.id != null && model!.id!.startsWith('media-'));
+
     return InkWell(
       onTap: () {
         NamedNavigatorImpl.push(
@@ -52,7 +57,7 @@ class RecommendedFilesItem extends StatelessWidget {
               CircleAvatar(
                 backgroundColor: AppColors.kPrimary,
                 radius: 20,
-                child: model?.type == 'video'
+                child: isVideo
                     ? SvgPicture.asset(
                         AppImages.playVideoSvg,
                         colorFilter: const ColorFilter.mode(
@@ -70,7 +75,7 @@ class RecommendedFilesItem extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AppText(
-                      model?.session?.title ?? '',
+                      model?.session?.title ?? model?.name ?? '',
                       size: 15.sp,
                       weight: w700,
                       color: AppColors.textColor,
@@ -79,7 +84,7 @@ class RecommendedFilesItem extends StatelessWidget {
                     ),
                     4.sbH,
                     AppText(
-                      model?.type == 'video' ? 'فيديو' : 'ملف PDF',
+                      isVideo ? 'فيديو' : 'ملف PDF',
                       size: 12.sp,
                       weight: w400,
                       color: AppColors.textColor4,
