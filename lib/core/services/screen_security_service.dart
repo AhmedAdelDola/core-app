@@ -6,13 +6,14 @@ class ScreenSecurityService {
     'elhanbly/screen_security',
   );
 
-  static final List<void Function(bool isRecording)> _listeners = [];
+  static final List<void Function(bool isRecording)> _recordingListeners = [];
+  static final List<VoidCallback> _screenshotListeners = [];
   static bool _initialized = false;
   static bool _isCurrentlyRecording = false;
 
   static bool get isCurrentlyRecording => _isCurrentlyRecording;
 
-  /// Initializes the method call listener for screen recording changes
+  /// Initializes the method call listener for screen recording and screenshot events
   static void init() {
     if (_initialized || kIsWeb) return;
     _initialized = true;
@@ -21,11 +22,19 @@ class ScreenSecurityService {
       if (call.method == 'onScreenRecordingChanged') {
         final bool isRecording = (call.arguments as bool?) ?? false;
         _isCurrentlyRecording = isRecording;
-        for (final listener in List.of(_listeners)) {
+        for (final listener in List.of(_recordingListeners)) {
           try {
             listener(isRecording);
           } catch (e) {
-            debugPrint('Error in screen security listener: $e');
+            debugPrint('Error in screen security recording listener: $e');
+          }
+        }
+      } else if (call.method == 'onScreenshotTaken') {
+        for (final listener in List.of(_screenshotListeners)) {
+          try {
+            listener();
+          } catch (e) {
+            debugPrint('Error in screen security screenshot listener: $e');
           }
         }
       }
@@ -35,14 +44,27 @@ class ScreenSecurityService {
   /// Adds a listener that triggers whenever screen recording starts or stops
   static void addListener(void Function(bool isRecording) listener) {
     init();
-    if (!_listeners.contains(listener)) {
-      _listeners.add(listener);
+    if (!_recordingListeners.contains(listener)) {
+      _recordingListeners.add(listener);
     }
   }
 
   /// Removes a screen recording listener
   static void removeListener(void Function(bool isRecording) listener) {
-    _listeners.remove(listener);
+    _recordingListeners.remove(listener);
+  }
+
+  /// Adds a listener that triggers when a screenshot is attempted/taken
+  static void addScreenshotListener(VoidCallback listener) {
+    init();
+    if (!_screenshotListeners.contains(listener)) {
+      _screenshotListeners.add(listener);
+    }
+  }
+
+  /// Removes a screenshot listener
+  static void removeScreenshotListener(VoidCallback listener) {
+    _screenshotListeners.remove(listener);
   }
 
   /// Checks if screen recording or screen mirroring is currently active

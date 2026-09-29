@@ -8,6 +8,7 @@ import '../network/extensions/http_overrides.dart';
 import '../services/di.dart';
 import '../services/notifications/firebase_messaging.dart';
 import '../services/notifications/local_notifications.dart';
+import '../services/screen_security_service.dart';
 
 Future<void> initServices() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -16,6 +17,7 @@ Future<void> initServices() async {
   const isTakingScreenshots = bool.fromEnvironment('TAKING_SCREENSHOTS');
   if (!isTakingScreenshots) {
     await listenAppFirebaseMessaging();
+    await ScreenSecurityService.enable();
   }
   Bloc.observer = BlocObserverService();
 }
