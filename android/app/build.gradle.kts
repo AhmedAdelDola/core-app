@@ -27,7 +27,7 @@ val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.0"
 
 android {
-    namespace = "demo.aplus.com"
+    namespace = "leader.aplus.com"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -36,7 +36,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "demo.aplus.com"
+        applicationId = "leader.aplus.com"
         minSdk = 24
         targetSdk = 36
         multiDexEnabled = true

@@ -907,6 +907,9 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
     await cubit.getvideo('${model?.session?.id}');
     final models = cubit.ShowVideoModel;
     if (!context.mounted) return;
+    if (models == null || models.playerUrl == null || models.playerUrl!.isEmpty) {
+      return;
+    }
     bool isTablet = MediaQuery.of(context).size.width >= 600;
     if (isTablet) {
       NamedNavigatorImpl.push(SplitViewScreen(

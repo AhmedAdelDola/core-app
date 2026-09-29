@@ -12,10 +12,15 @@ class ContentAccessResponse {
   });
 
   factory ContentAccessResponse.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map<String, dynamic> ? json['data'] : json;
+    final rawData = json['access'] is Map<String, dynamic>
+        ? json['access'] as Map<String, dynamic>
+        : (json['data'] is Map<String, dynamic>
+            ? json['data'] as Map<String, dynamic>
+            : json);
 
     return ContentAccessResponse(
-      playbackToken: rawData['playback_token']?.toString(),
+      playbackToken: rawData['token']?.toString() ??
+          rawData['playback_token']?.toString(),
       playerUrl: rawData['player_url']?.toString(),
       resolveEndpoint: rawData['resolve_endpoint']?.toString(),
       pdfUrl: rawData['pdf_url']?.toString() ??

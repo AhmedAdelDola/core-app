@@ -33,8 +33,13 @@ class ContentProtectionService {
     required this.cacheHelper,
   });
 
-  String? get enrolledDeviceId =>
-      cacheHelper.get<String>(CachingKey.securityDeviceId);
+  String? get enrolledDeviceId {
+    final id = cacheHelper.get<String>(CachingKey.securityDeviceId);
+    if (id != null && id.trim().isNotEmpty) {
+      return id.trim();
+    }
+    return null;
+  }
 
   String get securityMode =>
       cacheHelper.get<String>(CachingKey.securityMode) ?? 'off';
@@ -102,7 +107,7 @@ class ContentProtectionService {
     final existingDeviceId = enrolledDeviceId;
     final hasKey = await attestationService.hasAttestationKey();
 
-    if (!force && existingDeviceId != null && hasKey) {
+    if (!force && existingDeviceId != null && existingDeviceId.isNotEmpty && hasKey) {
       return existingDeviceId;
     }
 
