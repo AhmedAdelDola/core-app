@@ -25,13 +25,22 @@ class RecommendedFilesItem extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        NamedNavigatorImpl.push(
-          SessionDetilesScreen(
-            id: model?.session?.id ?? int.tryParse(model?.id ?? '') ?? 0,
-            title: model?.session?.title ?? model?.name ?? '',
-            subTitle: model?.course?.title ?? '',
-          ),
-        );
+        if (!isVideo && model?.url != null) {
+          NamedNavigatorImpl.push(
+            PdfViewers(
+              pdfurl: model?.url,
+              name: model?.name ?? model?.session?.title ?? '',
+            ),
+          );
+        } else {
+          NamedNavigatorImpl.push(
+            SessionDetilesScreen(
+              id: model?.session?.id ?? int.tryParse(model?.id ?? '') ?? 0,
+              title: model?.session?.title ?? model?.name ?? '',
+              subTitle: model?.course?.title ?? '',
+            ),
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
@@ -75,7 +84,7 @@ class RecommendedFilesItem extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AppText(
-                      model?.session?.title ?? model?.name ?? '',
+                      model?.name ?? model?.session?.title ?? '',
                       size: 15.sp,
                       weight: w700,
                       color: AppColors.textColor,

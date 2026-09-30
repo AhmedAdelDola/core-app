@@ -81,6 +81,7 @@ class NetworkCubit extends Cubit<NetworkStates> {
       if (isUpdateRequired) {
         final updateUrlAndroid = responseData is Map ? responseData['update_url_android']?.toString() : null;
         final updateUrlIos = responseData is Map ? responseData['update_url_ios']?.toString() : null;
+        safeEmit(NoErrorState());
         safeEmit(AppUpdateRequiredState(
           message,
           updateUrlAndroid: updateUrlAndroid,
@@ -89,8 +90,9 @@ class NetworkCubit extends Cubit<NetworkStates> {
         return;
       }
 
-      final isBanned = (response.statusCode == 403) && (code == 'DEVICE_IP_CHANGED' || code == 'banned' || message.contains('تعليق'));
+      final isBanned = (response.statusCode == 403 && code == 'DEVICE_IP_CHANGED') || code == 'banned' || message.contains('تعليق');
       if (isBanned) {
+        safeEmit(NoErrorState());
         safeEmit(StudentBannedNetworkState(message));
         return;
       }
@@ -100,9 +102,11 @@ class NetworkCubit extends Cubit<NetworkStates> {
 
       if (isUnauthenticated && !isProfileRelatedRequest) {
         showErrorToast(message);
+        safeEmit(NoErrorState());
         safeEmit(UnauthenticatedState(message));
       } else {
         showErrorToast(message);
+        safeEmit(NoErrorState());
         safeEmit(ErrorState(message));
       }
     } else {

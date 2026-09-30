@@ -12,6 +12,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController otpController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  final FocusNode otpFocusNode = FocusNode();
   bool isPhoneChecked = false;
 
   num? shortestSide;
@@ -258,6 +259,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                               appContext: context,
                                               length: 4,
                                               controller: otpController,
+                                              focusNode: otpFocusNode,
+                                              autoFocus: true,
                                               autoDisposeControllers: false,
                                               keyboardType: TextInputType.number,
                                               animationType: AnimationType.fade,
@@ -440,6 +443,7 @@ class _LoginScreenState extends State<LoginScreen> {
     phoneController.dispose();
     passwordController.dispose();
     otpController.dispose();
+    otpFocusNode.dispose();
     super.dispose();
   }
 }
