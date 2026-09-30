@@ -28,6 +28,11 @@ class UnauthenticatedState extends NetworkStates {
   UnauthenticatedState(this.error);
 }
 
+class StudentBannedNetworkState extends NetworkStates {
+  final String message;
+  const StudentBannedNetworkState(this.message);
+}
+
 class ErrorState extends NetworkStates {
   final String error;
 
@@ -44,5 +49,13 @@ class AppUpdateRequiredState extends NetworkStates {
     this.updateUrlAndroid,
     this.updateUrlIos,
   });
+}
+
+class AppInternetDisconnectedState extends NetworkStates {
+  const AppInternetDisconnectedState();
+}
+
+class AppInternetRestoredState extends NetworkStates {
+  const AppInternetRestoredState();
 }
 

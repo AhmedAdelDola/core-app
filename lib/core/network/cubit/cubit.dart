@@ -9,10 +9,31 @@ import '../../services/di.dart';
 import '../../util/logger.dart';
 import '../../widgets/ui_helpers/alert_message.dart';
 import '../extensions/cubit_extension.dart';
+import '../../services/internet_checker_service.dart';
 import 'state.dart';
 
 class NetworkCubit extends Cubit<NetworkStates> {
-  NetworkCubit() : super(NoErrorState());
+  late final InternetCheckerService _internetChecker;
+
+  NetworkCubit() : super(NoErrorState()) {
+    _internetChecker = InternetCheckerService(
+      onStatusChanged: (isConnected) {
+        if (isConnected) {
+          safeEmit(const AppInternetRestoredState());
+        } else {
+          safeEmit(const AppInternetDisconnectedState());
+        }
+      },
+    );
+    _internetChecker.startChecking();
+  }
+
+  @override
+  Future<void> close() {
+    _internetChecker.stopChecking();
+    return super.close();
+  }
+
 
   static NetworkCubit get(BuildContext context) => BlocProvider.of(context);
 
@@ -65,6 +86,12 @@ class NetworkCubit extends Cubit<NetworkStates> {
           updateUrlAndroid: updateUrlAndroid,
           updateUrlIos: updateUrlIos,
         ));
+        return;
+      }
+
+      final isBanned = (response.statusCode == 403) && (code == 'DEVICE_IP_CHANGED' || code == 'banned' || message.contains('تعليق'));
+      if (isBanned) {
+        safeEmit(StudentBannedNetworkState(message));
         return;
       }
 

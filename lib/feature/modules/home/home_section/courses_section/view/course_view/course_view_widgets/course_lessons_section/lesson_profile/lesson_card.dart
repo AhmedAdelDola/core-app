@@ -164,10 +164,12 @@ class LessonCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Top Row: Type Pill + Duration / Lock price
-                      Row(
+                      // Top Row: Type Pill + Duration
+                      Wrap(
+                        spacing: 6.w,
+                        runSpacing: 4.h,
                         children: [
-                          if (index != null) ...[
+                          if (index != null)
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
@@ -181,8 +183,6 @@ class LessonCard extends StatelessWidget {
                                 color: AppColors.textColor4,
                               ),
                             ),
-                            6.sbW,
-                          ],
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                             decoration: BoxDecoration(
@@ -196,8 +196,7 @@ class LessonCard extends StatelessWidget {
                               color: isLocked ? AppColors.textColor4 : typeColor,
                             ),
                           ),
-                          if (duration > 0) ...[
-                            6.sbW,
+                          if (duration > 0)
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
@@ -219,10 +218,27 @@ class LessonCard extends StatelessWidget {
                                 ],
                               ),
                             ),
-                          ],
-                          const Spacer(),
-                          // Locked Price or Status
-                          if (isLocked) ...[
+                        ],
+                      ),
+                      6.sbH,
+
+                      // Session Title + Lock/Completed Status
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AppText(
+                              model?.title ?? 'حصة بدون عنوان',
+                              size: isTablet ? 14.5.sp : 13.5.sp,
+                              weight: FontWeight.w700,
+                              color: AppColors.textColor,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              align: TextAlign.start,
+                            ),
+                          ),
+                          if (isLocked && model?.price != null && model?.price != '0') ...[
+                            8.sbW,
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
@@ -237,9 +253,7 @@ class LessonCard extends StatelessWidget {
                                       size: 10.sp, color: const Color(0xFFC2410C)),
                                   3.sbW,
                                   AppText(
-                                    (model?.price != null && model?.price != '0')
-                                        ? '${model?.price} ج.م'
-                                        : 'مقفلة',
+                                    '${model?.price} ج.م',
                                     size: isTablet ? 10.sp : 9.5.sp,
                                     color: const Color(0xFFC2410C),
                                     weight: FontWeight.w700,
@@ -248,6 +262,7 @@ class LessonCard extends StatelessWidget {
                               ),
                             ),
                           ] else if (isCompleted) ...[
+                            8.sbW,
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
@@ -271,18 +286,6 @@ class LessonCard extends StatelessWidget {
                             ),
                           ],
                         ],
-                      ),
-                      6.sbH,
-
-                      // Session Title
-                      AppText(
-                        model?.title ?? 'حصة بدون عنوان',
-                        size: isTablet ? 14.5.sp : 13.5.sp,
-                        weight: FontWeight.w700,
-                        color: AppColors.textColor,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        align: TextAlign.start,
                       ),
 
                       // Progress indicator (if unlocked and not yet 100%)

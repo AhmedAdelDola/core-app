@@ -80,6 +80,10 @@ class _SplashScreenState extends State<SplashScreen>
           if (state is AuthenticatedState) {
             NamedNavigatorImpl.pushNamed(Routes.homePage, clean: true);
           }
+
+          if (state is EmulatorDetectedState) {
+            NamedNavigatorImpl.pushNamed(Routes.emulatorBlocked, clean: true);
+          }
         },
         builder: (context, state) {
           return Container(

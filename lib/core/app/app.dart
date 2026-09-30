@@ -9,6 +9,7 @@ import '../navigator/named_navigator_impl.dart';
 import '../network/cubit/cubit.dart';
 import '../network/cubit/state.dart';
 import '../theme/theme.dart';
+import '../widgets/ui_helpers/network_status_banner.dart';
 import 'providers.dart';
 
 import '../util/responsive/responsive_helper.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
                   ],
                   supportedLocales: const [Locale('ar')],
                   theme: CustomMaterialAppTheme.mainThemeData,
+                  builder: (context, child) => NetworkStatusBanner(child: child ?? const SizedBox()),
                   home: const SplashScreen(),
                 );
               },

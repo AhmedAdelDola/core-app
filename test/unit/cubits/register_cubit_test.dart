@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:elhanbly/feature/auth/complete_profile/cubit/register_cubit.dart';
+import 'package:elhanbly/models/user_response/login_response.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fixtures/register_fixtures.dart';
@@ -65,7 +66,7 @@ void main() {
 
     test('register submits selected level and emits success', () async {
       final repository = FakeRepository()
-        ..registerStudentStub = () async => right(true);
+        ..registerStudentStub = () async => right(LoginResponse());
       final cubit = RegisterCubit(repository)
         ..stages = registerStagesFixture()
         ..selectedStage = registerStagesFixture().first;

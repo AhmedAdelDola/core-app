@@ -56,3 +56,10 @@ class ChangeCountryCodeState extends LoginState {}
 class ChangeNumberCodeState extends LoginState {}
 
 class GetNetworkInfoState extends LoginState {}
+
+class StudentBannedState extends LoginState {
+  final String message;
+  final DateTime? bannedUntil;
+
+  StudentBannedState({required this.message, this.bannedUntil});
+}

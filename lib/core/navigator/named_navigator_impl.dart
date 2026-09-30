@@ -5,6 +5,9 @@ import '../../feature/auth/login/login_imports.dart';
 import '../../feature/auth/splash/onboarding_screens.dart';
 import '../../feature/auth/splash/splash_screen.dart';
 import '../../feature/guest/guest_home_screen.dart';
+import '../../feature/auth/banned_screen.dart';
+import '../../feature/auth/force_update_screen.dart';
+import '../../feature/auth/emulator_blocked_screen.dart';
 import 'named_navigator_routes.dart';
 
 class NamedNavigatorImpl {
@@ -63,7 +66,13 @@ class NamedNavigatorImpl {
         return MaterialPageRoute(builder: (_) => const HomeLayout());
       case Routes.guestHome:
         return MaterialPageRoute(builder: (_) => const GuestHomeScreen());
-      // case Routes.homePage:
+      case Routes.banned:
+        final args = settings?.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(builder: (_) => BannedScreen(banMessage: args?['message']));
+      case Routes.forceUpdate:
+        return MaterialPageRoute(builder: (_) => const ForceUpdateScreen());
+      case Routes.emulatorBlocked:
+        return MaterialPageRoute(builder: (_) => const EmulatorBlockedScreen());
     }
 
     return MaterialPageRoute(builder: (_) => Container());

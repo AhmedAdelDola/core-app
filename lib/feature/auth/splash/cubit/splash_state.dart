@@ -18,3 +18,7 @@ class GetSettingsError extends SplashState {
   final String error;
   GetSettingsError(this.error);
 }
+
+class EmulatorDetectedState extends SplashState {}
+
+class ForceUpdateState extends SplashState {}

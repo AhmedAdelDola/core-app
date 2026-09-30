@@ -11,6 +11,7 @@ import '../../../../core/navigator/named_navigator_routes.dart';
 import '../../../../core/network/repository/repository_imports.dart';
 import '../../../../core/security/content_protection_service.dart';
 import '../../../../core/services/di.dart';
+import '../../../../core/security/emulator_detection_service.dart';
 import 'onboarding_models.dart';
 
 part 'splash_state.dart';
@@ -34,6 +35,12 @@ class SplashCubit extends Cubit<SplashState> {
 
   runSplash() {
     Future.delayed(const Duration(milliseconds: 500), () async {
+      final isEmulator = await EmulatorDetectionService().isEmulator();
+      if (isEmulator) {
+        emit(EmulatorDetectedState());
+        return;
+      }
+      
       bool isLogged = di<CacheHelper>().getBool(CachingKey.isLogged);
       if (isLogged == true) {
         String? token = UserPreferencesHelper().getUserTokenPreference();

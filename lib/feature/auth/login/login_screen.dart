@@ -50,7 +50,17 @@ class _LoginScreenState extends State<LoginScreen> {
           } else if (state is RequestOtpSuccessState) {
             showSuccessToast('تم إرسال كود التحقق بنجاح');
           } else if (state is LoginErrorState) {
-            showErrorToast(state.message);
+            if (state.message.contains('MOBILE_APP_UPDATE_REQUIRED') || state.message.contains('426')) {
+              NamedNavigatorImpl.pushNamed(Routes.forceUpdate, clean: true);
+            } else {
+              showErrorToast(state.message);
+            }
+          } else if (state is StudentBannedState) {
+            NamedNavigatorImpl.pushNamed(
+              Routes.banned, 
+              arguments: {'message': state.message},
+              clean: true,
+            );
           } else if (state is RequestOtpErrorState) {
             showErrorToast(state.message);
           }

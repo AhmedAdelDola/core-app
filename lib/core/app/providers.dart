@@ -1,3 +1,4 @@
+import 'package:elhanbly/core/navigator/named_navigator_routes.dart';
 import 'package:elhanbly/feature/home_layout/cubit/home_lay_out_cubit.dart';
 import 'package:elhanbly/feature/modules/home/cubit/home_cubit/home_cubit.dart';
 import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit/courses_section_cubit.dart';
@@ -44,15 +45,13 @@ List<SingleChildWidget> get providers {
 void networkListener(BuildContext context, NetworkStates state) {
   switch (state) {
     case UnauthenticatedState _:
-      NamedNavigatorImpl.push(const LoginScreen(), clean: true);
+      NamedNavigatorImpl.pushNamed(Routes.login, clean: true);
+      return;
+    case StudentBannedNetworkState bannedState:
+      NamedNavigatorImpl.pushNamed(Routes.banned, clean: true, arguments: {'message': bannedState.message});
       return;
     case AppUpdateRequiredState updateState:
-      SecurityAlertDialogs.showUpdateRequiredDialog(
-        context,
-        message: updateState.message,
-        updateUrlAndroid: updateState.updateUrlAndroid,
-        updateUrlIos: updateState.updateUrlIos,
-      );
+      NamedNavigatorImpl.pushNamed(Routes.forceUpdate, clean: true);
       return;
     case SocketErrorState _:
       showErrorToast('لديك مشكلة في الاتصال بالانترنت');

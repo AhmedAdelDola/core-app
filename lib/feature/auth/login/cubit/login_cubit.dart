@@ -91,7 +91,9 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
     f.fold(
       (l) {
         final errorMsg = l.toString();
-        if (errorMsg.contains('Phone number not found') ||
+        if (errorMsg.contains('DEVICE_IP_CHANGED') || errorMsg.contains('ip_changed') || errorMsg.contains('banned')) {
+          emit(StudentBannedState(message: 'تم اكتشاف تسجيل دخول من أجهزة متعددة. تم تعليق حسابك مؤقتاً.'));
+        } else if (errorMsg.contains('Phone number not found') ||
             errorMsg.contains('not found') ||
             errorMsg.contains('404')) {
           emit(PhoneNotFoundState(numberCode! + phone));
@@ -137,7 +139,14 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
       otp: otp,
     );
     f.fold(
-      (l) => emit(LoginErrorState(l.toString())),
+      (l) {
+        final error = l.toString();
+        if (error.contains('DEVICE_IP_CHANGED') || error.contains('ip_changed') || error.contains('banned')) {
+          emit(StudentBannedState(message: 'تم اكتشاف تسجيل دخول من أجهزة متعددة. تم تعليق حسابك مؤقتاً.'));
+        } else {
+          emit(LoginErrorState(error));
+        }
+      },
       (r) {
         loginResponse = r;
         // persist login state and user data so app recognizes authenticated user
