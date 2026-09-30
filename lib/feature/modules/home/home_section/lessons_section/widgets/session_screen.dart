@@ -394,6 +394,11 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
       );
     }
 
+    final dynamic remainingViews = model?.remainingViews;
+    final bool isWatchLimitReached = !isPdfSession &&
+        remainingViews != null &&
+        (remainingViews is int ? remainingViews <= 0 : (int.tryParse('$remainingViews') ?? 1) <= 0);
+
     return Row(
       children: [
         if (hasPdf) ...[
@@ -428,20 +433,29 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
         Expanded(
           flex: 6,
           child: ElevatedButton.icon(
-            onPressed: () => _startWatchVideo(context, model, cubit),
+            onPressed: isWatchLimitReached
+                ? () {
+                    showErrorToast(
+                        'لقد استنفدت عدد مرات المشاهدة المسموحة لهذه الحصة. تواصل مع المعلم لإضافة مشاهدات.');
+                  }
+                : () => _startWatchVideo(context, model, cubit),
             icon: Icon(
-              Icons.play_arrow_rounded,
+              isWatchLimitReached
+                  ? Icons.lock_clock_outlined
+                  : Icons.play_arrow_rounded,
               size: isTablet ? 22.sp : 20.sp,
               color: AppColors.kWhite,
             ),
             label: AppText(
-              'المشاهدة الآن',
+              isWatchLimitReached ? 'استنفدت المشاهدات' : 'المشاهدة الآن',
               size: isTablet ? 14.5.sp : 13.5.sp,
               weight: FontWeight.w700,
               color: AppColors.kWhite,
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.kPrimary,
+              backgroundColor: isWatchLimitReached
+                  ? const Color(0xFF64748B)
+                  : AppColors.kPrimary,
               elevation: 0,
               padding: EdgeInsets.symmetric(
                 vertical: isMobileLandscape ? 8.h : 11.h,
@@ -616,15 +630,25 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
                   8.sbW,
                 ],
                 if (model?.remainingViews != null) ...[
-                  Expanded(
-                    child: _buildInfoTile(
-                      icon: Icons.visibility_outlined,
-                      label: 'المشاهدات المتبقية',
-                      value: '${model!.remainingViews}',
-                      color: const Color(0xFF0284C7),
-                      isTablet: isTablet,
-                    ),
-                  ),
+                  () {
+                    final dynamic remaining = model!.remainingViews;
+                    final bool isZero = remaining is int
+                        ? remaining <= 0
+                        : (int.tryParse('$remaining') ?? 1) <= 0;
+                    return Expanded(
+                      child: _buildInfoTile(
+                        icon: isZero
+                            ? Icons.warning_amber_rounded
+                            : Icons.visibility_outlined,
+                        label: 'المشاهدات المتبقية',
+                        value: isZero ? '0 (استنفدت)' : '$remaining',
+                        color: isZero
+                            ? const Color(0xFFE53935)
+                            : const Color(0xFF0284C7),
+                        isTablet: isTablet,
+                      ),
+                    );
+                  }(),
                 ],
               ],
             ],
@@ -912,17 +936,20 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
     }
     bool isTablet = MediaQuery.of(context).size.width >= 600;
     if (isTablet) {
-      NamedNavigatorImpl.push(SplitViewScreen(
+      await NamedNavigatorImpl.push(SplitViewScreen(
         model: models,
         pdfUrl: model?.session?.pdf?.url ?? '',
         pdfname: model?.session?.pdf?.name ?? '',
         sessionId: model?.session?.id ?? widget.id,
       ));
     } else {
-      NamedNavigatorImpl.push(VideoPlayer(
+      await NamedNavigatorImpl.push(VideoPlayer(
         model: models,
         sessionId: model?.session?.id ?? widget.id,
       ));
+    }
+    if (context.mounted) {
+      cubit.getSessionInfo('${widget.id}');
     }
   }
 }
