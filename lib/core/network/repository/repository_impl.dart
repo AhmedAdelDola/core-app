@@ -1,4 +1,4 @@
-﻿part of 'repository_imports.dart';
+part of 'repository_imports.dart';
 
 class RepoImpl extends Repository {
   final DioHelper dioHelper;
@@ -990,6 +990,33 @@ class RepoImpl extends Repository {
             'certificate_chain': certificateChain,
             'play_integrity_token': playIntegrityToken,
             'device_model': model,
+            'app_version': appVersion,
+          },
+        );
+        final raw = response.data is Map ? response.data : {};
+        final dataMap = raw['data'] is Map ? raw['data'] : raw;
+        final deviceMap = dataMap['device'] is Map ? dataMap['device'] : dataMap;
+        final deviceId = deviceMap['device_id']?.toString() ?? dataMap['device_id']?.toString() ?? '';
+        return deviceId;
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, String>> enrollFallbackDevice({
+    required String deviceUuid,
+    required String deviceModel,
+    required String platform,
+    required String appVersion,
+  }) {
+    return responseHandling<String>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          'mobile/v2/device-attestations/fallback',
+          data: {
+            'device_uuid': deviceUuid,
+            'device_model': deviceModel,
+            'platform': platform,
             'app_version': appVersion,
           },
         );

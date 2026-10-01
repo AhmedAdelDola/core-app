@@ -95,131 +95,137 @@ class ContentProtectionService {
     return config;
   }
 
-  /// Enrolls the device using Android Key Attestation & Play Integrity
+  /// Enrolls the device using Android Key Attestation & Play Integrity, with a fallback for iOS/Huawei
   Future<String> enrollDevice({bool force = false}) async {
-    if (!Platform.isAndroid) {
-      throw ContentProtectionException(
-        'PLATFORM_NOT_SUPPORTED',
-        'Device attestation is only supported on Android.',
-      );
+    final existingDeviceId = enrolledDeviceId;
+
+    if (!force && existingDeviceId != null && existingDeviceId.isNotEmpty) {
+      if (!Platform.isAndroid) return existingDeviceId;
+      final hasKey = await attestationService.hasAttestationKey();
+      if (hasKey) return existingDeviceId;
     }
 
-    final existingDeviceId = enrolledDeviceId;
-    final hasKey = await attestationService.hasAttestationKey();
-
-    if (!force && existingDeviceId != null && existingDeviceId.isNotEmpty && hasKey) {
-      return existingDeviceId;
+    if (!Platform.isAndroid) {
+      _logger.i('Non-Android platform detected, using fallback enrollment...');
+      return await _fallbackEnrollment();
     }
 
     _logger.i('Starting Android device enrollment...');
 
-    // 0. Ensure security config is loaded so cloudProjectNumber is available
-    if (cloudProjectNumber == null) {
-      _logger.i('cloudProjectNumber is null, fetching security config first...');
-      await getSecurityConfig();
-    }
+    try {
+      // 0. Ensure security config is loaded so cloudProjectNumber is available
+      if (cloudProjectNumber == null) {
+        _logger.i('cloudProjectNumber is null, fetching security config first...');
+        await getSecurityConfig();
+      }
 
-    // 1. Get attestation challenge
-    final challengeResult = await repository.getAttestationChallenge();
-    final challenge = challengeResult.fold(
-      (error) => throw ContentProtectionException(
-        'CHALLENGE_FAILED',
-        error?.toString() ?? 'Failed to get attestation challenge.',
-      ),
-      (c) => c,
-    );
+      // 1. Get attestation challenge
+      final challengeResult = await repository.getAttestationChallenge();
+      final challenge = challengeResult.fold(
+        (error) => throw ContentProtectionException(
+          'CHALLENGE_FAILED',
+          error?.toString() ?? 'Failed to get attestation challenge.',
+        ),
+        (c) => c,
+      );
 
-    // If challenge provides cloudProjectNumber, save and prepare it
-    if (challenge.cloudProjectNumber != null) {
-      final pNum = int.tryParse(challenge.cloudProjectNumber!);
-      if (pNum != null) {
-        cacheHelper.put(CachingKey.cloudProjectNumber, pNum);
-        if (Platform.isAndroid) {
-          await attestationService.prepareIntegrity(pNum);
+      // If challenge provides cloudProjectNumber, save and prepare it
+      if (challenge.cloudProjectNumber != null) {
+        final pNum = int.tryParse(challenge.cloudProjectNumber!);
+        if (pNum != null) {
+          cacheHelper.put(CachingKey.cloudProjectNumber, pNum);
+          if (Platform.isAndroid) {
+            await attestationService.prepareIntegrity(pNum);
+          }
         }
       }
-    }
 
-    // 2. Generate ECDSA P-256 key with attestation challenge in Keystore
-    final certChain = await attestationService.generateAttestationKey(
-      challenge.payloadToSign,
-    );
-    if (certChain.isEmpty) {
-      throw ContentProtectionException(
-        'KEY_GENERATION_FAILED',
-        'Failed to generate hardware-backed attestation key.',
+      // 2. Generate ECDSA P-256 key with attestation challenge in Keystore
+      final certChain = await attestationService.generateAttestationKey(
+        challenge.payloadToSign,
       );
-    }
+      if (certChain.isEmpty) {
+        throw ContentProtectionException(
+          'KEY_GENERATION_FAILED',
+          'Failed to generate hardware-backed attestation key.',
+        );
+      }
 
-    // 3. Request Play Integrity token
-    final projectNum = cloudProjectNumber;
-    if (projectNum == null) {
-      _logger.w('Warning: cloudProjectNumber is still null before requesting Play Integrity token.');
-    }
-    final integrityToken = await attestationService.requestPlayIntegrityToken(
-      challenge.playIntegrityRequestHash,
-      cloudProjectNumber: projectNum,
-    );
+      // 3. Request Play Integrity token
+      final projectNum = cloudProjectNumber;
+      if (projectNum == null) {
+        _logger.w('Warning: cloudProjectNumber is still null before requesting Play Integrity token.');
+      }
+      final integrityToken = await attestationService.requestPlayIntegrityToken(
+        challenge.playIntegrityRequestHash,
+        cloudProjectNumber: projectNum,
+      );
 
-    // 4. Sign the decoded payload bytes using SHA256withECDSA
-    final signature = await attestationService.signPayload(
-      challenge.payloadToSign,
-    );
+      // 4. Sign the decoded payload bytes using SHA256withECDSA
+      final signature = await attestationService.signPayload(
+        challenge.payloadToSign,
+      );
 
-    // 5. Gather device model and app version
-    final deviceInfo = await DeviceInfoPlugin().androidInfo;
-    final packageInfo = await PackageInfo.fromPlatform();
+      // 5. Gather device model and app version
+      final deviceInfo = await DeviceInfoPlugin().androidInfo;
+      final packageInfo = await PackageInfo.fromPlatform();
 
-    final model = '${deviceInfo.brand} ${deviceInfo.model}';
-    final appVersion = packageInfo.version;
+      final model = '${deviceInfo.brand} ${deviceInfo.model}';
+      final appVersion = packageInfo.version;
 
-    // 6. Complete attestation
-    final completeResult = await repository.completeAttestation(
-      challengeId: challenge.challengeId,
-      signature: signature,
-      certificateChain: certChain,
-      playIntegrityToken: integrityToken,
-      model: model,
-      appVersion: appVersion,
-    );
+      // 6. Complete attestation
+      final completeResult = await repository.completeAttestation(
+        challengeId: challenge.challengeId,
+        signature: signature,
+        certificateChain: certChain,
+        playIntegrityToken: integrityToken,
+        model: model,
+        appVersion: appVersion,
+      );
 
-    final deviceId = completeResult.fold(
-      (error) {
-        final errorStr = error.toString();
-        if (errorStr.contains('DEVICE_NOT_TRUSTED')) {
+      final deviceId = completeResult.fold(
+        (error) {
+          final errorStr = error.toString();
+          if (errorStr.contains('DEVICE_NOT_TRUSTED')) {
+            throw ContentProtectionException(
+              'DEVICE_NOT_TRUSTED',
+              'This device cannot be trusted for protected content.',
+            );
+          } else if (errorStr.contains('APP_INTEGRITY_FAILED')) {
+            throw ContentProtectionException(
+              'APP_INTEGRITY_FAILED',
+              'Application integrity check failed.',
+            );
+          }
           throw ContentProtectionException(
-            'DEVICE_NOT_TRUSTED',
-            'This device cannot be trusted for protected content.',
+            'ENROLLMENT_FAILED',
+            errorStr,
           );
-        } else if (errorStr.contains('APP_INTEGRITY_FAILED')) {
-          throw ContentProtectionException(
-            'APP_INTEGRITY_FAILED',
-            'Application integrity check failed.',
-          );
-        }
+        },
+        (id) => id,
+      );
+
+      if (deviceId.isEmpty) {
         throw ContentProtectionException(
           'ENROLLMENT_FAILED',
-          errorStr,
+          'Device enrollment returned an empty device ID.',
         );
-      },
-      (id) => id,
-    );
+      }
 
-    if (deviceId.isEmpty) {
-      throw ContentProtectionException(
-        'ENROLLMENT_FAILED',
-        'Device enrollment returned an empty device ID.',
+      cacheHelper.put(CachingKey.securityDeviceId, deviceId);
+      cacheHelper.put(
+        CachingKey.lastAttestationTime,
+        DateTime.now().toIso8601String(),
       );
+
+      _logger.i('Device successfully enrolled with deviceId: $deviceId');
+      return deviceId;
+    } on ContentProtectionException {
+      rethrow;
+    } catch (e) {
+      _logger.w('Device enrollment failed (likely Huawei without GMS), falling back. Error: $e');
+      return await _fallbackEnrollment();
     }
-
-    cacheHelper.put(CachingKey.securityDeviceId, deviceId);
-    cacheHelper.put(
-      CachingKey.lastAttestationTime,
-      DateTime.now().toIso8601String(),
-    );
-
-    _logger.i('Device successfully enrolled with deviceId: $deviceId');
-    return deviceId;
   }
 
   /// Requests access to session media (video/audio).

@@ -179,6 +179,12 @@ abstract class Repository {
     required String model,
     required String appVersion,
   });
+  Future<Either<dynamic, String>> enrollFallbackDevice({
+    required String deviceUuid,
+    required String deviceModel,
+    required String platform,
+    required String appVersion,
+  });
   Future<Either<dynamic, ContentChallengeResponse>> createContentChallenge({
     required String deviceId,
     required int sessionId,
