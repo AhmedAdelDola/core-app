@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../local/cache_helper.dart';
+import '../../local/enum_init.dart';
 import '../../local/user_preferences/user_preferences_helper.dart';
 import '../../services/di.dart';
 import '../../util/logger.dart';
@@ -34,16 +37,21 @@ class NetworkCubit extends Cubit<NetworkStates> {
     return super.close();
   }
 
-
   static NetworkCubit get(BuildContext context) => BlocProvider.of(context);
 
   Future<Map<String, dynamic>> onRequestCallback() async {
     String? token = UserPreferencesHelper().getUserTokenPreference();
     final packageInfo = di.isRegistered<PackageInfo>() ? di<PackageInfo>() : null;
     final version = packageInfo?.version ?? '15.0.23';
+    
+    final deviceId = di.isRegistered<CacheHelper>() ? di<CacheHelper>().get<String>(CachingKey.securityDeviceId) : null;
+    final platform = Platform.isIOS ? 'ios' : 'android';
+
     return {
       if (token != null) 'Authorization': 'Bearer $token',
       'X-App-Version': version,
+      'X-Platform': platform,
+      if (deviceId != null) 'X-Device-Id': deviceId,
     };
   }
 

@@ -238,6 +238,9 @@ class ContentProtectionService {
 
     // If security is off or not Android, fallback to legacy getvideo
     if (securityMode == 'off' || !Platform.isAndroid) {
+      if (!Platform.isAndroid) {
+        try { await enrollDevice(); } catch (_) {}
+      }
       final legacy = await repository.getvideo(sessionId.toString());
       return legacy.fold(
         (error) => throw ContentProtectionException('ACCESS_FAILED', error.toString()),
@@ -296,6 +299,9 @@ class ContentProtectionService {
 
     // If security is off or not Android, return direct PDF URL
     if (securityMode == 'off' || !Platform.isAndroid) {
+      if (!Platform.isAndroid) {
+        try { await enrollDevice(); } catch (_) {}
+      }
       return ContentAccessResponse(pdfUrl: fallbackUrl);
     }
 
