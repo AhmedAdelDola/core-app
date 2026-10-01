@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:elhanbly/feature/auth/common/country_picker_cubit.dart';
@@ -91,8 +91,8 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
     f.fold(
       (l) {
         final errorMsg = l.toString();
-        if (errorMsg.contains('DEVICE_IP_CHANGED') || errorMsg.contains('ip_changed') || errorMsg.contains('banned')) {
-          emit(StudentBannedState(message: 'تم اكتشاف تسجيل دخول من أجهزة متعددة. تم تعليق حسابك مؤقتاً.'));
+        if (errorMsg.contains('DEVICE_IP_CHANGED') || errorMsg.contains('DEVICE_LIMIT_EXCEEDED') || errorMsg.contains('ip_changed') || errorMsg.contains('banned')) {
+          emit(StudentBannedState(message: 'ØªÙ… Ø§ÙƒØªØ´Ø§Ù ØªØ³Ø¬ÙŠÙ„ Ø¯Ø®ÙˆÙ„ Ù…Ù† Ø£Ø¬Ù‡Ø²Ø© Ù…ØªØ¹Ø¯Ø¯Ø©. ØªÙ… ØªØ¹Ù„ÙŠÙ‚ Ø­Ø³Ø§Ø¨Ùƒ Ù…Ø¤Ù‚ØªØ§Ù‹.'));
         } else if (errorMsg.contains('Phone number not found') ||
             errorMsg.contains('not found') ||
             errorMsg.contains('404')) {
@@ -141,8 +141,8 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
     f.fold(
       (l) {
         final error = l.toString();
-        if (error.contains('DEVICE_IP_CHANGED') || error.contains('ip_changed') || error.contains('banned')) {
-          emit(StudentBannedState(message: 'تم اكتشاف تسجيل دخول من أجهزة متعددة. تم تعليق حسابك مؤقتاً.'));
+        if (error.contains('DEVICE_IP_CHANGED') || error.contains('DEVICE_LIMIT_EXCEEDED') || error.contains('ip_changed') || error.contains('banned')) {
+          emit(StudentBannedState(message: 'ØªÙ… Ø§ÙƒØªØ´Ø§Ù ØªØ³Ø¬ÙŠÙ„ Ø¯Ø®ÙˆÙ„ Ù…Ù† Ø£Ø¬Ù‡Ø²Ø© Ù…ØªØ¹Ø¯Ø¯Ø©. ØªÙ… ØªØ¹Ù„ÙŠÙ‚ Ø­Ø³Ø§Ø¨Ùƒ Ù…Ø¤Ù‚ØªØ§Ù‹.'));
         } else {
           emit(LoginErrorState(error));
         }
@@ -177,3 +177,4 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
     return super.close();
   }
 }
+

@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -90,7 +90,7 @@ class NetworkCubit extends Cubit<NetworkStates> {
         return;
       }
 
-      final isBanned = (response.statusCode == 403 && code == 'DEVICE_IP_CHANGED') || code == 'banned' || message.contains('تعليق');
+      final isBanned = (response.statusCode == 403) && (code == 'DEVICE_LIMIT_EXCEEDED' || code == 'DEVICE_IP_CHANGED' || code == 'banned' || message.contains('تعليق'));
       if (isBanned) {
         safeEmit(NoErrorState());
         safeEmit(StudentBannedNetworkState(message));
@@ -114,3 +114,4 @@ class NetworkCubit extends Cubit<NetworkStates> {
     }
   }
 }
+
