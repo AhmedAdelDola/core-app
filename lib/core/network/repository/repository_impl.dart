@@ -1,4 +1,4 @@
-part of 'repository_imports.dart';
+﻿part of 'repository_imports.dart';
 
 class RepoImpl extends Repository {
   final DioHelper dioHelper;
@@ -989,7 +989,7 @@ class RepoImpl extends Repository {
             'signature': signature,
             'certificate_chain': certificateChain,
             'play_integrity_token': playIntegrityToken,
-            'model': model,
+            'device_model': model,
             'app_version': appVersion,
           },
         );
@@ -1255,3 +1255,4 @@ class RepoImpl extends Repository {
     );
   }
 }
+
