@@ -24,7 +24,7 @@ import Firebase
         application.registerUserNotificationSettings(settings)
     }
         GeneratedPluginRegistrant.register(with: self)
-        self.window.makeSecure()
+        self.window?.makeSecure()
         NotificationCenter.default.addObserver(self, selector: #selector(screenRecordingStatusChanged), name: UIScreen.capturedDidChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(screenshotHasTaken), name: UIApplication.userDidTakeScreenshotNotification, object: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
