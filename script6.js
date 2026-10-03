@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); let c = fs.readFileSync('lib/core/security/content_protection_service.dart', 'utf8'); c = c.split('if (deviceId.isEmpty) {').join('} on ContentProtectionException { rethrow; } catch (e) { return await _fallbackEnrollment(); }\n\n    if (deviceId.isEmpty) {'); fs.writeFileSync('lib/core/security/content_protection_service.dart', c);
