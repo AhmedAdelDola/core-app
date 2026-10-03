@@ -3,6 +3,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../models/security/security_config_response.dart';
 import '../../models/security/content_access_response.dart';
@@ -225,6 +226,82 @@ class ContentProtectionService {
     } catch (e) {
       _logger.w('Device enrollment failed (likely Huawei without GMS), falling back. Error: $e');
       return await _fallbackEnrollment();
+    }
+  }
+
+  /// Fallback enrollment for iOS, Huawei (without GMS), or other unsupported environments
+  Future<String> _fallbackEnrollment() async {
+    try {
+      String deviceUuid = '';
+      String model = 'Unknown Device';
+      final platform = Platform.isAndroid
+          ? 'android'
+          : (Platform.isIOS ? 'ios' : Platform.operatingSystem);
+
+      if (Platform.isAndroid) {
+        final deviceInfo = await DeviceInfoPlugin().androidInfo;
+        deviceUuid = deviceInfo.id;
+        model = '${deviceInfo.brand} ${deviceInfo.model}'.trim();
+      } else if (Platform.isIOS) {
+        final deviceInfo = await DeviceInfoPlugin().iosInfo;
+        deviceUuid = deviceInfo.identifierForVendor ?? '';
+        model = '${deviceInfo.name} ${deviceInfo.model}'.trim();
+      }
+
+      if (deviceUuid.trim().isEmpty) {
+        String? cachedUuid = cacheHelper.get<String>('security_fallback_device_uuid');
+        if (cachedUuid == null || cachedUuid.trim().isEmpty) {
+          cachedUuid = const Uuid().v4();
+          cacheHelper.put('security_fallback_device_uuid', cachedUuid);
+        }
+        deviceUuid = cachedUuid;
+      }
+
+      if (model.trim().isEmpty) {
+        model = 'Mobile Device';
+      }
+
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = packageInfo.version;
+
+      final result = await repository.enrollFallbackDevice(
+        deviceUuid: deviceUuid,
+        deviceModel: model,
+        platform: platform,
+        appVersion: appVersion,
+      );
+
+      final deviceId = result.fold(
+        (error) => throw ContentProtectionException(
+          'FALLBACK_ENROLLMENT_FAILED',
+          error?.toString() ?? 'Failed to complete fallback enrollment.',
+        ),
+        (id) => id,
+      );
+
+      if (deviceId.isEmpty) {
+        throw ContentProtectionException(
+          'FALLBACK_ENROLLMENT_FAILED',
+          'Fallback device enrollment returned an empty device ID.',
+        );
+      }
+
+      cacheHelper.put(CachingKey.securityDeviceId, deviceId);
+      cacheHelper.put(
+        CachingKey.lastAttestationTime,
+        DateTime.now().toIso8601String(),
+      );
+
+      _logger.i('Device successfully enrolled (fallback) with deviceId: $deviceId');
+      return deviceId;
+    } on ContentProtectionException {
+      rethrow;
+    } catch (e) {
+      _logger.e('Fallback device enrollment failed: $e');
+      throw ContentProtectionException(
+        'FALLBACK_ENROLLMENT_FAILED',
+        e.toString(),
+      );
     }
   }
 
