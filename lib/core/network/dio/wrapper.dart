@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -29,19 +30,22 @@ class DioImpl extends DioHelper {
     _dio = Dio()
       ..interceptors.addAll(
         [
-          PrettyDioLogger(
-            requestHeader: true,
-            requestBody: true,
-            responseBody: true,
-            responseHeader: false,
-            error: true,
-            compact: true,
-            maxWidth: 120,
-          ),
+          if (kDebugMode)
+            PrettyDioLogger(
+              requestHeader: true,
+              requestBody: true,
+              responseBody: true,
+              responseHeader: false,
+              error: true,
+              compact: true,
+              maxWidth: 120,
+            ),
           AppInterceptors(onRequest, onResponse, onError),
         ],
       )
       ..options.baseUrl = baseURL
+      ..options.connectTimeout = const Duration(seconds: 30)
+      ..options.receiveTimeout = const Duration(seconds: 30)
       ..options.headers.addAll({
         'Accept': 'application/json',
         if (dotenv.env['TENANT_DOMAIN'] != null) 'X-Tenant-Domain': dotenv.env['TENANT_DOMAIN']!,
