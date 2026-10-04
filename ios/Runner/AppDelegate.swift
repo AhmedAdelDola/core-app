@@ -31,7 +31,6 @@ import flutter_local_notifications
         NotificationCenter.default.addObserver(self, selector: #selector(screenRecordingStatusChanged), name: UIScreen.capturedDidChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(screenshotHasTaken), name: UIApplication.userDidTakeScreenshotNotification, object: nil)
 
-        // Apply secure window protection
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.makeSecure()
             if self?.checkIsScreenRecording() == true {
@@ -61,7 +60,6 @@ import flutter_local_notifications
                 self?.makeSecure()
                 result(nil)
             case "disable":
-                // If global security is required, leave secure or remove
                 result(nil)
             case "isScreenRecording":
                 result(self?.checkIsScreenRecording() ?? false)
@@ -95,7 +93,8 @@ import flutter_local_notifications
     func makeSecure() {
         guard secureTextField == nil else { return }
         guard let window = resolveWindow(),
-              let controllerView = window.rootViewController?.view else {
+              let controller = resolveFlutterViewController(),
+              let controllerView = controller.view else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
                 self?.makeSecure()
             }
@@ -109,24 +108,24 @@ import flutter_local_notifications
         field.translatesAutoresizingMaskIntoConstraints = false
         field.tag = 888999
 
-        controllerView.addSubview(field)
-        controllerView.sendSubviewToBack(field)
+        // Add to window as sibling to avoid circular layer graph
+        window.addSubview(field)
+        window.sendSubviewToBack(field)
 
         NSLayoutConstraint.activate([
-            field.topAnchor.constraint(equalTo: controllerView.topAnchor),
-            field.bottomAnchor.constraint(equalTo: controllerView.bottomAnchor),
-            field.leadingAnchor.constraint(equalTo: controllerView.leadingAnchor),
-            field.trailingAnchor.constraint(equalTo: controllerView.trailingAnchor)
+            field.topAnchor.constraint(equalTo: window.topAnchor),
+            field.bottomAnchor.constraint(equalTo: window.bottomAnchor),
+            field.leadingAnchor.constraint(equalTo: window.leadingAnchor),
+            field.trailingAnchor.constraint(equalTo: window.trailingAnchor)
         ])
 
-        controllerView.layoutIfNeeded()
+        window.layoutIfNeeded()
 
-        if let superlayer = controllerView.layer.superlayer {
-            superlayer.addSublayer(field.layer)
-            let secureLayer = field.layer.sublayers?.first ?? field.subviews.first?.layer
-            if let secureLayer = secureLayer {
-                secureLayer.addSublayer(controllerView.layer)
-            }
+        let secureLayer = field.subviews.first?.layer ?? field.layer.sublayers?.first
+        if let secureLayer = secureLayer {
+            secureLayer.addSublayer(controllerView.layer)
+        } else {
+            field.layer.addSublayer(controllerView.layer)
         }
 
         self.secureTextField = field
@@ -201,6 +200,7 @@ import flutter_local_notifications
         snap.addSubview(blurBackground)
         blurBackground.frame = snap.frame
         targetWindow.addSubview(snap)
+        targetWindow.bringSubviewToFront(snap)
         self.screen = snap
     }
 
