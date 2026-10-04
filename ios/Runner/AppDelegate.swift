@@ -1,211 +1,288 @@
-import UIKit
 import Flutter
-import flutter_local_notifications
+import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
-    private let screenSecurityChannel = "elhanbly/screen_security"
-    weak var screen: UIView? = nil
-    var overlayController = UIViewController()
-    private var secureTextField: UITextField?
+  private let screenSecurityChannel = "elhanbly/screen_security"
 
-    override func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-    ) -> Bool {
-        FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { (registry) in
-            GeneratedPluginRegistrant.register(with: registry)
-        }
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    registerScreenSecurityChannel()
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
 
-        if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
-        } else {
-            let settings: UIUserNotificationSettings =
-            UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
-            application.registerUserNotificationSettings(settings)
-        }
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    registerScreenSecurityChannel()
+  }
 
-        GeneratedPluginRegistrant.register(with: self)
-        registerScreenSecurityChannel()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(screenRecordingStatusChanged), name: UIScreen.capturedDidChangeNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(screenshotHasTaken), name: UIApplication.userDidTakeScreenshotNotification, object: nil)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.makeSecure()
-            if self?.checkIsScreenRecording() == true {
-                self?.displayOverlayControllerWith(message: "Screen recording is not allowed while using the app. Kindly turn off the screen recording to continue using the app.")
-            }
-        }
-
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  private func registerScreenSecurityChannel() {
+    guard let controller = window?.rootViewController as? FlutterViewController else {
+      return
     }
 
-    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-        registerScreenSecurityChannel()
+    let channel = FlutterMethodChannel(
+      name: screenSecurityChannel,
+      binaryMessenger: controller.binaryMessenger
+    )
+    ScreenSecurityManager.shared.setup(channel: channel, window: window)
+
+    channel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "enable":
+        ScreenSecurityManager.shared.enable()
+        result(nil)
+      case "disable":
+        ScreenSecurityManager.shared.disable()
+        result(nil)
+      case "isScreenRecording":
+        result(ScreenSecurityManager.shared.isRecordingActive)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
     }
+  }
+}
 
-    private func registerScreenSecurityChannel() {
-        guard let controller = resolveFlutterViewController() else { return }
+final class ScreenSecurityManager {
+  static let shared = ScreenSecurityManager()
 
-        let channel = FlutterMethodChannel(
-            name: screenSecurityChannel,
-            binaryMessenger: controller.binaryMessenger
-        )
+  private var privacyOverlay: UIView?
+  private var secureTextField: UITextField?
+  private var isObserverRegistered = false
+  private var isEnabled = false
+  private weak var targetWindow: UIWindow?
+  private var channel: FlutterMethodChannel?
 
-        channel.setMethodCallHandler { [weak self] call, result in
-            switch call.method {
-            case "enable":
-                self?.makeSecure()
-                result(nil)
-            case "disable":
-                result(nil)
-            case "isScreenRecording":
-                result(self?.checkIsScreenRecording() ?? false)
-            default:
-                result(FlutterMethodNotImplemented)
-            }
-        }
+  var isRecordingActive: Bool {
+    return checkIsScreenRecording()
+  }
+
+  private init() {}
+
+  func setup(channel: FlutterMethodChannel?, window: UIWindow?) {
+    self.channel = channel
+    if let window = window {
+      self.targetWindow = window
     }
+    registerObservers()
+  }
 
-    private func resolveWindow() -> UIWindow? {
-        if let appWindow = self.window { return appWindow }
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        return scenes.flatMap({ $0.windows }).first(where: { $0.isKeyWindow }) ?? scenes.flatMap({ $0.windows }).first
+  func enable(window: UIWindow? = nil, channel: FlutterMethodChannel? = nil) {
+    if let channel = channel {
+      self.channel = channel
     }
-
-    private func resolveFlutterViewController() -> FlutterViewController? {
-        if let controller = self.window?.rootViewController as? FlutterViewController {
-            return controller
-        }
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        for scene in scenes {
-            for win in scene.windows {
-                if let flutterVC = win.rootViewController as? FlutterViewController {
-                    return flutterVC
-                }
-            }
-        }
-        return nil
+    if let window = window {
+      self.targetWindow = window
     }
+    isEnabled = true
+    registerObservers()
+    applySecureContent()
+    updateScreenCaptureStatus()
+  }
 
-    func makeSecure() {
-        guard secureTextField == nil else { return }
-        guard let window = resolveWindow(),
-              let controller = resolveFlutterViewController(),
-              let controllerView = controller.view else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                self?.makeSecure()
-            }
-            return
+  func disable() {
+    isEnabled = false
+    removeSecureContent()
+    removePrivacyOverlay()
+  }
+
+  private func registerObservers() {
+    guard !isObserverRegistered else { return }
+    isObserverRegistered = true
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(screenCaptureChanged),
+      name: UIScreen.capturedDidChangeNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(userDidTakeScreenshot),
+      name: UIApplication.userDidTakeScreenshotNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(applicationWillResignActive),
+      name: UIApplication.willResignActiveNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(applicationDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
+  }
+
+  private func resolveWindow() -> UIWindow? {
+    if let target = targetWindow {
+      return target
+    }
+    if let appDelegateWindow = (UIApplication.shared.delegate as? AppDelegate)?.window, appDelegateWindow != nil {
+      self.targetWindow = appDelegateWindow
+      return appDelegateWindow
+    }
+    let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+    if let sceneWindow = scenes.flatMap({ $0.windows }).first(where: { $0.isKeyWindow }) ?? scenes.flatMap({ $0.windows }).first {
+      self.targetWindow = sceneWindow
+      return sceneWindow
+    }
+    return nil
+  }
+
+  private func applySecureContent() {
+    guard isEnabled else { return }
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self, self.isEnabled else { return }
+      guard self.secureTextField == nil else { return }
+      guard let window = self.resolveWindow(),
+            let controllerView = window.rootViewController?.view else {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+          self?.applySecureContent()
         }
+        return
+      }
 
-        let field = UITextField()
-        field.isSecureTextEntry = true
-        field.isUserInteractionEnabled = false
-        field.backgroundColor = .clear
-        field.translatesAutoresizingMaskIntoConstraints = false
-        field.tag = 888999
+      let field = UITextField()
+      field.isSecureTextEntry = true
+      field.isUserInteractionEnabled = false
+      field.backgroundColor = .clear
+      field.translatesAutoresizingMaskIntoConstraints = false
+      field.tag = 888999
 
-        // Add to window as sibling to avoid circular layer graph
-        window.addSubview(field)
-        window.sendSubviewToBack(field)
+      controllerView.addSubview(field)
+      controllerView.sendSubviewToBack(field)
+
+      NSLayoutConstraint.activate([
+        field.topAnchor.constraint(equalTo: controllerView.topAnchor),
+        field.bottomAnchor.constraint(equalTo: controllerView.bottomAnchor),
+        field.leadingAnchor.constraint(equalTo: controllerView.leadingAnchor),
+        field.trailingAnchor.constraint(equalTo: controllerView.trailingAnchor)
+      ])
+
+      controllerView.layoutIfNeeded()
+
+      if let superlayer = controllerView.layer.superlayer {
+        superlayer.addSublayer(field.layer)
+        // In iOS, UITextField's secure canvas layer renders blank in screenshots and recordings
+        let secureLayer = field.layer.sublayers?.first ?? field.subviews.first?.layer
+        if let secureLayer = secureLayer {
+          secureLayer.addSublayer(controllerView.layer)
+        }
+      }
+
+      self.secureTextField = field
+    }
+  }
+
+  private func removeSecureContent() {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      if let field = self.secureTextField {
+        field.isSecureTextEntry = false
+        if let window = self.resolveWindow(),
+           let controllerView = window.rootViewController?.view {
+          window.layer.addSublayer(controllerView.layer)
+        }
+        field.removeFromSuperview()
+        self.secureTextField = nil
+      }
+    }
+  }
+
+  @objc private func screenCaptureChanged() {
+    updateScreenCaptureStatus()
+  }
+
+  @objc private func userDidTakeScreenshot() {
+    DispatchQueue.main.async { [weak self] in
+      self?.channel?.invokeMethod("onScreenshotTaken", arguments: nil)
+    }
+  }
+
+  @objc private func applicationWillResignActive() {
+    guard isEnabled else { return }
+    showPrivacyOverlay()
+  }
+
+  @objc private func applicationDidBecomeActive() {
+    if isEnabled {
+      applySecureContent()
+      updateScreenCaptureStatus()
+    }
+  }
+
+  private func updateScreenCaptureStatus() {
+    let recording = checkIsScreenRecording()
+    if recording && isEnabled {
+      showPrivacyOverlay()
+    } else if !recording && UIApplication.shared.applicationState == .active {
+      removePrivacyOverlay()
+    }
+    DispatchQueue.main.async { [weak self] in
+      self?.channel?.invokeMethod("onScreenRecordingChanged", arguments: recording)
+    }
+  }
+
+  private func checkIsScreenRecording() -> Bool {
+    if let window = resolveWindow(), let scene = window.windowScene {
+      return scene.screen.isCaptured
+    }
+    return UIScreen.main.isCaptured
+  }
+
+  private func showPrivacyOverlay() {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      guard let window = self.resolveWindow() else { return }
+
+      if self.privacyOverlay == nil {
+        let overlay = UIView(frame: window.bounds)
+        overlay.backgroundColor = .black
+        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        overlay.tag = 777666
+
+        let label = UILabel()
+        label.text = "عفواً، لا يمكن تصوير أو تسجيل الشاشة"
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        overlay.addSubview(label)
 
         NSLayoutConstraint.activate([
-            field.topAnchor.constraint(equalTo: window.topAnchor),
-            field.bottomAnchor.constraint(equalTo: window.bottomAnchor),
-            field.leadingAnchor.constraint(equalTo: window.leadingAnchor),
-            field.trailingAnchor.constraint(equalTo: window.trailingAnchor)
+          label.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+          label.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
+          label.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 24),
+          label.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -24)
         ])
 
-        window.layoutIfNeeded()
+        self.privacyOverlay = overlay
+      }
 
-        let secureLayer = field.subviews.first?.layer ?? field.layer.sublayers?.first
-        if let secureLayer = secureLayer {
-            secureLayer.addSublayer(controllerView.layer)
-        } else {
-            field.layer.addSublayer(controllerView.layer)
+      if let overlay = self.privacyOverlay {
+        overlay.frame = window.bounds
+        if overlay.superview == nil {
+          window.addSubview(overlay)
         }
-
-        self.secureTextField = field
+        window.bringSubviewToFront(overlay)
+      }
     }
+  }
 
-    private func checkIsScreenRecording() -> Bool {
-        if let window = resolveWindow(), let scene = window.windowScene {
-            return scene.screen.isCaptured
-        }
-        return UIScreen.main.isCaptured
+  private func removePrivacyOverlay() {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      if !self.checkIsScreenRecording() && UIApplication.shared.applicationState == .active {
+        self.privacyOverlay?.removeFromSuperview()
+        self.privacyOverlay = nil
+      }
     }
-
-    override func applicationWillResignActive(_ application: UIApplication) {
-        self.blurScreen()
-    }
-
-    override func applicationDidBecomeActive(_ application: UIApplication) {
-        self.removeBlurScreen()
-        self.makeSecure()
-        if self.checkIsScreenRecording() {
-            self.displayOverlayControllerWith(message: "Screen recording is not allowed while using the app. Kindly turn off the screen recording to continue using the app.")
-        } else {
-            self.overlayController.dismiss(animated: false, completion: nil)
-        }
-    }
-
-    @objc func screenRecordingStatusChanged() {
-        if checkIsScreenRecording() {
-            self.displayOverlayControllerWith(message: "Screen recording is not allowed while using the app. Kindly turn off the screen recording to continue using the app.")
-        } else {
-            self.overlayController.dismiss(animated: false, completion: nil)
-        }
-    }
-
-    @objc func screenshotHasTaken() {
-    }
-
-    fileprivate func displayOverlayControllerWith(message: String) {
-        guard let rootWindow = resolveWindow() else { return }
-
-        self.overlayController.view.backgroundColor = .white
-        self.overlayController.modalPresentationStyle = .fullScreen
-        let screenWidth = UIScreen.main.bounds.width
-        let screenHeight = UIScreen.main.bounds.height - (rootWindow.safeAreaInsets.top + rootWindow.safeAreaInsets.bottom)
-        let frameOfLabel = CGRect(x: 20, y: screenHeight/2 - 100, width: screenWidth - 40, height: 200)
-
-        if let labelMessage = self.overlayController.view.viewWithTag(1010) as? UILabel {
-            labelMessage.text = message
-        } else {
-            let labelMessage = UILabel(frame: frameOfLabel)
-            labelMessage.tag = 1010
-            labelMessage.numberOfLines = 0
-            labelMessage.font = UIFont.systemFont(ofSize: 18, weight: .regular)
-            labelMessage.text = message
-            labelMessage.textColor = .black
-            labelMessage.textAlignment = .center
-            self.overlayController.view.addSubview(labelMessage)
-        }
-
-        if self.overlayController.presentingViewController == nil {
-            rootWindow.rootViewController?.present(self.overlayController, animated: false, completion: nil)
-        }
-    }
-
-    func blurScreen(style: UIBlurEffect.Style = UIBlurEffect.Style.regular) {
-        guard let targetWindow = resolveWindow() else { return }
-        if screen != nil { return }
-
-        let snap = UIScreen.main.snapshotView(afterScreenUpdates: false)
-        let blurEffect = UIBlurEffect(style: style)
-        let blurBackground = UIVisualEffectView(effect: blurEffect)
-        snap.addSubview(blurBackground)
-        blurBackground.frame = snap.frame
-        targetWindow.addSubview(snap)
-        targetWindow.bringSubviewToFront(snap)
-        self.screen = snap
-    }
-
-    func removeBlurScreen() {
-        screen?.removeFromSuperview()
-        screen = nil
-    }
+  }
 }
