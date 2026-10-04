@@ -30,6 +30,11 @@ class MyApp extends StatelessWidget {
               designSize: _getDesignSize(constraints),
               minTextAdapt: true,
               splitScreenMode: true,
+              fontSizeResolver: (fontSize, instance) {
+                final scale = instance.scaleText;
+                final clampedScale = scale.clamp(0.9, 1.15);
+                return fontSize * clampedScale;
+              },
               builder: (_, child) {
                 return MaterialApp(
                   title: ClientConfig.appName,
@@ -43,7 +48,18 @@ class MyApp extends StatelessWidget {
                   ],
                   supportedLocales: const [Locale('ar')],
                   theme: CustomMaterialAppTheme.mainThemeData,
-                  builder: (context, child) => NetworkStatusBanner(child: child ?? const SizedBox()),
+                  builder: (context, child) {
+                    final mediaQuery = MediaQuery.of(context);
+                    return MediaQuery(
+                      data: mediaQuery.copyWith(
+                        textScaler: mediaQuery.textScaler.clamp(
+                          minScaleFactor: 0.85,
+                          maxScaleFactor: 1.15,
+                        ),
+                      ),
+                      child: NetworkStatusBanner(child: child ?? const SizedBox()),
+                    );
+                  },
                   home: const SplashScreen(),
                 );
               },
@@ -62,7 +78,7 @@ class MyApp extends StatelessWidget {
     final isTabletDevice = shortestSide >= ResponsiveBreakpoints.tabletPortraitMin;
 
     if (isTabletDevice) {
-      return isLandscape ? const Size(1024, 768) : const Size(768, 1024);
+      return isLandscape ? const Size(1194, 834) : const Size(834, 1194);
     } else {
       return isLandscape ? const Size(843, 411) : const Size(411, 843);
     }
