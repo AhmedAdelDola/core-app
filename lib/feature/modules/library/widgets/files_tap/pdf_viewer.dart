@@ -105,26 +105,27 @@ class _PdfViewersState extends State<PdfViewers> {
       appBar: AppBar(
         title: Text(widget.name ?? ''),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          PdfViewer.uri(
-            Uri.parse(widget.pdfurl ?? ''),
-            params: PdfViewerParams(
-              errorBannerBuilder: (context, error, stackTrace, documentRef) {
-                return showErrorToast(error.toString());
-              },
-            ),
-          ),
-          if (watermarkText.isNotEmpty)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _PdfWatermarkPainter(text: watermarkText),
-                ),
-              ),
-            ),
-        ],
+      body: PdfViewer.uri(
+        Uri.parse(widget.pdfurl ?? ''),
+        params: PdfViewerParams(
+          pageOverlaysBuilder: watermarkText.isEmpty
+              ? null
+              : (context, pageRect, page) {
+                  return [
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(
+                          size: pageRect.size,
+                          painter: _PdfWatermarkPainter(text: watermarkText),
+                        ),
+                      ),
+                    ),
+                  ];
+                },
+          errorBannerBuilder: (context, error, stackTrace, documentRef) {
+            return showErrorToast(error.toString());
+          },
+        ),
       ),
     );
   }
