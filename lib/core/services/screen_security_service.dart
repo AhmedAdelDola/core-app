@@ -96,7 +96,8 @@ class ScreenSecurityService {
   }
 
   /// Disables FLAG_SECURE and restores default audio capture policy
-  static Future<void> disable() async {
+  static Future<void> disable({bool force = false}) async {
+    if (!force) return; // Keep security active across the entire app
     if (kIsWeb) return;
 
     try {
