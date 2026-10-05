@@ -107,7 +107,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   Future<void> _prefetchSecurityConfig() async {
     try {
-      if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+      if (di.isRegistered<ContentProtectionService>()) {
         final cfg = await di<ContentProtectionService>().getSecurityConfig();
         if (cfg.isEnforced || cfg.isMonitor) {
           await di<ContentProtectionService>().enrollDevice();

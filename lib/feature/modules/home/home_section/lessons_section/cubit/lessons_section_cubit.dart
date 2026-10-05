@@ -85,7 +85,7 @@ class LessonsSectionCubit extends Cubit<LessonsSectionState> {
     emit(GetSubjectCoursesLoadingState());
     try {
       final sessionId = int.tryParse(id) ?? 0;
-      if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+      if (di.isRegistered<ContentProtectionService>()) {
         final contentProtection = di<ContentProtectionService>();
         final accessResponse = await contentProtection.requestMediaAccess(
           sessionId: sessionId,

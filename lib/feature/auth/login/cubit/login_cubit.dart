@@ -162,7 +162,7 @@ class LoginCubit extends Cubit<LoginState> implements CountryPickerCubit {
 
   Future<void> _prefetchSecurityConfig() async {
     try {
-      if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+      if (di.isRegistered<ContentProtectionService>()) {
         final cfg = await di<ContentProtectionService>().getSecurityConfig();
         if (cfg.isEnforced || cfg.isMonitor) {
           await di<ContentProtectionService>().enrollDevice();

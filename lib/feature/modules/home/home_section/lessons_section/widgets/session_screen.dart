@@ -892,7 +892,7 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
         finalPdfUrl = model?.delivery?.payload?['url']?.toString();
       }
     }
-    if (Platform.isAndroid && di.isRegistered<ContentProtectionService>()) {
+    if (di.isRegistered<ContentProtectionService>()) {
       try {
         final contentProtection = di<ContentProtectionService>();
         final access = await contentProtection.requestPdfAccess(

@@ -50,7 +50,14 @@ class SplashCubit extends Cubit<SplashState> {
         log('FCM TOKEN ==> $token_');
         try {
           if (di.isRegistered<ContentProtectionService>()) {
-            di<ContentProtectionService>().getSecurityConfig().then((_) {}, onError: (e) {
+            di<ContentProtectionService>().getSecurityConfig().then((cfg) {
+              if (cfg.isEnforced || cfg.isMonitor) {
+                di<ContentProtectionService>().enrollDevice().catchError((e) {
+                  log('Device enrollment error in splash: $e');
+                  return '';
+                });
+              }
+            }, onError: (e) {
               log('Security config prefetch error: $e');
             });
           }

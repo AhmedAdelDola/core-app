@@ -245,7 +245,12 @@ class ContentProtectionService {
       } else if (Platform.isIOS) {
         final deviceInfo = await DeviceInfoPlugin().iosInfo;
         deviceUuid = deviceInfo.identifierForVendor ?? '';
-        model = '${deviceInfo.name} ${deviceInfo.model}'.trim();
+        final machine = deviceInfo.utsname.machine;
+        final name = deviceInfo.name;
+        final sysName = deviceInfo.systemName;
+        model = (name.isNotEmpty && name != 'iPhone' && name != 'iPad')
+            ? '$name ($machine)'
+            : (machine.isNotEmpty ? machine : '$sysName Device');
       }
 
       if (deviceUuid.trim().isEmpty) {
