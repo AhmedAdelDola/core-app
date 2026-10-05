@@ -56,6 +56,9 @@ final class ScreenSecurityManager {
   private weak var targetWindow: UIWindow?
   private var channel: FlutterMethodChannel?
 
+  // لتخزين الـ Constraints الأصلية لإعادتها عند إيقاف الحماية
+  private var originalFlutterConstraints: [NSLayoutConstraint] = []
+
   var isRecordingActive: Bool {
     return checkIsScreenRecording()
   }
@@ -135,44 +138,21 @@ final class ScreenSecurityManager {
     return nil
   }
 
-  private func findSecureLayer(in view: UIView) -> CALayer? {
-    // البحث بالاسم داخل subviews عن الطبقة المخصصة للتأمين
-    for subview in view.subviews {
-      let typeName = String(describing: type(of: subview))
-      if typeName.contains("CanvasView") || typeName.contains("TextLayoutCanvas") {
-        return subview.layer
-      }
-      if let nested = findSecureLayer(in: subview) {
-        return nested
-      }
-    }
-    
-    // البحث داخل sublayers مباشرة كخيار بديل
-    if let sublayers = view.layer.sublayers {
-      for layer in sublayers {
-        let layerName = String(describing: type(of: layer))
-        if layerName.contains("Canvas") {
-          return layer
-        }
-      }
-    }
-    
-    return view.layer.sublayers?.first ?? view.subviews.first?.layer
-  }
-
   private func applySecureContent() {
     guard isEnabled else { return }
     DispatchQueue.main.async { [weak self] in
       guard let self = self, self.isEnabled else { return }
       guard self.secureTextField == nil else { return }
       guard let window = self.resolveWindow(),
-            let controllerView = window.rootViewController?.view else {
+            let controller = window.rootViewController,
+            let controllerView = controller.view else {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
           self?.applySecureContent()
         }
         return
       }
 
+      // --- الجزء الأول: إنشاء حقل النص المؤمن وتجهيزه ---
       let field = UITextField()
       field.isSecureTextEntry = true
       field.isUserInteractionEnabled = false
@@ -181,17 +161,58 @@ final class ScreenSecurityManager {
       field.tag = 888999
 
       window.addSubview(field)
-      NSLayoutConstraint.activate([
-        field.centerXAnchor.constraint(equalTo: window.centerXAnchor),
-        field.centerYAnchor.constraint(equalTo: window.centerYAnchor)
-      ])
       window.sendSubviewToBack(field)
-      field.layoutIfNeeded()
 
-      if let secureLayer = self.findSecureLayer(in: field) {
-        secureLayer.addSublayer(controllerView.layer)
+      // جعل الـ UITextField يملأ الشاشة بالكامل خلف الواجهة
+      NSLayoutConstraint.activate([
+        field.topAnchor.constraint(equalTo: window.topAnchor),
+        field.bottomAnchor.constraint(equalTo: window.bottomAnchor),
+        field.leadingAnchor.constraint(equalTo: window.leadingAnchor),
+        field.trailingAnchor.constraint(equalTo: window.trailingAnchor)
+      ])
+      window.layoutIfNeeded()
+
+      // --- الجزء الثاني: البحث عن الـ Secure Canvas Layer ---
+      var secureCanvasView: UIView? = nil
+      for subview in field.subviews {
+        let className = String(describing: type(of: subview))
+        if className.contains("CanvasView") || className.contains("TextLayoutCanvas") {
+          secureCanvasView = subview
+          break
+        }
+      }
+
+      let targetLayer = secureCanvasView?.layer ?? field.layer.sublayers?.first ?? field.subviews.first?.layer
+
+      // --- الجزء الثالث: نقل واجهة Flutter وتصحيح الأبعاد ---
+      if let secureLayer = targetLayer {
         self.secureTextField = field
+
+        // 1. نقل الـ Layer (وهذا ما يسبب مشكلة الأبعاد)
+        secureLayer.addSublayer(controllerView.layer)
+
+        // 2. إصلاح مشكلة الأبعاد عبر إجبار الـ View على ملء الـ Secure Canvas
+        // يجب التأكد من تفعيل translatesAutoresizingMaskIntoConstraints
+        controllerView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // إزالة أي Constraints سابقة قد تسبب تعارضاً
+        controllerView.removeConstraints(controllerView.constraints)
+
+        // إضافة Constraints جديدة لربط واجهة Flutter بأبعاد الـ window
+        NSLayoutConstraint.activate([
+          controllerView.topAnchor.constraint(equalTo: window.topAnchor),
+          controllerView.bottomAnchor.constraint(equalTo: window.bottomAnchor),
+          controllerView.leadingAnchor.constraint(equalTo: window.leadingAnchor),
+          controllerView.trailingAnchor.constraint(equalTo: window.trailingAnchor)
+        ])
+        
+        // إجبار النظام على إعادة حساب الأبعاد فوراً
+        window.layoutIfNeeded()
+        controllerView.setNeedsLayout()
+        controllerView.layoutIfNeeded()
+
       } else {
+        // إعادة المحاولة في حال لم تكن الطبقة جاهزة
         field.removeFromSuperview()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
           self?.applySecureContent()
@@ -206,8 +227,17 @@ final class ScreenSecurityManager {
       if let field = self.secureTextField {
         field.isSecureTextEntry = false
         if let window = self.resolveWindow(),
-           let controllerView = window.rootViewController?.view {
+           let controller = window.rootViewController,
+           let controllerView = controller.view {
+          
+          // إعادة الـ Layer لمكانه الأصلي في الـ window
           window.layer.addSublayer(controllerView.layer)
+          
+          // إعادة ضبط الـ Constraints الأصلية للـ View
+          controllerView.translatesAutoresizingMaskIntoConstraints = true
+          controllerView.frame = window.bounds
+          controllerView.setNeedsLayout()
+          controllerView.layoutIfNeeded()
         }
         field.removeFromSuperview()
         self.secureTextField = nil
