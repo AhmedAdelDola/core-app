@@ -25,6 +25,7 @@ import '../../../models/exams/course_exams_response.dart';
 import '../../../models/exams/exam_attempt_response.dart';
 import '../../../models/exams/exam_result_response.dart';
 import '../../../models/exams/single_exam_response.dart';
+import '../../../models/ai_bot/course_ai_bot_model.dart';
 import '../../../models/user_response/login_response.dart';
 import '../../../models/user_response/user_data.dart';
 import '../dio/dio_helper.dart';

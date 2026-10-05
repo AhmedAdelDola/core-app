@@ -78,6 +78,9 @@ class EndPoints {
   static String submitExamAttempt(dynamic attemptId) => 'exam-attempts/$attemptId/submit';
   static String getExamResult(dynamic attemptId) => 'exam-attempts/$attemptId/result';
 
+  /// ============================== AI Bot ==================================
+  static String courseAiBotMessages(dynamic courseId) => 'courses/$courseId/ai-bot/messages';
+
   /// ============================== Wallet & Purchases ==================================
   static const String getWallet = 'wallet';
   static String ChargeWithCode = 'wallet/redeem-code';

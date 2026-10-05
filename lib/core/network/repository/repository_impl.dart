@@ -1281,5 +1281,43 @@ class RepoImpl extends Repository {
       },
     );
   }
+
+  /// ============================== Course AI Bot ==================================
+
+  @override
+  Future<Either<dynamic, CourseAiBotHistoryResponse>> getCourseAiBotHistory(dynamic courseId) {
+    return responseHandling<CourseAiBotHistoryResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.get(EndPoints.courseAiBotMessages(courseId));
+        return CourseAiBotHistoryResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, SendAiBotMessageResponse>> sendCourseAiBotMessage({
+    required dynamic courseId,
+    required String message,
+  }) {
+    return responseHandling<SendAiBotMessageResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.post(
+          EndPoints.courseAiBotMessages(courseId),
+          data: {'message': message},
+        );
+        return SendAiBotMessageResponse.fromJson(response.data);
+      },
+    );
+  }
+
+  @override
+  Future<Either<dynamic, GeneralResponse>> resetCourseAiBotHistory(dynamic courseId) {
+    return responseHandling<GeneralResponse>(
+      onSuccess: () async {
+        final response = await dioHelper.delete(EndPoints.courseAiBotMessages(courseId));
+        return GeneralResponse.fromJson(response.data as Map<String, dynamic>? ?? {});
+      },
+    );
+  }
 }
 

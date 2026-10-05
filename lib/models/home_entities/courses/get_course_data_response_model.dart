@@ -115,6 +115,7 @@ class Course {
   String? promoUrl;
   List<String>? sliders;
   List<Chapter>? chapters;
+  AiBotInfo? aiBot;
 
   Course({
     this.id,
@@ -138,6 +139,7 @@ class Course {
     this.promoUrl,
     this.sliders,
     this.chapters,
+    this.aiBot,
   });
 
   factory Course.fromJson(Map<String, dynamic>? json) {
@@ -190,6 +192,9 @@ class Course {
       chapters: (json['chapters'] as List?)
           ?.map((e) => Chapter.fromJson(e as Map<String, dynamic>))
           .toList(),
+      aiBot: json['ai_bot'] == null
+          ? null
+          : AiBotInfo.fromJson(json['ai_bot'] as Map<String, dynamic>),
     );
   }
 
@@ -215,6 +220,27 @@ class Course {
         'promo_url': promoUrl,
         'sliders': sliders,
         'chapters': chapters?.map((e) => e.toJson()).toList(),
+        'ai_bot': aiBot?.toJson(),
+      };
+}
+
+class AiBotInfo {
+  bool? available;
+  String? botId;
+
+  AiBotInfo({this.available, this.botId});
+
+  factory AiBotInfo.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return AiBotInfo();
+    return AiBotInfo(
+      available: json['available'] as bool?,
+      botId: json['bot_id']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'available': available,
+        'bot_id': botId,
       };
 }
 

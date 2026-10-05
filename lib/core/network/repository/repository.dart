@@ -249,4 +249,12 @@ abstract class Repository {
   });
   Future<Either<dynamic, ExamAttemptResponse>> submitExamAttempt(dynamic attemptId);
   Future<Either<dynamic, ExamResultResponse>> getExamResult(dynamic attemptId);
+
+  /// ============================== Course AI Bot ==================================
+  Future<Either<dynamic, CourseAiBotHistoryResponse>> getCourseAiBotHistory(dynamic courseId);
+  Future<Either<dynamic, SendAiBotMessageResponse>> sendCourseAiBotMessage({
+    required dynamic courseId,
+    required String message,
+  });
+  Future<Either<dynamic, GeneralResponse>> resetCourseAiBotHistory(dynamic courseId);
 }

@@ -15,6 +15,8 @@ import '../../cubit/courses_section_cubit.dart';
 import 'course_view_widgets/course_details_image.dart';
 import 'course_view_widgets/course_view_appbar.dart';
 import 'course_view_widgets/course_comments_section/course_comments_widget.dart';
+import 'course_view_widgets/course_ai_floating_button.dart';
+import 'course_view_widgets/course_ai_assistant_modal.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../../../core/consts/images.dart';
 import '../../../../../../../core/util/launcher.dart';
@@ -130,6 +132,20 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
                 customAppBar,
               ],
             ),
+            floatingActionButton: ((model?.subscription?.hasActiveSubscription == true ||
+                        model?.course?.hasActiveSubscription == true) &&
+                    model?.course?.aiBot?.available == true)
+                ? CourseAiFloatingButton(
+                    onTap: () {
+                      CourseAiAssistantModal.show(
+                        context: context,
+                        courseId: model?.course?.id ?? widget.id,
+                        courseTitle: model?.course?.title ?? '',
+                      );
+                    },
+                  )
+                : null,
+            floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
             bottomNavigationBar: model?.course?.hasActiveSubscription == true
                 ? null
                 : SafeArea(

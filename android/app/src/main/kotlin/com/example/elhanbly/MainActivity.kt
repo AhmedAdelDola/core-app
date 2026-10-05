@@ -1,4 +1,4 @@
-package leader.aplus.com
+package demo.aplus.com
 
 import android.content.Context
 import android.hardware.display.DisplayManager
