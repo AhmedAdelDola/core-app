@@ -1012,7 +1012,7 @@ class RepoImpl extends Repository {
     return responseHandling<String>(
       onSuccess: () async {
         final response = await dioHelper.post(
-          'mobile/v2/device-attestations/fallback',
+          EndPoints.enrollFallback,
           data: {
             'device_uuid': deviceUuid,
             'device_model': deviceModel,

@@ -114,6 +114,8 @@ class EndPoints {
       '$_server/api/mobile/v2/device-attestations/challenge';
   static String get attestationComplete =>
       '$_server/api/mobile/v2/device-attestations/complete';
+  static String get enrollFallback =>
+      '$_server/api/mobile/v2/device-attestations/fallback';
   static String get contentChallenges =>
       '$_server/api/mobile/v2/content/challenges';
   static String get contentAccess => '$_server/api/mobile/v2/content/access';
