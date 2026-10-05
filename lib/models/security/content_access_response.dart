@@ -21,7 +21,9 @@ class ContentAccessResponse {
     return ContentAccessResponse(
       playbackToken: rawData['token']?.toString() ??
           rawData['playback_token']?.toString(),
-      playerUrl: rawData['player_url']?.toString(),
+      playerUrl: rawData['player_url']?.toString() ??
+          rawData['url']?.toString() ??
+          rawData['link']?.toString(),
       resolveEndpoint: rawData['resolve_endpoint']?.toString(),
       pdfUrl: rawData['pdf_url']?.toString() ??
           rawData['url']?.toString() ??
