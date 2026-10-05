@@ -135,6 +135,31 @@ final class ScreenSecurityManager {
     return nil
   }
 
+  private func findSecureLayer(in view: UIView) -> CALayer? {
+    // البحث بالاسم داخل subviews عن الطبقة المخصصة للتأمين
+    for subview in view.subviews {
+      let typeName = String(describing: type(of: subview))
+      if typeName.contains("CanvasView") || typeName.contains("TextLayoutCanvas") {
+        return subview.layer
+      }
+      if let nested = findSecureLayer(in: subview) {
+        return nested
+      }
+    }
+    
+    // البحث داخل sublayers مباشرة كخيار بديل
+    if let sublayers = view.layer.sublayers {
+      for layer in sublayers {
+        let layerName = String(describing: type(of: layer))
+        if layerName.contains("Canvas") {
+          return layer
+        }
+      }
+    }
+    
+    return view.layer.sublayers?.first ?? view.subviews.first?.layer
+  }
+
   private func applySecureContent() {
     guard isEnabled else { return }
     DispatchQueue.main.async { [weak self] in
@@ -155,28 +180,23 @@ final class ScreenSecurityManager {
       field.translatesAutoresizingMaskIntoConstraints = false
       field.tag = 888999
 
-      controllerView.addSubview(field)
-      controllerView.sendSubviewToBack(field)
-
+      window.addSubview(field)
       NSLayoutConstraint.activate([
-        field.topAnchor.constraint(equalTo: controllerView.topAnchor),
-        field.bottomAnchor.constraint(equalTo: controllerView.bottomAnchor),
-        field.leadingAnchor.constraint(equalTo: controllerView.leadingAnchor),
-        field.trailingAnchor.constraint(equalTo: controllerView.trailingAnchor)
+        field.centerXAnchor.constraint(equalTo: window.centerXAnchor),
+        field.centerYAnchor.constraint(equalTo: window.centerYAnchor)
       ])
+      window.sendSubviewToBack(field)
+      field.layoutIfNeeded()
 
-      controllerView.layoutIfNeeded()
-
-      if let superlayer = controllerView.layer.superlayer {
-        superlayer.addSublayer(field.layer)
-        // In iOS, UITextField's secure canvas layer renders blank in screenshots and recordings
-        let secureLayer = field.layer.sublayers?.first ?? field.subviews.first?.layer
-        if let secureLayer = secureLayer {
-          secureLayer.addSublayer(controllerView.layer)
+      if let secureLayer = self.findSecureLayer(in: field) {
+        secureLayer.addSublayer(controllerView.layer)
+        self.secureTextField = field
+      } else {
+        field.removeFromSuperview()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+          self?.applySecureContent()
         }
       }
-
-      self.secureTextField = field
     }
   }
 
