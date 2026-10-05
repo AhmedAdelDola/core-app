@@ -254,7 +254,8 @@ abstract class Repository {
   Future<Either<dynamic, CourseAiBotHistoryResponse>> getCourseAiBotHistory(dynamic courseId);
   Future<Either<dynamic, SendAiBotMessageResponse>> sendCourseAiBotMessage({
     required dynamic courseId,
-    required String message,
+    String? message,
+    File? imageFile,
   });
   Future<Either<dynamic, GeneralResponse>> resetCourseAiBotHistory(dynamic courseId);
 }

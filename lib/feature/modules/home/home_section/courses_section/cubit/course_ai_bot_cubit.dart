@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../../core/network/repository/repository_imports.dart';
 import '../../../../../../models/ai_bot/course_ai_bot_model.dart';
@@ -54,14 +56,15 @@ class CourseAiBotCubit extends Cubit<CourseAiBotState> {
     );
   }
 
-  Future<bool> sendMessage(String text) async {
-    final trimmed = text.trim();
-    if (trimmed.isEmpty) return false;
+  Future<bool> sendMessage({String? text, File? imageFile}) async {
+    final trimmed = text?.trim() ?? '';
+    if (trimmed.isEmpty && imageFile == null) return false;
 
     // Optimistically add the student message to the list
     final optimisticMessage = AiBotMessage(
       role: 'student',
-      content: trimmed,
+      content: trimmed.isNotEmpty ? trimmed : 'سؤال مرفق بصورة',
+      localImagePath: imageFile?.path,
       createdAt: DateTime.now(),
     );
 
@@ -71,7 +74,8 @@ class CourseAiBotCubit extends Cubit<CourseAiBotState> {
 
     final result = await repo.sendCourseAiBotMessage(
       courseId: courseId,
-      message: trimmed,
+      message: trimmed.isNotEmpty ? trimmed : null,
+      imageFile: imageFile,
     );
 
     return result.fold(
@@ -84,6 +88,12 @@ class CourseAiBotCubit extends Cubit<CourseAiBotState> {
       },
       (r) {
         isSending = false;
+        if (r.userMessage != null && messages.isNotEmpty) {
+          final lastStudentIdx = messages.lastIndexWhere((m) => m.role == 'student');
+          if (lastStudentIdx != -1) {
+            messages[lastStudentIdx] = r.userMessage!;
+          }
+        }
         if (r.reply != null) {
           messages.add(r.reply!);
           _safeEmit(SendAiBotMessageSuccessState(r.reply!));

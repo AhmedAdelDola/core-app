@@ -1297,13 +1297,35 @@ class RepoImpl extends Repository {
   @override
   Future<Either<dynamic, SendAiBotMessageResponse>> sendCourseAiBotMessage({
     required dynamic courseId,
-    required String message,
+    String? message,
+    File? imageFile,
   }) {
     return responseHandling<SendAiBotMessageResponse>(
       onSuccess: () async {
+        dynamic dataPayload;
+        if (imageFile != null) {
+          final Map<String, dynamic> map = {};
+          if (message != null && message.trim().isNotEmpty) {
+            map['message'] = message.trim();
+          }
+          final bytes = await imageFile.readAsBytes();
+          final ext = imageFile.path.split('.').last.toLowerCase();
+          final mimeType = ext == 'png' ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
+          map['image_base64'] = 'data:image/$mimeType;base64,${base64Encode(bytes)}';
+          map['image'] = MultipartFile.fromBytes(
+            bytes,
+            filename: imageFile.path.split(Platform.pathSeparator).last,
+          );
+          dataPayload = FormData.fromMap(map);
+        } else {
+          dataPayload = {
+            'message': message?.trim() ?? '',
+          };
+        }
+
         final response = await dioHelper.post(
           EndPoints.courseAiBotMessages(courseId),
-          data: {'message': message},
+          data: dataPayload,
         );
         return SendAiBotMessageResponse.fromJson(response.data);
       },

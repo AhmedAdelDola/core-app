@@ -76,6 +76,8 @@ class AiBotMessage {
   final String? id;
   final String role; // 'student' or 'assistant'
   final String content;
+  final String? imageUrl;
+  final String? localImagePath;
   final DateTime? createdAt;
   final bool answerable;
 
@@ -83,6 +85,8 @@ class AiBotMessage {
     this.id,
     required this.role,
     required this.content,
+    this.imageUrl,
+    this.localImagePath,
     this.createdAt,
     this.answerable = true,
   });
@@ -91,10 +95,17 @@ class AiBotMessage {
     if (json == null || json is! Map) {
       return AiBotMessage(role: 'assistant', content: '');
     }
+
+    String? imgUrl = json['image_url']?.toString();
+    if (imgUrl == null && json['metadata'] is Map) {
+      imgUrl = json['metadata']['image_url']?.toString();
+    }
+
     return AiBotMessage(
       id: json['id']?.toString(),
       role: json['role']?.toString() ?? 'assistant',
       content: json['content']?.toString() ?? '',
+      imageUrl: imgUrl,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
       answerable: json['answerable'] != false,
     );
@@ -104,6 +115,7 @@ class AiBotMessage {
         'id': id,
         'role': role,
         'content': content,
+        'image_url': imageUrl,
         'created_at': createdAt?.toIso8601String(),
         'answerable': answerable,
       };

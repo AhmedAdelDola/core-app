@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit/course_ai_bot_cubit.dart';
 import 'package:elhanbly/feature/modules/home/home_section/courses_section/cubit/course_ai_bot_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../../../../core/services/di.dart';
@@ -48,6 +51,8 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
 
   @override
   void dispose() {
@@ -269,13 +274,144 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
     );
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? file = await _picker.pickImage(
+        source: source,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (file != null) {
+        setState(() {
+          _selectedImage = File(file.path);
+        });
+      }
+    } catch (e) {
+      showErrorToast('تعذر اختيار الصورة.');
+    }
+  }
+
+  void _showImageSourcePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.kWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'إرفاق صورة للسؤال',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'DINNextLT',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16.sp,
+                  color: AppColors.textColor,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.kPrimary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.camera_alt_rounded, color: AppColors.kPrimary, size: 22.r),
+                ),
+                title: Text(
+                  'التقاط صورة بالكاميرا',
+                  style: TextStyle(
+                    fontFamily: 'DINNextLT',
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.kPrimary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.photo_library_rounded, color: AppColors.kPrimary, size: 22.r),
+                ),
+                title: Text(
+                  'اختيار من المعرض',
+                  style: TextStyle(
+                    fontFamily: 'DINNextLT',
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFullImage(BuildContext context, {String? imageUrl, String? localPath}) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.all(12.r),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            InteractiveViewer(
+              clipBehavior: Clip.none,
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: localPath != null && File(localPath).existsSync()
+                      ? Image.file(File(localPath))
+                      : (imageUrl != null
+                          ? Image.network(imageUrl)
+                          : const SizedBox.shrink()),
+                ),
+              ),
+            ),
+            IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.black54,
+              ),
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildChatList(
     CourseAiBotHistoryResponse? history,
     List<AiBotMessage> messages,
     bool isSending,
   ) {
     final welcomeText = history?.bot?.welcomeMessage ??
-        'أهلاً بك يا بطل! أنا المساعد الذكي لكورس ${widget.courseTitle}. اسألني أي سؤال في المنهج وسأساعدك فوراً.';
+        'أهلاً بك يا بطل! أنا المساعد الذكي لكورس ${widget.courseTitle}. اسألني أي سؤال في المنهج أو أرفق صورة وسأساعدك فوراً.';
 
     return ListView.builder(
       controller: _scrollController,
@@ -297,6 +433,8 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
           return _buildMessageBubble(
             isStudent: msg.role == 'student',
             text: msg.content,
+            imageUrl: msg.imageUrl,
+            localImagePath: msg.localImagePath,
             time: msg.createdAt,
           );
         }
@@ -310,9 +448,12 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
   Widget _buildMessageBubble({
     required bool isStudent,
     required String text,
+    String? imageUrl,
+    String? localImagePath,
     DateTime? time,
   }) {
     final timeStr = time != null ? DateFormat('hh:mm a', 'ar').format(time) : '';
+    final hasImage = localImagePath != null || (imageUrl != null && imageUrl.isNotEmpty);
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6.h),
@@ -349,18 +490,65 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
                     : Border.all(color: AppColors.borderColor.withValues(alpha: 0.5)),
               ),
               child: Column(
-                crossAxisAlignment:
-                    isStudent ? CrossAxisAlignment.start : CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SelectableText(
-                    text,
-                    style: TextStyle(
-                      fontFamily: 'DINNextLT',
-                      fontSize: 14.sp,
-                      color: isStudent ? AppColors.kWhite : AppColors.textColor,
-                      height: 1.45,
+                  if (hasImage) ...[
+                    GestureDetector(
+                      onTap: () => _showFullImage(
+                        context,
+                        imageUrl: imageUrl,
+                        localPath: localImagePath,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: Container(
+                          constraints: BoxConstraints(
+                            maxHeight: 220.h,
+                            maxWidth: 240.w,
+                          ),
+                          margin: EdgeInsets.only(bottom: text.isNotEmpty ? 6.h : 0),
+                          child: localImagePath != null && File(localImagePath).existsSync()
+                              ? Image.file(
+                                  File(localImagePath),
+                                  fit: BoxFit.cover,
+                                )
+                              : (imageUrl != null && imageUrl.isNotEmpty)
+                                  ? Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (ctx, child, progress) {
+                                        if (progress == null) return child;
+                                        return Container(
+                                          height: 140.h,
+                                          color: Colors.black12,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (ctx, _, __) => Container(
+                                        height: 100.h,
+                                        color: Colors.black12,
+                                        child: const Center(
+                                          child: Icon(Icons.broken_image_outlined, color: Colors.grey),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
+                  if (text.isNotEmpty && text != 'سؤال مرفق بصورة')
+                    SelectableText(
+                      text,
+                      style: TextStyle(
+                        fontFamily: 'DINNextLT',
+                        fontSize: 14.sp,
+                        color: isStudent ? AppColors.kWhite : AppColors.textColor,
+                        height: 1.45,
+                      ),
+                    ),
                   if (timeStr.isNotEmpty) ...[
                     SizedBox(height: 4.h),
                     Text(
@@ -490,70 +678,143 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.w),
+          // Image Preview Container (if selected)
+          if (_selectedImage != null) ...[
+            Container(
+              margin: EdgeInsets.only(bottom: 8.h),
+              padding: EdgeInsets.all(6.r),
               decoration: BoxDecoration(
-                color: const Color(0xFFF4F6F9),
-                borderRadius: BorderRadius.circular(24.r),
-                border: Border.all(color: AppColors.borderColor.withValues(alpha: 0.6)),
+                color: const Color(0xFFF0F4F8),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: AppColors.kPrimary.withValues(alpha: 0.3)),
               ),
-              child: TextField(
-                controller: _textController,
-                focusNode: _focusNode,
-                textInputAction: TextInputAction.send,
-                enabled: !isSending,
-                minLines: 1,
-                maxLines: 4,
-                onSubmitted: (val) => _handleSend(cubit),
-                style: TextStyle(
-                  fontFamily: 'DINNextLT',
-                  fontSize: 14.sp,
-                  color: AppColors.textColor,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'اكتب سؤالك هنا عن محتوى الكورس...',
-                  hintStyle: TextStyle(
-                    fontFamily: 'DINNextLT',
-                    fontSize: 13.sp,
-                    color: AppColors.hintColor,
-                  ),
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10.h),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 8.w),
-          InkWell(
-            onTap: isSending ? null : () => _handleSend(cubit),
-            borderRadius: BorderRadius.circular(24.r),
-            child: Container(
-              width: 44.r,
-              height: 44.r,
-              decoration: BoxDecoration(
-                color: isSending ? AppColors.disabledBtnColor : AppColors.kPrimary,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: isSending
-                  ? SizedBox(
-                      width: 18.r,
-                      height: 18.r,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.textColor2,
-                      ),
-                    )
-                  : Icon(
-                      Icons.send_rounded,
-                      color: AppColors.kWhite,
-                      size: 20.r,
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10.r),
+                    child: Image.file(
+                      _selectedImage!,
+                      width: 72.r,
+                      height: 72.r,
+                      fit: BoxFit.cover,
                     ),
+                  ),
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: GestureDetector(
+                      onTap: isSending
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedImage = null;
+                              });
+                            },
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration:  BoxDecoration(
+                          color: Colors.black87,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ],
+
+          // Input Row
+          Row(
+            children: [
+              // Image Picker Button
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(minWidth: 38.r, minHeight: 38.r),
+                icon: Icon(
+                  Icons.add_photo_alternate_outlined,
+                  color: _selectedImage != null ? AppColors.kPrimary : AppColors.textColor4,
+                  size: 26.r,
+                ),
+                tooltip: 'إرفاق صورة',
+                onPressed: isSending ? null : () => _showImageSourcePicker(context),
+              ),
+              SizedBox(width: 4.w),
+
+              // Text field
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6F9),
+                    borderRadius: BorderRadius.circular(24.r),
+                    border: Border.all(color: AppColors.borderColor.withValues(alpha: 0.6)),
+                  ),
+                  child: TextField(
+                    controller: _textController,
+                    focusNode: _focusNode,
+                    textInputAction: TextInputAction.send,
+                    enabled: !isSending,
+                    minLines: 1,
+                    maxLines: 4,
+                    onSubmitted: (val) => _handleSend(cubit),
+                    style: TextStyle(
+                      fontFamily: 'DINNextLT',
+                      fontSize: 14.sp,
+                      color: AppColors.textColor,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: _selectedImage != null
+                          ? 'أضف تعليقاً على الصورة (اختياري)...'
+                          : 'اكتب سؤالك هنا عن محتوى الكورس...',
+                      hintStyle: TextStyle(
+                        fontFamily: 'DINNextLT',
+                        fontSize: 13.sp,
+                        color: AppColors.hintColor,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.w),
+
+              // Send button
+              InkWell(
+                onTap: isSending ? null : () => _handleSend(cubit),
+                borderRadius: BorderRadius.circular(24.r),
+                child: Container(
+                  width: 44.r,
+                  height: 44.r,
+                  decoration: BoxDecoration(
+                    color: isSending ? AppColors.disabledBtnColor : AppColors.kPrimary,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: isSending
+                      ? SizedBox(
+                          width: 18.r,
+                          height: 18.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.textColor2,
+                          ),
+                        )
+                      : Icon(
+                          Icons.send_rounded,
+                          color: AppColors.kWhite,
+                          size: 20.r,
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -562,10 +823,15 @@ class _CourseAiAssistantModalState extends State<CourseAiAssistantModal> {
 
   void _handleSend(CourseAiBotCubit cubit) {
     final text = _textController.text.trim();
-    if (text.isEmpty || cubit.isSending) return;
+    final image = _selectedImage;
+    if ((text.isEmpty && image == null) || cubit.isSending) return;
 
     _textController.clear();
-    cubit.sendMessage(text);
+    setState(() {
+      _selectedImage = null;
+    });
+    cubit.sendMessage(text: text, imageFile: image);
     _scrollToBottom();
   }
 }
+
