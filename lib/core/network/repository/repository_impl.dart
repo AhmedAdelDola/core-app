@@ -996,8 +996,28 @@ class RepoImpl extends Repository {
         final raw = response.data is Map ? response.data : {};
         final dataMap = raw['data'] is Map ? raw['data'] : raw;
         final deviceMap = dataMap['device'] is Map ? dataMap['device'] : dataMap;
-        final deviceId = deviceMap['device_id']?.toString() ?? dataMap['device_id']?.toString() ?? '';
+        final deviceId = deviceMap['id']?.toString() ??
+            deviceMap['device_id']?.toString() ??
+            dataMap['device_id']?.toString() ??
+            '';
         return deviceId;
+      },
+      onOtherError: (e) async {
+        if (e is DioException && e.response?.data is Map) {
+          final data = e.response!.data as Map;
+          final deviceId = data['device_id']?.toString() ??
+              data['device']?['id']?.toString() ??
+              '';
+          if (deviceId.isNotEmpty && di.isRegistered<CacheHelper>()) {
+            di<CacheHelper>().put(CachingKey.securityDeviceId, deviceId);
+          }
+          final code = data['code']?.toString() ?? '';
+          final msg = data['message']?.toString() ?? '';
+          if (code.isNotEmpty) {
+            return '$code: $msg';
+          }
+        }
+        return onServerErrorBase(e).toString();
       },
     );
   }
