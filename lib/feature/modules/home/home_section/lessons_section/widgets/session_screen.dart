@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:elhanbly/core/widgets/purchase_modal/course_purchase_modal.dart';
 import 'package:elhanbly/feature/modules/library/widgets/files_tap/pdf_viewer.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +7,7 @@ import '../../../../../../core/navigator/named_navigator_impl.dart';
 import '../../../../../../core/security/content_protection_service.dart';
 import '../../../../../../core/security/widgets/security_alert_dialogs.dart';
 import '../../../../../../core/services/di.dart';
+import '../../../../../../core/services/headphone_detector_service.dart';
 import '../../../../../../core/theme/colors/app_colors.dart';
 import '../../../../../../core/util/responsive/responsive_helper.dart';
 import '../../../../../../core/widgets/app_bar/custom_curved_appbar.dart';
@@ -530,6 +530,34 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
                   ],
                 ),
               ),
+              if (session?.requiresHeadphones == true) ...[
+                6.sbW,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.headphones_rounded,
+                        size: isTablet ? 13.sp : 11.sp,
+                        color: const Color(0xFF2563EB),
+                      ),
+                      4.sbW,
+                      AppText(
+                        'سماعة مطلوبة',
+                        size: isTablet ? 11.sp : 10.sp,
+                        weight: FontWeight.w700,
+                        color: const Color(0xFF2563EB),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
@@ -928,6 +956,19 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
   }
 
   Future<void> _startWatchVideo(BuildContext context, dynamic model, LessonsSectionCubit cubit) async {
+    final bool requiresHeadphones = model?.session?.requiresHeadphones == true;
+    if (requiresHeadphones) {
+      final isConnected = await HeadphoneDetectorService.isHeadphonesConnected();
+      if (!context.mounted) return;
+      if (!isConnected) {
+        SecurityAlertDialogs.showHeadphonesRequiredDialog(
+          context,
+          onRetry: () => _startWatchVideo(context, model, cubit),
+        );
+        return;
+      }
+    }
+
     await cubit.getvideo('${model?.session?.id}');
     final models = cubit.ShowVideoModel;
     if (!context.mounted) return;
@@ -941,11 +982,13 @@ class _SessionDetilesScreenState extends State<SessionDetilesScreen> {
         pdfUrl: model?.session?.pdf?.url ?? '',
         pdfname: model?.session?.pdf?.name ?? '',
         sessionId: model?.session?.id ?? widget.id,
+        requiresHeadphones: requiresHeadphones,
       ));
     } else {
       await NamedNavigatorImpl.push(VideoPlayer(
         model: models,
         sessionId: model?.session?.id ?? widget.id,
+        requiresHeadphones: requiresHeadphones,
       ));
     }
     if (context.mounted) {

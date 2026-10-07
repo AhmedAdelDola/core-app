@@ -1,8 +1,13 @@
 package demo.aplus.com
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.display.DisplayManager
 import android.media.AudioAttributes
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -18,11 +23,15 @@ import leader.aplus.com.security.AttestationService
 import java.util.function.Consumer
 
 class MainActivity : FlutterActivity() {
-    private val screenSecurityChannel = "core_app/screen_security"
+    private val screenSecurityChannel = "elhanbly/screen_security"
     private val contentProtectionChannel = "leader.aplus.com/content_protection"
+    private val headphoneChannel = "elhanbly/headphone_detector"
 
     private lateinit var attestationService: AttestationService
     private var screenSecurityMethodChannel: MethodChannel? = null
+    private var headphoneMethodChannel: MethodChannel? = null
+    private var audioDeviceCallback: AudioDeviceCallback? = null
+    private var headsetReceiver: BroadcastReceiver? = null
     private var screenRecordingCallback: Consumer<Int>? = null
     private var displayListener: DisplayManager.DisplayListener? = null
     private var isRecordingDetected: Boolean = false
@@ -34,6 +43,22 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Headphone detector channel
+        val hpChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            headphoneChannel
+        )
+        headphoneMethodChannel = hpChannel
+        hpChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "isHeadphonesConnected" -> {
+                    result.success(isHeadphonesConnected())
+                }
+                else -> result.notImplemented()
+            }
+        }
+        setupHeadphoneDetection()
 
         // Screen security channel
         val secChannel = MethodChannel(
@@ -249,6 +274,72 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun isHeadphonesConnected(): Boolean {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            for (device in devices) {
+                when (device.type) {
+                    AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                    AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+                    AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+                    AudioDeviceInfo.TYPE_USB_HEADSET,
+                    AudioDeviceInfo.TYPE_USB_DEVICE,
+                    AudioDeviceInfo.TYPE_HEARING_AID,
+                    26, // AudioDeviceInfo.TYPE_BLE_HEADSET
+                    27, // AudioDeviceInfo.TYPE_BLE_SPEAKER
+                    30  // AudioDeviceInfo.TYPE_BLE_BROADCAST
+                    -> return true
+                }
+            }
+            return false
+        } else {
+            @Suppress("DEPRECATION")
+            return audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
+        }
+    }
+
+    private fun setupHeadphoneDetection() {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && audioManager != null) {
+            audioDeviceCallback = object : AudioDeviceCallback() {
+                override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>?) {
+                    notifyHeadphoneStateChanged()
+                }
+
+                override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>?) {
+                    notifyHeadphoneStateChanged()
+                }
+            }
+            audioManager.registerAudioDeviceCallback(audioDeviceCallback, Handler(Looper.getMainLooper()))
+        }
+
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_HEADSET_PLUG)
+            addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+            addAction("android.bluetooth.device.action.ACL_CONNECTED")
+            addAction("android.bluetooth.device.action.ACL_DISCONNECTED")
+        }
+
+        headsetReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                notifyHeadphoneStateChanged()
+            }
+        }
+        try {
+            registerReceiver(headsetReceiver, filter)
+        } catch (_: Exception) {}
+    }
+
+    private fun notifyHeadphoneStateChanged() {
+        val connected = isHeadphonesConnected()
+        runOnUiThread {
+            headphoneMethodChannel?.invokeMethod("onHeadphonesStateChanged", connected)
+        }
+    }
+
     override fun onDestroy() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && screenRecordingCallback != null) {
             try {
@@ -260,6 +351,17 @@ class MainActivity : FlutterActivity() {
         displayListener?.let {
             val displayManager = getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
             displayManager?.unregisterDisplayListener(it)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && audioDeviceCallback != null) {
+            try {
+                val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+                audioManager?.unregisterAudioDeviceCallback(audioDeviceCallback)
+            } catch (_: Exception) {}
+        }
+        headsetReceiver?.let {
+            try {
+                unregisterReceiver(it)
+            } catch (_: Exception) {}
         }
         super.onDestroy()
     }

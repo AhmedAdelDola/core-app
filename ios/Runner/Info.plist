@@ -70,7 +70,7 @@
 	<string>This app needs access to your camera to capture photos and videos for your profile and course content.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs access to your microphone to record audio for course assignments and video content.</string>
-	<key>UIRequiresFullScreen</key>
+	<key>UIApplicationExitsOnSuspend</key>
 	<true/>
 </dict>
 </plist>

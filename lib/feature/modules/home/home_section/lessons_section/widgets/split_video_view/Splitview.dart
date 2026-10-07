@@ -20,6 +20,7 @@ class SplitViewScreen extends StatefulWidget {
   final String pdfUrl, pdfname;
   final ShowVideo? model;
   final dynamic sessionId;
+  final bool requiresHeadphones;
 
   const SplitViewScreen({
     Key? key,
@@ -27,6 +28,7 @@ class SplitViewScreen extends StatefulWidget {
     required this.model,
     required this.pdfname,
     this.sessionId,
+    this.requiresHeadphones = false,
   }) : super(key: key);
 
   @override
@@ -51,6 +53,7 @@ class _SplitViewScreenState extends State<SplitViewScreen> {
           builder: (context, area) => VideoPlayer(
                 model: widget.model,
                 sessionId: widget.sessionId,
+                requiresHeadphones: widget.requiresHeadphones,
               )),
       Area(builder: (context, area) => PdfViewers(pdfurl:widget.pdfUrl , name: widget.pdfname,)),
     ]);

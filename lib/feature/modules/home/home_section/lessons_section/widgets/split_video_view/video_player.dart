@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../../../../../../../core/security/widgets/security_alert_dialogs.dart';
+import '../../../../../../../core/services/headphone_detector_service.dart';
 import '../../../../../../../core/services/screen_security_service.dart';
 import '../../../../../../../models/Session/show_video_response.dart';
 import '../../../courses_section/view/course_view/course_view_widgets/course_comments_section/course_comments_widget.dart';
 
 class VideoPlayer extends StatefulWidget {
-  const VideoPlayer({Key? key, required this.model, this.sessionId}) : super(key: key);
+  const VideoPlayer({
+    Key? key,
+    required this.model,
+    this.sessionId,
+    this.requiresHeadphones = false,
+  }) : super(key: key);
 
   final ShowVideo? model;
   final dynamic sessionId;
+  final bool requiresHeadphones;
 
   @override
   State<VideoPlayer> createState() => _VideoPlayerState();
@@ -19,6 +26,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   bool _isChecking = true;
   bool _isBlocked = false;
   bool _isLoading = true;
+  bool _isHeadphonesDisconnected = false;
   InAppWebViewController? _webViewController;
 
   @override
@@ -27,6 +35,40 @@ class _VideoPlayerState extends State<VideoPlayer> {
     ScreenSecurityService.enable();
     ScreenSecurityService.addListener(_onRecordingChanged);
     _checkRecording();
+
+    if (widget.requiresHeadphones) {
+      HeadphoneDetectorService.addListener(_onHeadphonesChanged);
+      _checkHeadphones();
+    }
+  }
+
+  Future<void> _checkHeadphones() async {
+    final connected = await HeadphoneDetectorService.isHeadphonesConnected();
+    if (!mounted) return;
+    setState(() {
+      _isHeadphonesDisconnected = !connected;
+    });
+    if (!connected) {
+      _pauseVideo();
+    }
+  }
+
+  void _onHeadphonesChanged(bool isConnected) {
+    if (!mounted) return;
+    setState(() {
+      _isHeadphonesDisconnected = !isConnected;
+    });
+    if (!isConnected) {
+      _pauseVideo();
+    }
+  }
+
+  void _pauseVideo() {
+    try {
+      _webViewController?.evaluateJavascript(
+        source: 'try { document.querySelectorAll("video").forEach(v => v.pause()); } catch(e){}',
+      );
+    } catch (_) {}
   }
 
   Future<void> _checkRecording() async {
@@ -69,6 +111,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   void dispose() {
+    if (widget.requiresHeadphones) {
+      HeadphoneDetectorService.removeListener(_onHeadphonesChanged);
+    }
     ScreenSecurityService.removeListener(_onRecordingChanged);
     ScreenSecurityService.disable();
     super.dispose();
@@ -258,6 +303,59 @@ class _VideoPlayerState extends State<VideoPlayer> {
               child: CircularProgressIndicator(
                 color: Colors.white,
                 strokeWidth: 2.5,
+              ),
+            ),
+          if (_isHeadphonesDisconnected && widget.requiresHeadphones)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.94),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.headphones_rounded,
+                        color: Colors.amber,
+                        size: 56,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'تم إيقاف الفيديو مؤقتاً',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'هذه الحصة تتطلب توصيل سماعة أذن (سلكية أو AirPods / Bluetooth).\nيرجى إعادة توصيل السماعة للمتابعة.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: _checkHeadphones,
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('تحقق من التوصيل'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber[700],
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           // Back / Close button

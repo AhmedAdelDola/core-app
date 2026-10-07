@@ -222,4 +222,92 @@ class SecurityAlertDialogs {
       ),
     );
   }
+
+  /// Shows a blocking dialog when headphones are required to watch content
+  static Future<void> showHeadphonesRequiredDialog(
+    BuildContext context, {
+    String? message,
+    VoidCallback? onRetry,
+    VoidCallback? onClose,
+  }) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          icon: Icon(
+            Icons.headphones_rounded,
+            size: 48.r,
+            color: AppColors.kPrimary,
+          ),
+          title: AppText(
+            'سماعة الأذن مطلوبة',
+            style: TextStyles.textViewBold(
+              size: 18.sp,
+              color: AppColors.textColor,
+            ),
+            align: TextAlign.center,
+          ),
+          content: AppText(
+            message ?? 'هذه الحصة محمية وتتطلب توصيل سماعة أذن (سلكية أو بلوتوث / AirPods) للبدء في المشاهدة.',
+            style: TextStyles.textViewRegular(
+              fontSize: 14.sp,
+              color: AppColors.textColor2,
+            ),
+            align: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (onRetry != null) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: CustomButton(
+                      text: 'تم التوصيل، متابعة',
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        onRetry();
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      if (onClose != null) {
+                        onClose();
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.kPrimary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 10.h),
+                    ),
+                    child: AppText(
+                      'إلغاء',
+                      style: TextStyles.textViewBold(
+                        size: 14.sp,
+                        color: AppColors.kPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

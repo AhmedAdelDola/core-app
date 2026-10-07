@@ -71,6 +71,7 @@ class Session {
     dynamic liveUrl;
     int? sortOrder;
     bool? isVisible;
+    bool? requiresHeadphones;
     dynamic publishAt;
     dynamic startsAt;
     dynamic endsAt;
@@ -97,6 +98,7 @@ class Session {
         this.liveUrl,
         this.sortOrder,
         this.isVisible,
+        this.requiresHeadphones,
         this.publishAt,
         this.startsAt,
         this.endsAt,
@@ -124,6 +126,7 @@ class Session {
         liveUrl: json["live_url"],
         sortOrder: json["sort_order"],
         isVisible: json["is_visible"],
+        requiresHeadphones: json["requires_headphones"] == null ? null : (json["requires_headphones"] == true || json["requires_headphones"] == 1 || json["requires_headphones"] == '1'),
         publishAt: json["publish_at"],
         startsAt: json["starts_at"],
         endsAt: json["ends_at"],
@@ -151,6 +154,7 @@ class Session {
         "live_url": liveUrl,
         "sort_order": sortOrder,
         "is_visible": isVisible,
+        "requires_headphones": requiresHeadphones,
         "publish_at": publishAt,
         "starts_at": startsAt,
         "ends_at": endsAt,
