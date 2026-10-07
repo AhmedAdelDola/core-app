@@ -18,7 +18,7 @@ import leader.aplus.com.security.AttestationService
 import java.util.function.Consumer
 
 class MainActivity : FlutterActivity() {
-    private val screenSecurityChannel = "elhanbly/screen_security"
+    private val screenSecurityChannel = "core_app/screen_security"
     private val contentProtectionChannel = "leader.aplus.com/content_protection"
 
     private lateinit var attestationService: AttestationService

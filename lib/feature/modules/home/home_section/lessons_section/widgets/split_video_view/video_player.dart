@@ -111,9 +111,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
 <body>
   <div class="video-wrapper">
     <iframe
-      src="https://www.youtube.com/embed/$videoId?autoplay=1&playsinline=1&enablejsapi=1&rel=0&modestbranding=1"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen>
+      src="https://www.youtube.com/embed/$videoId?autoplay=1&playsinline=1&enablejsapi=1&rel=0&modestbranding=1&fs=0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope">
     </iframe>
   </div>
 </body>
@@ -121,6 +120,48 @@ class _VideoPlayerState extends State<VideoPlayer> {
 ''';
   }
 
+  static const String _disableFullscreenScript = '''
+    (function() {
+      function disableFs() {
+        Element.prototype.requestFullscreen = function() {
+          return Promise.reject(new Error('Fullscreen disabled'));
+        };
+        if (Element.prototype.webkitRequestFullscreen) {
+          Element.prototype.webkitRequestFullscreen = function() {
+            return Promise.reject(new Error('Fullscreen disabled'));
+          };
+        }
+        if (Element.prototype.mozRequestFullScreen) {
+          Element.prototype.mozRequestFullScreen = function() {
+            return Promise.reject(new Error('Fullscreen disabled'));
+          };
+        }
+        if (Element.prototype.msRequestFullscreen) {
+          Element.prototype.msRequestFullscreen = function() {
+            return Promise.reject(new Error('Fullscreen disabled'));
+          };
+        }
+        Document.prototype.exitFullscreen = function() {
+          return Promise.resolve();
+        };
+        if (Document.prototype.webkitExitFullscreen) {
+          Document.prototype.webkitExitFullscreen = function() {};
+        }
+        try {
+          Object.defineProperty(document, 'fullscreenEnabled', {
+            get: function() { return false; },
+            configurable: true
+          });
+          Object.defineProperty(document, 'webkitFullscreenEnabled', {
+            get: function() { return false; },
+            configurable: true
+          });
+        } catch(e) {}
+      }
+      disableFs();
+      document.addEventListener('DOMContentLoaded', disableFs);
+    })();
+  ''';
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +196,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
                       mediaPlaybackRequiresUserGesture: false,
                       allowsInlineMediaPlayback: true,
                       useHybridComposition: true,
-                      allowsPictureInPictureMediaPlayback: true,
+                      allowsPictureInPictureMediaPlayback: false,
                       transparentBackground: true,
                       domStorageEnabled: true,
                       databaseEnabled: true,
@@ -180,8 +221,10 @@ class _VideoPlayerState extends State<VideoPlayer> {
                         : null,
                     onWebViewCreated: (controller) {
                       _webViewController = controller;
+                      controller.evaluateJavascript(source: _disableFullscreenScript);
                     },
                     onLoadStop: (controller, url) {
+                      controller.evaluateJavascript(source: _disableFullscreenScript);
                       if (mounted) {
                         setState(() {
                           _isLoading = false;
