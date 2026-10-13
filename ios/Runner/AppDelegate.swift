@@ -356,53 +356,59 @@ final class ScreenSecurityManager {
     return UIScreen.main.isCaptured
   }
 
+  func showPrivacyOverlayImmediately() {
+    guard let window = resolveWindow() else { return }
+
+    if self.privacyOverlay == nil {
+      let overlay = UIView(frame: window.bounds)
+      overlay.backgroundColor = .black
+      overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+      overlay.tag = 777666
+
+      let label = UILabel()
+      label.text = "عفواً، لا يمكن تصوير أو تسجيل الشاشة"
+      label.textColor = .white
+      label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+      label.textAlignment = .center
+      label.numberOfLines = 0
+      label.translatesAutoresizingMaskIntoConstraints = false
+      overlay.addSubview(label)
+
+      NSLayoutConstraint.activate([
+        label.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+        label.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
+        label.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 24),
+        label.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -24)
+      ])
+
+      self.privacyOverlay = overlay
+    }
+
+    if let overlay = self.privacyOverlay {
+      overlay.frame = window.bounds
+      if overlay.superview == nil {
+        window.addSubview(overlay)
+      }
+      window.bringSubviewToFront(overlay)
+    }
+  }
+
+  func removePrivacyOverlayIfSafe() {
+    if !self.checkIsScreenRecording() && UIApplication.shared.applicationState == .active {
+      self.privacyOverlay?.removeFromSuperview()
+      self.privacyOverlay = nil
+    }
+  }
+
   private func showPrivacyOverlay() {
     DispatchQueue.main.async { [weak self] in
-      guard let self = self else { return }
-      guard let window = self.resolveWindow() else { return }
-
-      if self.privacyOverlay == nil {
-        let overlay = UIView(frame: window.bounds)
-        overlay.backgroundColor = .black
-        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        overlay.tag = 777666
-
-        let label = UILabel()
-        label.text = "عفواً، لا يمكن تصوير أو تسجيل الشاشة"
-        label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(label)
-
-        NSLayoutConstraint.activate([
-          label.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-          label.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
-          label.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 24),
-          label.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -24)
-        ])
-
-        self.privacyOverlay = overlay
-      }
-
-      if let overlay = self.privacyOverlay {
-        overlay.frame = window.bounds
-        if overlay.superview == nil {
-          window.addSubview(overlay)
-        }
-        window.bringSubviewToFront(overlay)
-      }
+      self?.showPrivacyOverlayImmediately()
     }
   }
 
   private func removePrivacyOverlay() {
     DispatchQueue.main.async { [weak self] in
-      guard let self = self else { return }
-      if !self.checkIsScreenRecording() && UIApplication.shared.applicationState == .active {
-        self.privacyOverlay?.removeFromSuperview()
-        self.privacyOverlay = nil
-      }
+      self?.removePrivacyOverlayIfSafe()
     }
   }
 }
