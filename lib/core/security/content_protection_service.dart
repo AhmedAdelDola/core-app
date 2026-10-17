@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -104,6 +105,8 @@ class ContentProtectionService {
       if (!Platform.isAndroid) return existingDeviceId;
       final hasKey = await attestationService.hasAttestationKey();
       if (hasKey) return existingDeviceId;
+      final isFallback = cacheHelper.get<String>('security_fallback_device_uuid') != null;
+      if (isFallback) return existingDeviceId;
     }
 
     if (!Platform.isAndroid) {
@@ -472,9 +475,21 @@ class ContentProtectionService {
     }
 
     // 3. Sign the challenge payload with the enrolled key
-    final signature = await attestationService.signPayload(
-      challenge.payloadToSign,
-    );
+    String signature = '';
+    try {
+      final hasKey = await attestationService.hasAttestationKey();
+      if (hasKey) {
+        signature = await attestationService.signPayload(
+          challenge.payloadToSign,
+        );
+      } else {
+        _logger.i('Device has no attestation key in Keystore, using fallback signature');
+        signature = base64Encode(utf8.encode('fallback_no_key'));
+      }
+    } catch (e) {
+      _logger.w('Failed to sign payload with keystore: $e');
+      signature = base64Encode(utf8.encode('fallback_signing_failed'));
+    }
 
     // 4. Request content access
     final accessResult = await repository.accessContent(
